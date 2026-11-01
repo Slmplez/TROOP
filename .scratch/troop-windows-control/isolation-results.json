@@ -1,0 +1,3575 @@
+{
+  "date": "2026-11-01",
+  "scope": "Own synthetic target; separate Rust input helper and Electron capture process",
+  "scenarios": [
+    {
+      "name": "normal",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_event": "Local\\TROOP-prototype-stop-48272-1793520399288",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 4394062,
+              "integrity": 8192,
+              "marker": 4919446,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 45108,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 48272,
+          "utc_ms": 1793520399395
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 48272,
+          "utc_ms": 1793520399414
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 48272,
+          "utc_ms": 1793520399437
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 48272,
+          "utc_ms": 1793520399453
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 48272,
+          "utc_ms": 1793520399475
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "target_identity"
+          },
+          "event": "command_denied",
+          "pid": 48272,
+          "utc_ms": 1793520399481
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 48272,
+          "utc_ms": 1793520400289
+        },
+        {
+          "data": {
+            "delay_ms": 0,
+            "epoch": 1
+          },
+          "event": "queued",
+          "pid": 48272,
+          "utc_ms": 1793520400310
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "error": 0,
+            "inserted": 3,
+            "requested": 3
+          },
+          "event": "os_submission",
+          "pid": 48272,
+          "utc_ms": 1793520400316
+        },
+        {
+          "data": {
+            "data": {
+              "hits": 1
+            },
+            "event": "target_hit",
+            "pid": 45108,
+            "utc_ms": 1793520400319
+          },
+          "event": "target_event",
+          "pid": 48272,
+          "utc_ms": 1793520400319
+        },
+        {
+          "data": {
+            "discarded": false,
+            "epoch": 2,
+            "grant": false,
+            "reason": "driver_exit"
+          },
+          "event": "stop_ack",
+          "pid": 48272,
+          "utc_ms": 1793520400332
+        }
+      ],
+      "helperPid": 48272,
+      "targetPid": 45108,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_event": "Local\\TROOP-prototype-stop-48272-1793520399288",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 4394062,
+          "integrity": 8192,
+          "marker": 4919446,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 45108,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "capturePid": 45080,
+      "captureFrame": {
+        "target_pid": 45108,
+        "frame": {
+          "width": 836,
+          "height": 512,
+          "patch": [
+            32,
+            172,
+            61,
+            201
+          ],
+          "count": 896,
+          "trackState": "live"
+        },
+        "point": [
+          234,
+          307
+        ],
+        "error": [
+          0,
+          0.365234375
+        ],
+        "sourceId": "window:4394062:0"
+      },
+      "captureTrace": [
+        {
+          "event": "capture_ready",
+          "data": {
+            "target_pid": 45108,
+            "frame": {
+              "width": 836,
+              "height": 512,
+              "patch": [
+                32,
+                172,
+                61,
+                201
+              ],
+              "count": 896,
+              "trackState": "live"
+            },
+            "point": [
+              234,
+              307
+            ],
+            "error": [
+              0,
+              0.365234375
+            ],
+            "sourceId": "window:4394062:0"
+          },
+          "utc_ms": 1793520400275,
+          "pid": 45080
+        }
+      ],
+      "passed": true,
+      "helperStderr": "",
+      "captureStderr": "[45080:1101/160640.341:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capture_session.cc:442] The target source has been closed.\r\n[45080:1101/160640.341:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capturer_win.cc:413] GetFrame failed.\r\n"
+    },
+    {
+      "name": "focus-pulse",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_event": "Local\\TROOP-prototype-stop-43628-1793520400739",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 594438,
+              "integrity": 8192,
+              "marker": 1446244,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 41660,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 43628,
+          "utc_ms": 1793520400788
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 43628,
+          "utc_ms": 1793520400806
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 43628,
+          "utc_ms": 1793520400828
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 43628,
+          "utc_ms": 1793520400850
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 43628,
+          "utc_ms": 1793520400871
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "target_identity"
+          },
+          "event": "command_denied",
+          "pid": 43628,
+          "utc_ms": 1793520400877
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 43628,
+          "utc_ms": 1793520401598
+        },
+        {
+          "data": {
+            "delay_ms": 1500,
+            "epoch": 1
+          },
+          "event": "queued",
+          "pid": 43628,
+          "utc_ms": 1793520401614
+        },
+        {
+          "data": {
+            "discarded": true,
+            "epoch": 2,
+            "focus_event_latched": true,
+            "session_ok": true
+          },
+          "event": "observation_invalidated",
+          "pid": 43628,
+          "utc_ms": 1793520401643
+        },
+        {
+          "data": {
+            "data": {
+              "foreground_changed": true
+            },
+            "event": "focus_pulse_started",
+            "pid": 41660,
+            "utc_ms": 1793520401644
+          },
+          "event": "target_event",
+          "pid": 43628,
+          "utc_ms": 1793520401645
+        },
+        {
+          "data": {
+            "data": {
+              "target_foreground": true
+            },
+            "event": "focus_pulse_returned",
+            "pid": 41660,
+            "utc_ms": 1793520401949
+          },
+          "event": "target_event",
+          "pid": 43628,
+          "utc_ms": 1793520401949
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 43628,
+          "utc_ms": 1793520403665
+        },
+        {
+          "data": {
+            "delay_ms": 0,
+            "epoch": 2
+          },
+          "event": "queued",
+          "pid": 43628,
+          "utc_ms": 1793520403687
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "error": 0,
+            "inserted": 3,
+            "requested": 3
+          },
+          "event": "os_submission",
+          "pid": 43628,
+          "utc_ms": 1793520403690
+        },
+        {
+          "data": {
+            "data": {
+              "hits": 1
+            },
+            "event": "target_hit",
+            "pid": 41660,
+            "utc_ms": 1793520403692
+          },
+          "event": "target_event",
+          "pid": 43628,
+          "utc_ms": 1793520403692
+        },
+        {
+          "data": {
+            "discarded": false,
+            "epoch": 3,
+            "grant": false,
+            "reason": "driver_exit"
+          },
+          "event": "stop_ack",
+          "pid": 43628,
+          "utc_ms": 1793520403707
+        }
+      ],
+      "helperPid": 43628,
+      "targetPid": 41660,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_event": "Local\\TROOP-prototype-stop-43628-1793520400739",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 594438,
+          "integrity": 8192,
+          "marker": 1446244,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 41660,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "capturePid": 41532,
+      "captureFrame": {
+        "target_pid": 41660,
+        "frame": {
+          "width": 836,
+          "height": 512,
+          "patch": [
+            32,
+            172,
+            61,
+            201
+          ],
+          "count": 761,
+          "trackState": "live"
+        },
+        "point": [
+          234,
+          307
+        ],
+        "error": [
+          0,
+          0.365234375
+        ],
+        "sourceId": "window:594438:0"
+      },
+      "noReplayAfterFocusReturn": true,
+      "invalidatedEpoch": 2,
+      "newActionAfterExplicitObservation": true,
+      "captureTrace": [
+        {
+          "event": "capture_ready",
+          "data": {
+            "target_pid": 41660,
+            "frame": {
+              "width": 836,
+              "height": 512,
+              "patch": [
+                32,
+                172,
+                61,
+                201
+              ],
+              "count": 761,
+              "trackState": "live"
+            },
+            "point": [
+              234,
+              307
+            ],
+            "error": [
+              0,
+              0.365234375
+            ],
+            "sourceId": "window:594438:0"
+          },
+          "utc_ms": 1793520401589,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520401690,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520401791,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520401892,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520401993,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520402093,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520402194,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520402294,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520402394,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520402494,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520402595,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520402695,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520402795,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520402896,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520402998,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520403098,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520403198,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520403297,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520403398,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520403499,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520403599,
+          "pid": 41532
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520403698,
+          "pid": 41532
+        }
+      ],
+      "passed": true,
+      "helperStderr": "",
+      "captureStderr": "[41532:1101/160643.714:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capture_session.cc:442] The target source has been closed.\r\n[41532:1101/160643.714:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capturer_win.cc:413] GetFrame failed.\r\n"
+    },
+    {
+      "name": "stale-observation",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_event": "Local\\TROOP-prototype-stop-10308-1793520404113",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 790976,
+              "integrity": 8192,
+              "marker": 7082574,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 47640,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 10308,
+          "utc_ms": 1793520404165
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 10308,
+          "utc_ms": 1793520404177
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 10308,
+          "utc_ms": 1793520404198
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 10308,
+          "utc_ms": 1793520404227
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 10308,
+          "utc_ms": 1793520404238
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "target_identity"
+          },
+          "event": "command_denied",
+          "pid": 10308,
+          "utc_ms": 1793520404243
+        },
+        {
+          "data": {
+            "discarded": false,
+            "epoch": 2,
+            "focus_event_latched": true,
+            "session_ok": true
+          },
+          "event": "observation_invalidated",
+          "pid": 10308,
+          "utc_ms": 1793520404848
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 10308,
+          "utc_ms": 1793520405020
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 10308,
+          "utc_ms": 1793520410246
+        },
+        {
+          "data": {
+            "discarded": false,
+            "epoch": 3,
+            "focus_event_latched": true,
+            "session_ok": true
+          },
+          "event": "observation_invalidated",
+          "pid": 10308,
+          "utc_ms": 1793520413164
+        },
+        {
+          "data": {
+            "discarded": false,
+            "epoch": 4,
+            "grant": false,
+            "reason": "driver_exit"
+          },
+          "event": "stop_ack",
+          "pid": 10308,
+          "utc_ms": 1793520422253
+        }
+      ],
+      "helperPid": 10308,
+      "targetPid": 47640,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_event": "Local\\TROOP-prototype-stop-10308-1793520404113",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 790976,
+          "integrity": 8192,
+          "marker": 7082574,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 47640,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "capturePid": 44480,
+      "captureFrame": {
+        "target_pid": 47640,
+        "frame": {
+          "width": 836,
+          "height": 512,
+          "patch": [
+            32,
+            172,
+            61,
+            201
+          ],
+          "count": 642,
+          "trackState": "live"
+        },
+        "point": [
+          234,
+          307
+        ],
+        "error": [
+          0,
+          0.365234375
+        ],
+        "sourceId": "window:790976:0"
+      },
+      "passed": false,
+      "error": "Error: Timed out: queued action",
+      "helperStderr": "",
+      "captureStderr": "[44480:1101/160702.260:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capture_session.cc:442] The target source has been closed.\r\n[44480:1101/160702.260:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capturer_win.cc:413] GetFrame failed.\r\n"
+    },
+    {
+      "name": "capture-hang",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_event": "Local\\TROOP-prototype-stop-15176-1793520422721",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 1314058,
+              "integrity": 8192,
+              "marker": 725510,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 40120,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 15176,
+          "utc_ms": 1793520422775
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520422782
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 15176,
+          "utc_ms": 1793520422803
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 15176,
+          "utc_ms": 1793520422825
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520422846
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "target_identity"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520422851
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 15176,
+          "utc_ms": 1793520423664
+        },
+        {
+          "data": {
+            "delay_ms": 1500,
+            "epoch": 1
+          },
+          "event": "queued",
+          "pid": 15176,
+          "utc_ms": 1793520423685
+        },
+        {
+          "data": {
+            "discarded": true,
+            "epoch": 2,
+            "grant": false,
+            "reason": "independent_stop_event"
+          },
+          "event": "stop_ack",
+          "pid": 15176,
+          "utc_ms": 1793520423995
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "grant",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520424003
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "enqueue",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520424009
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520424089
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520424185
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520424286
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520424388
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520424490
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520424587
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520424689
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520424787
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520424890
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520424987
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520425089
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520425187
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520425288
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520425389
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520425490
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520425592
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520425693
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520425789
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 15176,
+          "utc_ms": 1793520425892
+        }
+      ],
+      "helperPid": 15176,
+      "targetPid": 40120,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_event": "Local\\TROOP-prototype-stop-15176-1793520422721",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 1314058,
+          "integrity": 8192,
+          "marker": 725510,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 40120,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "capturePid": 40084,
+      "captureFrame": {
+        "target_pid": 40120,
+        "frame": {
+          "width": 836,
+          "height": 512,
+          "patch": [
+            32,
+            172,
+            61,
+            201
+          ],
+          "count": 642,
+          "trackState": "live"
+        },
+        "point": [
+          234,
+          307
+        ],
+        "error": [
+          0,
+          0.365234375
+        ],
+        "sourceId": "window:1314058:0"
+      },
+      "captureAliveAtStop": true,
+      "stopRequestUtcMs": 1793520423971,
+      "signal": {
+        "data": {
+          "set_event": 1,
+          "signal_utc_ms": 1793520423995
+        },
+        "event": "signal_sent",
+        "pid": 45168,
+        "utc_ms": 1793520423995
+      },
+      "stopAckUtcMs": 1793520423995,
+      "stopLatencyIncludingSignalProcessMs": 24,
+      "observedBeyondOriginalDeadline": true,
+      "captureTrace": [
+        {
+          "event": "capture_ready",
+          "data": {
+            "target_pid": 40120,
+            "frame": {
+              "width": 836,
+              "height": 512,
+              "patch": [
+                32,
+                172,
+                61,
+                201
+              ],
+              "count": 642,
+              "trackState": "live"
+            },
+            "point": [
+              234,
+              307
+            ],
+            "error": [
+              0,
+              0.365234375
+            ],
+            "sourceId": "window:1314058:0"
+          },
+          "utc_ms": 1793520423653,
+          "pid": 40084
+        },
+        {
+          "event": "capture_hang_injected",
+          "data": {
+            "kind": "blocked main event loop after real capture"
+          },
+          "utc_ms": 1793520423716,
+          "pid": 40084
+        }
+      ],
+      "passed": true,
+      "helperStderr": "",
+      "captureStderr": "[40084:1101/160705.945:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capture_session.cc:442] The target source has been closed.\r\n[40084:1101/160705.945:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capturer_win.cc:413] GetFrame failed.\r\n"
+    },
+    {
+      "name": "capture-exit",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_event": "Local\\TROOP-prototype-stop-42936-1793520426388",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 41095316,
+              "integrity": 8192,
+              "marker": 1642852,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 40988,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 42936,
+          "utc_ms": 1793520426439
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520426457
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 42936,
+          "utc_ms": 1793520426479
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 42936,
+          "utc_ms": 1793520426496
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520426517
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "target_identity"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520426522
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 42936,
+          "utc_ms": 1793520427341
+        },
+        {
+          "data": {
+            "delay_ms": 1500,
+            "epoch": 1
+          },
+          "event": "queued",
+          "pid": 42936,
+          "utc_ms": 1793520427368
+        },
+        {
+          "data": {
+            "discarded": true,
+            "epoch": 2,
+            "grant": false,
+            "reason": "independent_stop_event"
+          },
+          "event": "stop_ack",
+          "pid": 42936,
+          "utc_ms": 1793520427523
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "grant",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520427531
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "enqueue",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520427537
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520427564
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520427661
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520427762
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520427859
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520427962
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520428065
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520428161
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520428264
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520428362
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520428462
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520428564
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520428666
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520428768
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520428869
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520428965
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520429068
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520429165
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520429269
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42936,
+          "utc_ms": 1793520429372
+        }
+      ],
+      "helperPid": 42936,
+      "targetPid": 40988,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_event": "Local\\TROOP-prototype-stop-42936-1793520426388",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 41095316,
+          "integrity": 8192,
+          "marker": 1642852,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 40988,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "capturePid": 13508,
+      "captureFrame": {
+        "target_pid": 40988,
+        "frame": {
+          "width": 836,
+          "height": 512,
+          "patch": [
+            32,
+            172,
+            61,
+            201
+          ],
+          "count": 761,
+          "trackState": "live"
+        },
+        "point": [
+          234,
+          307
+        ],
+        "error": [
+          0,
+          0.365234375
+        ],
+        "sourceId": "window:41095316:0"
+      },
+      "stopRequestUtcMs": 1793520427503,
+      "signal": {
+        "data": {
+          "set_event": 1,
+          "signal_utc_ms": 1793520427523
+        },
+        "event": "signal_sent",
+        "pid": 38464,
+        "utc_ms": 1793520427523
+      },
+      "stopAckUtcMs": 1793520427523,
+      "stopLatencyIncludingSignalProcessMs": 20,
+      "observedBeyondOriginalDeadline": true,
+      "captureTrace": [
+        {
+          "event": "capture_ready",
+          "data": {
+            "target_pid": 40988,
+            "frame": {
+              "width": 836,
+              "height": 512,
+              "patch": [
+                32,
+                172,
+                61,
+                201
+              ],
+              "count": 761,
+              "trackState": "live"
+            },
+            "point": [
+              234,
+              307
+            ],
+            "error": [
+              0,
+              0.365234375
+            ],
+            "sourceId": "window:41095316:0"
+          },
+          "utc_ms": 1793520427325,
+          "pid": 13508
+        },
+        {
+          "event": "capture_exit_injected",
+          "data": {
+            "exitCode": 73
+          },
+          "utc_ms": 1793520427388,
+          "pid": 13508
+        }
+      ],
+      "passed": true,
+      "helperStderr": "",
+      "captureStderr": ""
+    },
+    {
+      "name": "channel-eof",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_event": "Local\\TROOP-prototype-stop-21756-1793520429569",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 3737666,
+              "integrity": 8192,
+              "marker": 4524108,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 1840,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 21756,
+          "utc_ms": 1793520429615
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 21756,
+          "utc_ms": 1793520429639
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 21756,
+          "utc_ms": 1793520429661
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 21756,
+          "utc_ms": 1793520429678
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 21756,
+          "utc_ms": 1793520429700
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "target_identity"
+          },
+          "event": "command_denied",
+          "pid": 21756,
+          "utc_ms": 1793520429705
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 21756,
+          "utc_ms": 1793520431483
+        },
+        {
+          "data": {
+            "delay_ms": 1500,
+            "epoch": 1
+          },
+          "event": "queued",
+          "pid": 21756,
+          "utc_ms": 1793520431505
+        },
+        {
+          "data": {
+            "discarded": true,
+            "epoch": 2,
+            "grant": false,
+            "reason": "command_channel_eof"
+          },
+          "event": "stop_ack",
+          "pid": 21756,
+          "utc_ms": 1793520431524
+        }
+      ],
+      "helperPid": 21756,
+      "targetPid": 1840,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_event": "Local\\TROOP-prototype-stop-21756-1793520429569",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 3737666,
+          "integrity": 8192,
+          "marker": 4524108,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 1840,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "capturePid": 45428,
+      "captureFrame": {
+        "target_pid": 1840,
+        "frame": {
+          "width": 836,
+          "height": 512,
+          "patch": [
+            32,
+            172,
+            61,
+            201
+          ],
+          "count": 761,
+          "trackState": "live"
+        },
+        "point": [
+          234,
+          307
+        ],
+        "error": [
+          0,
+          0.365234375
+        ],
+        "sourceId": "window:3737666:0"
+      },
+      "stopRequestUtcMs": 1793520431524,
+      "stopAckUtcMs": 1793520431524,
+      "stopLatencyIncludingSignalProcessMs": 0,
+      "observedBeyondOriginalDeadline": true,
+      "captureTrace": [
+        {
+          "event": "capture_ready",
+          "data": {
+            "target_pid": 1840,
+            "frame": {
+              "width": 836,
+              "height": 512,
+              "patch": [
+                32,
+                172,
+                61,
+                201
+              ],
+              "count": 761,
+              "trackState": "live"
+            },
+            "point": [
+              234,
+              307
+            ],
+            "error": [
+              0,
+              0.365234375
+            ],
+            "sourceId": "window:3737666:0"
+          },
+          "utc_ms": 1793520431467,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520431568,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520431670,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520431771,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520431872,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520431972,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520432073,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520432174,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520432274,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520432373,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520432474,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520432574,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520432675,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520432775,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520432874,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520432975,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520433076,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520433177,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520433278,
+          "pid": 45428
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520433377,
+          "pid": 45428
+        }
+      ],
+      "passed": true,
+      "helperStderr": "",
+      "captureStderr": "[45428:1101/160713.577:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capture_session.cc:442] The target source has been closed.\r\n[45428:1101/160713.577:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capturer_win.cc:413] GetFrame failed.\r\n"
+    },
+    {
+      "name": "lease-timeout",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_event": "Local\\TROOP-prototype-stop-37964-1793520433886",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 1117654,
+              "integrity": 8192,
+              "marker": 4264114,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 44516,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 37964,
+          "utc_ms": 1793520433934
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 37964,
+          "utc_ms": 1793520433952
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 37964,
+          "utc_ms": 1793520433974
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 37964,
+          "utc_ms": 1793520433997
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 37964,
+          "utc_ms": 1793520434012
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "target_identity"
+          },
+          "event": "command_denied",
+          "pid": 37964,
+          "utc_ms": 1793520434018
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 37964,
+          "utc_ms": 1793520434806
+        },
+        {
+          "data": {
+            "delay_ms": 1500,
+            "epoch": 1
+          },
+          "event": "queued",
+          "pid": 37964,
+          "utc_ms": 1793520434827
+        },
+        {
+          "data": {
+            "discarded": true,
+            "epoch": 2,
+            "grant": false,
+            "reason": "coordinator_lease_expired"
+          },
+          "event": "stop_ack",
+          "pid": 37964,
+          "utc_ms": 1793520435454
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "grant",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 37964,
+          "utc_ms": 1793520435464
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "enqueue",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 37964,
+          "utc_ms": 1793520435469
+        }
+      ],
+      "helperPid": 37964,
+      "targetPid": 44516,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_event": "Local\\TROOP-prototype-stop-37964-1793520433886",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 1117654,
+          "integrity": 8192,
+          "marker": 4264114,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 44516,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "capturePid": 14680,
+      "captureFrame": {
+        "target_pid": 44516,
+        "frame": {
+          "width": 836,
+          "height": 512,
+          "patch": [
+            32,
+            172,
+            61,
+            201
+          ],
+          "count": 761,
+          "trackState": "live"
+        },
+        "point": [
+          234,
+          307
+        ],
+        "error": [
+          0,
+          0.365234375
+        ],
+        "sourceId": "window:1117654:0"
+      },
+      "stopRequestUtcMs": 1793520434844,
+      "stopAckUtcMs": 1793520435454,
+      "stopLatencyIncludingSignalProcessMs": 610,
+      "observedBeyondOriginalDeadline": true,
+      "captureTrace": [
+        {
+          "event": "capture_ready",
+          "data": {
+            "target_pid": 44516,
+            "frame": {
+              "width": 836,
+              "height": 512,
+              "patch": [
+                32,
+                172,
+                61,
+                201
+              ],
+              "count": 761,
+              "trackState": "live"
+            },
+            "point": [
+              234,
+              307
+            ],
+            "error": [
+              0,
+              0.365234375
+            ],
+            "sourceId": "window:1117654:0"
+          },
+          "utc_ms": 1793520434785,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520434887,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520434986,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520435087,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520435188,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520435288,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520435389,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520435490,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520435590,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520435690,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520435791,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520435891,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520435992,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520436093,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520436192,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520436293,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520436393,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520436492,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520436593,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520436693,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520436793,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520436892,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520436993,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520437094,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520437194,
+          "pid": 14680
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520437294,
+          "pid": 14680
+        }
+      ],
+      "passed": true,
+      "helperStderr": "",
+      "captureStderr": "[14680:1101/160717.402:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capture_session.cc:442] The target source has been closed.\r\n[14680:1101/160717.402:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capturer_win.cc:413] GetFrame failed.\r\n"
+    },
+    {
+      "name": "helper-crash",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_event": "Local\\TROOP-prototype-stop-24460-1793520437830",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 987654,
+              "integrity": 8192,
+              "marker": 1903368,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 25852,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 24460,
+          "utc_ms": 1793520437878
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 24460,
+          "utc_ms": 1793520437897
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 24460,
+          "utc_ms": 1793520437919
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 24460,
+          "utc_ms": 1793520437940
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 24460,
+          "utc_ms": 1793520437961
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "target_identity"
+          },
+          "event": "command_denied",
+          "pid": 24460,
+          "utc_ms": 1793520437966
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 24460,
+          "utc_ms": 1793520438750
+        },
+        {
+          "data": {
+            "delay_ms": 1500,
+            "epoch": 1
+          },
+          "event": "queued",
+          "pid": 24460,
+          "utc_ms": 1793520438771
+        }
+      ],
+      "helperPid": 24460,
+      "targetPid": 25852,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_event": "Local\\TROOP-prototype-stop-24460-1793520437830",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 987654,
+          "integrity": 8192,
+          "marker": 1903368,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 25852,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "capturePid": 38960,
+      "captureFrame": {
+        "target_pid": 25852,
+        "frame": {
+          "width": 836,
+          "height": 512,
+          "patch": [
+            32,
+            172,
+            61,
+            201
+          ],
+          "count": 761,
+          "trackState": "live"
+        },
+        "point": [
+          234,
+          307
+        ],
+        "error": [
+          0,
+          0.365234375
+        ],
+        "sourceId": "window:987654:0"
+      },
+      "helperKillUtcMs": 1793520438786,
+      "targetExitAfterHelperCrash": {
+        "code": 0,
+        "report": {
+          "data": {
+            "error": 87,
+            "exited": true,
+            "pid": 25852
+          },
+          "event": "target_open_failed",
+          "pid": 46004,
+          "utc_ms": 1793520439109
+        }
+      },
+      "observedBeyondOriginalDeadline": true,
+      "captureTrace": [
+        {
+          "event": "capture_ready",
+          "data": {
+            "target_pid": 25852,
+            "frame": {
+              "width": 836,
+              "height": 512,
+              "patch": [
+                32,
+                172,
+                61,
+                201
+              ],
+              "count": 761,
+              "trackState": "live"
+            },
+            "point": [
+              234,
+              307
+            ],
+            "error": [
+              0,
+              0.365234375
+            ],
+            "sourceId": "window:987654:0"
+          },
+          "utc_ms": 1793520438736,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520438838,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520438939,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520439039,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520439139,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520439240,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520439340,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520439440,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520439541,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520439642,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520439742,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520439842,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520439942,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520440043,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520440143,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520440243,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520440343,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520440443,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520440543,
+          "pid": 38960
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520440643,
+          "pid": 38960
+        }
+      ],
+      "passed": true,
+      "helperStderr": "",
+      "captureStderr": "[38960:1101/160718.814:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capture_session.cc:442] The target source has been closed.\r\n[38960:1101/160718.814:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capturer_win.cc:413] GetFrame failed.\r\n"
+    },
+    {
+      "name": "target-crash",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_event": "Local\\TROOP-prototype-stop-44756-1793520441146",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 41357460,
+              "integrity": 8192,
+              "marker": 1249684,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 38292,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 44756,
+          "utc_ms": 1793520441190
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 44756,
+          "utc_ms": 1793520441213
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 44756,
+          "utc_ms": 1793520441235
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 44756,
+          "utc_ms": 1793520441253
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 44756,
+          "utc_ms": 1793520441274
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "target_identity"
+          },
+          "event": "command_denied",
+          "pid": 44756,
+          "utc_ms": 1793520441280
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 44756,
+          "utc_ms": 1793520442038
+        },
+        {
+          "data": {
+            "delay_ms": 1500,
+            "epoch": 1
+          },
+          "event": "queued",
+          "pid": 44756,
+          "utc_ms": 1793520442060
+        },
+        {
+          "data": {
+            "discarded": true,
+            "epoch": 2,
+            "focus_event_latched": true,
+            "session_ok": true
+          },
+          "event": "observation_invalidated",
+          "pid": 44756,
+          "utc_ms": 1793520442082
+        },
+        {
+          "data": {
+            "discarded": false,
+            "epoch": 3,
+            "grant": false,
+            "reason": "target_exit"
+          },
+          "event": "stop_ack",
+          "pid": 44756,
+          "utc_ms": 1793520442087
+        }
+      ],
+      "helperPid": 44756,
+      "targetPid": 38292,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_event": "Local\\TROOP-prototype-stop-44756-1793520441146",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 41357460,
+          "integrity": 8192,
+          "marker": 1249684,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 38292,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "capturePid": 46852,
+      "captureFrame": {
+        "target_pid": 38292,
+        "frame": {
+          "width": 836,
+          "height": 512,
+          "patch": [
+            32,
+            172,
+            61,
+            201
+          ],
+          "count": 761,
+          "trackState": "live"
+        },
+        "point": [
+          234,
+          307
+        ],
+        "error": [
+          0,
+          0.365234375
+        ],
+        "sourceId": "window:41357460:0"
+      },
+      "stopRequestUtcMs": 1793520442078,
+      "stopAckUtcMs": 1793520442087,
+      "stopLatencyIncludingSignalProcessMs": 9,
+      "observedBeyondOriginalDeadline": true,
+      "captureTrace": [
+        {
+          "event": "capture_ready",
+          "data": {
+            "target_pid": 38292,
+            "frame": {
+              "width": 836,
+              "height": 512,
+              "patch": [
+                32,
+                172,
+                61,
+                201
+              ],
+              "count": 761,
+              "trackState": "live"
+            },
+            "point": [
+              234,
+              307
+            ],
+            "error": [
+              0,
+              0.365234375
+            ],
+            "sourceId": "window:41357460:0"
+          },
+          "utc_ms": 1793520442030,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520442131,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520442233,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520442332,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520442433,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520442533,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520442633,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520442733,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520442834,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520442934,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520443034,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520443134,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520443234,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520443333,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520443434,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520443534,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520443635,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520443734,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520443834,
+          "pid": 46852
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793520443935,
+          "pid": 46852
+        }
+      ],
+      "passed": true,
+      "helperStderr": "",
+      "captureStderr": "[46852:1101/160722.105:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capture_session.cc:442] The target source has been closed.\r\n[46852:1101/160722.105:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capturer_win.cc:413] GetFrame failed.\r\n"
+    },
+    {
+      "name": "permission",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_event": "Local\\TROOP-prototype-stop-40520-1793520444446",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 1249728,
+              "integrity": 8192,
+              "marker": 5247080,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 47768,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 40520,
+          "utc_ms": 1793520444492
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 40520,
+          "utc_ms": 1793520444516
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 40520,
+          "utc_ms": 1793520444537
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 40520,
+          "utc_ms": 1793520444553
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 40520,
+          "utc_ms": 1793520444574
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "target_identity"
+          },
+          "event": "command_denied",
+          "pid": 40520,
+          "utc_ms": 1793520444579
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 40520,
+          "utc_ms": 1793520445494
+        },
+        {
+          "data": {
+            "delay_ms": 0,
+            "epoch": 1
+          },
+          "event": "queued",
+          "pid": 40520,
+          "utc_ms": 1793520445516
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "error": 0,
+            "inserted": 3,
+            "requested": 3
+          },
+          "event": "os_submission",
+          "pid": 40520,
+          "utc_ms": 1793520445519
+        },
+        {
+          "data": {
+            "data": {
+              "hits": 1
+            },
+            "event": "target_hit",
+            "pid": 47768,
+            "utc_ms": 1793520445521
+          },
+          "event": "target_event",
+          "pid": 40520,
+          "utc_ms": 1793520445521
+        },
+        {
+          "data": {
+            "discarded": false,
+            "epoch": 2,
+            "grant": false,
+            "reason": "driver_exit"
+          },
+          "event": "stop_ack",
+          "pid": 40520,
+          "utc_ms": 1793520445534
+        }
+      ],
+      "helperPid": 40520,
+      "targetPid": 47768,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_event": "Local\\TROOP-prototype-stop-40520-1793520444446",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 1249728,
+          "integrity": 8192,
+          "marker": 5247080,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 47768,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "permission": {
+        "exit": 0,
+        "stdout": "{\"data\":{\"pid\":38336,\"target_integrity\":8192,\"target_pid\":47768},\"event\":\"low_integrity_spawned\",\"pid\":22220,\"utc_ms\":1793520444662}\n",
+        "stderr": "",
+        "child": {
+          "diagnosticCallAttempted": false,
+          "inserted": 0,
+          "lastError": 0,
+          "note": "Return/error alone cannot identify UIPI; correlate actual integrity tokens and same-target positive control.",
+          "policyDenied": true,
+          "policyPathOsCalls": 0,
+          "policyReason": "higher_integrity_target",
+          "preflightAllowed": true,
+          "preflightReason": null,
+          "requested": 0,
+          "senderIntegrity": 4096,
+          "senderUiAccess": 0,
+          "targetIntegrity": 8192,
+          "targetUiAccess": 0
+        },
+        "policyTargetHits": 0,
+        "diagnosticProcess": {
+          "exit": 0,
+          "stdout": "{\"data\":{\"pid\":38216,\"target_integrity\":8192,\"target_pid\":47768},\"event\":\"low_integrity_spawned\",\"pid\":5476,\"utc_ms\":1793520444962}\n",
+          "stderr": ""
+        },
+        "diagnostic": {
+          "diagnosticCallAttempted": true,
+          "inserted": 3,
+          "lastError": 0,
+          "note": "Return/error alone cannot identify UIPI; correlate actual integrity tokens and same-target positive control.",
+          "policyDenied": true,
+          "policyPathOsCalls": 0,
+          "policyReason": "higher_integrity_target",
+          "preflightAllowed": true,
+          "preflightReason": null,
+          "requested": 3,
+          "senderIntegrity": 4096,
+          "senderUiAccess": 0,
+          "targetIntegrity": 8192,
+          "targetUiAccess": 0,
+          "targetHits": 0,
+          "verdict": "Diagnostic only: preserve OS return and target delivery separately; do not infer UIPI solely from return code."
+        },
+        "sameTargetPositiveControl": true
+      },
+      "passed": true,
+      "helperStderr": "",
+      "captureStderr": ""
+    }
+  ]
+}

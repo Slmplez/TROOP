@@ -1,0 +1,177 @@
+{
+  "date": "2026-11-01",
+  "scope": "Own synthetic target; separate Rust input helper and Electron capture process",
+  "scenarios": [
+    {
+      "name": "permission",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_event": "Local\\TROOP-prototype-stop-45252-1793518059426",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 22351542,
+              "integrity": 8192,
+              "marker": 6557514,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 46728,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 45252,
+          "utc_ms": 1793518059530
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 45252,
+          "utc_ms": 1793518059552
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 45252,
+          "utc_ms": 1793518059574
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 45252,
+          "utc_ms": 1793518059599
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 45252,
+          "utc_ms": 1793518059620
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "target_identity"
+          },
+          "event": "command_denied",
+          "pid": 45252,
+          "utc_ms": 1793518059625
+        },
+        {
+          "data": {
+            "discarded": false,
+            "epoch": 2,
+            "grant": false,
+            "reason": "driver_exit"
+          },
+          "event": "stop_ack",
+          "pid": 45252,
+          "utc_ms": 1793518060235
+        }
+      ],
+      "helperPid": 45252,
+      "targetPid": 46728,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_event": "Local\\TROOP-prototype-stop-45252-1793518059426",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 22351542,
+          "integrity": 8192,
+          "marker": 6557514,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 46728,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "permission": {
+        "exit": 0,
+        "stdout": "{\"data\":{\"pid\":43408,\"target_integrity\":8192,\"target_pid\":46728},\"event\":\"low_integrity_spawned\",\"pid\":17308,\"utc_ms\":1793518059700}\n",
+        "stderr": "",
+        "child": {
+          "diagnosticCallAttempted": true,
+          "inserted": 3,
+          "lastError": 0,
+          "note": "Return/error alone cannot identify UIPI; correlate actual integrity tokens and same-target positive control.",
+          "policyDenied": true,
+          "policyReason": "higher_integrity_target",
+          "preflightAllowed": true,
+          "preflightReason": null,
+          "requested": 3,
+          "senderIntegrity": 4096,
+          "senderUiAccess": 0,
+          "targetIntegrity": 8192,
+          "targetUiAccess": 0
+        },
+        "targetHits": 0
+      },
+      "passed": false,
+      "error": "Error: Controlled lower-integrity submission was not rejected",
+      "helperStderr": "",
+      "captureStderr": ""
+    }
+  ]
+}

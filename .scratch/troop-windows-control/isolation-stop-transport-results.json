@@ -1,0 +1,172 @@
+{
+  "date": "2026-11-01",
+  "scope": "Own synthetic target; separate Rust input helper and Electron capture process",
+  "scenarios": [
+    {
+      "name": "stop-transport",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_ack_event": "Local\\TROOP-prototype-stop-42564-1793521598686-ack",
+            "stop_event": "Local\\TROOP-prototype-stop-42564-1793521598686",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 986368,
+              "integrity": 8192,
+              "marker": 1706732,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 47564,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 42564,
+          "utc_ms": 1793521598732
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 42564,
+          "utc_ms": 1793521598755
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 42564,
+          "utc_ms": 1793521598772
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42564,
+          "utc_ms": 1793521599255
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42564,
+          "utc_ms": 1793521599353
+        },
+        {
+          "data": {
+            "diagnostic_events_dropped": 1853,
+            "epoch": 2,
+            "grant": false,
+            "pending": false,
+            "stopped": true
+          },
+          "event": "status",
+          "pid": 42564,
+          "utc_ms": 1793521599417
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "grant",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 42564,
+          "utc_ms": 1793521599439
+        }
+      ],
+      "helperPid": 42564,
+      "targetPid": 47564,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_ack_event": "Local\\TROOP-prototype-stop-42564-1793521598686-ack",
+        "stop_event": "Local\\TROOP-prototype-stop-42564-1793521598686",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 986368,
+          "integrity": 8192,
+          "marker": 1706732,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 47564,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "scope": "Independent stop acknowledgment under log backpressure, WITHOUT observation, pending action or OS input",
+      "signal": {
+        "data": {
+          "ack_utc_ms": 1793521599162,
+          "kernel_ack": true,
+          "set_event": 1,
+          "signal_utc_ms": 1793521599162
+        },
+        "event": "signal_sent",
+        "pid": 7184,
+        "utc_ms": 1793521599162
+      },
+      "fillerEventsReceived": 148,
+      "finalState": {
+        "diagnostic_events_dropped": 1853,
+        "epoch": 2,
+        "grant": false,
+        "pending": false,
+        "stopped": true
+      },
+      "passed": true,
+      "helperStderr": "",
+      "captureStderr": ""
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "date": "2026-11-01",
+  "scope": "Own synthetic target; separate Rust input helper and Electron capture process",
+  "scenarios": [
+    {
+      "name": "normal",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_ack_event": "Local\\TROOP-prototype-stop-9892-1793520769332-ack",
+            "stop_event": "Local\\TROOP-prototype-stop-9892-1793520769332",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 921056,
+              "integrity": 8192,
+              "marker": 1116908,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 48820,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 9892,
+          "utc_ms": 1793520769371
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 9892,
+          "utc_ms": 1793520769379
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 9892,
+          "utc_ms": 1793520769401
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 9892,
+          "utc_ms": 1793520769423
+        },
+        {
+          "data": {
+            "discarded": false,
+            "epoch": 2,
+            "grant": false,
+            "reason": "driver_exit"
+          },
+          "event": "stop_ack",
+          "pid": 9892,
+          "utc_ms": 1793520769439
+        }
+      ],
+      "helperPid": 9892,
+      "targetPid": 48820,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_ack_event": "Local\\TROOP-prototype-stop-9892-1793520769332-ack",
+        "stop_event": "Local\\TROOP-prototype-stop-9892-1793520769332",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 921056,
+          "integrity": 8192,
+          "marker": 1116908,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 48820,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "blockedPrerequisite": {
+        "detail": "target_not_foreground",
+        "grant": true,
+        "op": "observe",
+        "reason": "observation_gate"
+      },
+      "passed": false,
+      "error": "Error: Observation unavailable: {\"detail\":\"target_not_foreground\",\"grant\":true,\"op\":\"observe\",\"reason\":\"observation_gate\"}",
+      "helperStderr": "",
+      "captureStderr": ""
+    }
+  ]
+}

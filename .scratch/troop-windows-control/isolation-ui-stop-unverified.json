@@ -1,0 +1,209 @@
+{
+  "date": "2026-11-01",
+  "scope": "Own synthetic target; separate Rust input helper and Electron capture process",
+  "scenarios": [
+    {
+      "name": "hotkey-stop",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_event": "Local\\TROOP-prototype-stop-30792-1793518355831",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 8981380,
+              "integrity": 8192,
+              "marker": 2231170,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 8884,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 30792,
+          "utc_ms": 1793518355875
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 30792,
+          "utc_ms": 1793518355881
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 30792,
+          "utc_ms": 1793518355902
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 30792,
+          "utc_ms": 1793518355925
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 30792,
+          "utc_ms": 1793518355947
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "target_identity"
+          },
+          "event": "command_denied",
+          "pid": 30792,
+          "utc_ms": 1793518355952
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 30792,
+          "utc_ms": 1793518357738
+        },
+        {
+          "data": {
+            "delay_ms": 60000,
+            "epoch": 1
+          },
+          "event": "queued",
+          "pid": 30792,
+          "utc_ms": 1793518357759
+        },
+        {
+          "data": {
+            "discarded": true,
+            "epoch": 2,
+            "grant": false,
+            "reason": "driver_exit"
+          },
+          "event": "stop_ack",
+          "pid": 30792,
+          "utc_ms": 1793518412809
+        }
+      ],
+      "helperPid": 30792,
+      "targetPid": 8884,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_event": "Local\\TROOP-prototype-stop-30792-1793518355831",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 8981380,
+          "integrity": 8192,
+          "marker": 2231170,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 8884,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "capturePid": 20100,
+      "captureFrame": {
+        "target_pid": 8884,
+        "frame": {
+          "width": 836,
+          "height": 512,
+          "patch": [
+            32,
+            172,
+            61,
+            201
+          ],
+          "count": 761,
+          "trackState": "live"
+        },
+        "point": [
+          234,
+          307
+        ],
+        "error": [
+          0,
+          0.365234375
+        ],
+        "sourceId": "window:8981380:0"
+      },
+      "uiStopWaitingUtcMs": 1793518357797,
+      "passed": false,
+      "error": "Error: Timed out: stop acknowledgment",
+      "helperStderr": "",
+      "captureStderr": "[20100:1101/153332.819:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capture_session.cc:442] The target source has been closed.\r\n[20100:1101/153332.819:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capturer_win.cc:413] GetFrame failed.\r\n"
+    }
+  ]
+}

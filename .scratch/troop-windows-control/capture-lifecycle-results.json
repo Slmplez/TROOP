@@ -1,0 +1,608 @@
+{
+  "date": "2026-11-01",
+  "scope": "Own synthetic target; separate Rust input helper and Electron capture process",
+  "scenarios": [
+    {
+      "name": "capture-lifecycle",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_ack_event": "Local\\TROOP-prototype-stop-42168-1793521124887-ack",
+            "stop_event": "Local\\TROOP-prototype-stop-42168-1793521124887",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 16125026,
+              "integrity": 8192,
+              "marker": 1117190,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 12860,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 42168,
+          "utc_ms": 1793521124995
+        },
+        {
+          "data": {
+            "data": {
+              "iconic": 1
+            },
+            "event": "target_minimized",
+            "pid": 12860,
+            "utc_ms": 1793521125854
+          },
+          "event": "target_event",
+          "pid": 42168,
+          "utc_ms": 1793521125854
+        },
+        {
+          "data": {
+            "data": {
+              "iconic": 0,
+              "patch_rgb": [
+                0,
+                255,
+                255
+              ],
+              "rect": [
+                180,
+                120,
+                1280,
+                770
+              ]
+            },
+            "event": "target_restored_changed",
+            "pid": 12860,
+            "utc_ms": 1793521127206
+          },
+          "event": "target_event",
+          "pid": 42168,
+          "utc_ms": 1793521127206
+        },
+        {
+          "data": {
+            "discarded": false,
+            "epoch": 2,
+            "grant": false,
+            "reason": "target_exit"
+          },
+          "event": "stop_ack",
+          "pid": 42168,
+          "utc_ms": 1793521129032
+        }
+      ],
+      "helperPid": 42168,
+      "targetPid": 12860,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_ack_event": "Local\\TROOP-prototype-stop-42168-1793521124887-ack",
+        "stop_event": "Local\\TROOP-prototype-stop-42168-1793521124887",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 16125026,
+          "integrity": 8192,
+          "marker": 1117190,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 12860,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "scope": "Capture lifecycle only; no task grant, observation or input",
+      "capturePid": 42692,
+      "initialFrame": {
+        "target_pid": 12860,
+        "frame": {
+          "width": 836,
+          "height": 512,
+          "patch": [
+            32,
+            172,
+            61,
+            201
+          ],
+          "count": 896,
+          "trackState": "live"
+        },
+        "point": [
+          234,
+          307
+        ],
+        "error": [
+          0,
+          0.365234375
+        ],
+        "sourceId": "window:16125026:0"
+      },
+      "minimized": {
+        "newFrame": false,
+        "width": 836,
+        "height": 512,
+        "magenta": 0,
+        "cyan": 0,
+        "oldState": null,
+        "trackStates": [
+          "live"
+        ],
+        "targetEnumerated": false
+      },
+      "restoreEvent": {
+        "iconic": 0,
+        "patch_rgb": [
+          0,
+          255,
+          255
+        ],
+        "rect": [
+          180,
+          120,
+          1280,
+          770
+        ]
+      },
+      "restoredOldStream": {
+        "newFrame": true,
+        "width": 1086,
+        "height": 642,
+        "magenta": 0,
+        "cyan": 900,
+        "oldState": null,
+        "trackStates": [
+          "live"
+        ],
+        "targetEnumerated": true
+      },
+      "recreatedStream": {
+        "newFrame": true,
+        "width": 1086,
+        "height": 642,
+        "magenta": 0,
+        "cyan": 900,
+        "oldState": [
+          "ended"
+        ],
+        "trackStates": [
+          "live"
+        ],
+        "targetEnumerated": true
+      },
+      "afterTargetClose": {
+        "newFrame": false,
+        "width": 1086,
+        "height": 642,
+        "magenta": 0,
+        "cyan": 0,
+        "oldState": null,
+        "trackStates": [
+          "ended"
+        ],
+        "targetEnumerated": false
+      },
+      "captureTrace": [
+        {
+          "event": "capture_ready",
+          "data": {
+            "target_pid": 12860,
+            "frame": {
+              "width": 836,
+              "height": 512,
+              "patch": [
+                32,
+                172,
+                61,
+                201
+              ],
+              "count": 896,
+              "trackState": "live"
+            },
+            "point": [
+              234,
+              307
+            ],
+            "error": [
+              0,
+              0.365234375
+            ],
+            "sourceId": "window:16125026:0"
+          },
+          "utc_ms": 1793521125836,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521125937,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521126036,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521126137,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521126237,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521126339,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521126439,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521126539,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521126638,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521126739,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521126839,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521126939,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521127039,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521127145,
+          "pid": 42692
+        },
+        {
+          "event": "lifecycle_snapshot",
+          "data": {
+            "id": "minimized",
+            "newFrame": false,
+            "width": 836,
+            "height": 512,
+            "magenta": 0,
+            "cyan": 0,
+            "oldState": null,
+            "trackStates": [
+              "live"
+            ],
+            "targetEnumerated": false
+          },
+          "utc_ms": 1793521127182,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521127245,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521127344,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521127445,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521127545,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521127645,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521127745,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521127845,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521127946,
+          "pid": 42692
+        },
+        {
+          "event": "lifecycle_snapshot",
+          "data": {
+            "id": "restored",
+            "newFrame": true,
+            "width": 1086,
+            "height": 642,
+            "magenta": 0,
+            "cyan": 900,
+            "oldState": null,
+            "trackStates": [
+              "live"
+            ],
+            "targetEnumerated": true
+          },
+          "utc_ms": 1793521128042,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521128047,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521128311,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521128415,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521128516,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521128616,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521128717,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521128817,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521128960,
+          "pid": 42692
+        },
+        {
+          "event": "lifecycle_snapshot",
+          "data": {
+            "id": "recreated",
+            "newFrame": true,
+            "width": 1086,
+            "height": 642,
+            "magenta": 0,
+            "cyan": 900,
+            "oldState": [
+              "ended"
+            ],
+            "trackStates": [
+              "live"
+            ],
+            "targetEnumerated": true
+          },
+          "utc_ms": 1793521129014,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521129065,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521129166,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521129266,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521129367,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521129468,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521129569,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521129669,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521129768,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521129869,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521129969,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521130068,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521130169,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521130269,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521130630,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521130729,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521130830,
+          "pid": 42692
+        },
+        {
+          "event": "lifecycle_snapshot",
+          "data": {
+            "id": "closed",
+            "newFrame": false,
+            "width": 1086,
+            "height": 642,
+            "magenta": 0,
+            "cyan": 0,
+            "oldState": null,
+            "trackStates": [
+              "ended"
+            ],
+            "targetEnumerated": false
+          },
+          "utc_ms": 1793521130927,
+          "pid": 42692
+        },
+        {
+          "event": "capture_heartbeat",
+          "data": {},
+          "utc_ms": 1793521130931,
+          "pid": 42692
+        }
+      ],
+      "passed": true,
+      "helperStderr": "",
+      "captureStderr": "[42692:1101/161849.032:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capture_session.cc:442] The target source has been closed.\r\n[42692:1101/161849.032:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capturer_win.cc:413] GetFrame failed.\r\n"
+    }
+  ]
+}

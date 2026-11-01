@@ -1,0 +1,96 @@
+{
+  "recordedUtc": "2026-11-01T08:27:26.7404257Z",
+  "purpose": "Source and evidence inventory at publication; not retrospective source attribution for older runtime samples.",
+  "currentSources": [
+    {
+      "path": "Cargo.toml",
+      "sha256": "a66bf88f0eec27ba82495157ca1e826579f70b5873efe573d6e96b451d23595c"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "a2ac30241d62ce6fc814d55bcfec473621fe399b57afc54ec5a4bcc412b872b2"
+    },
+    {
+      "path": "src/isolation_common.rs",
+      "sha256": "bf2262e3159fe44f3eb2213c78f1d9bac157b5b87acdead117ff41eb00f53b54"
+    },
+    {
+      "path": "src/bin/control-helper.rs",
+      "sha256": "70504afc5f0a61e8d1d2864bfb8d646504639508084c77358afa373fb9621971"
+    },
+    {
+      "path": "src/bin/isolation-target.rs",
+      "sha256": "b3987a47d0059f5ab688f8769f4cc829bb60e9ebd04bffca507a606ca5ce7ffa"
+    },
+    {
+      "path": "src/bin/permission-probe.rs",
+      "sha256": "f3ee4b9ce88f3e88404467315e9e97eb60e699c183835f6ae2d09ec3c239ee24"
+    },
+    {
+      "path": "isolation-capture.cjs",
+      "sha256": "8f2c6566ed3f6434ca9583fa0358cf3efeb6d78b98e2876a1b1ec32854dc1587"
+    },
+    {
+      "path": "isolation-driver.mjs",
+      "sha256": "f60e3da7db7a59cec26ab0b591a44ae0be626109108baa9e72eafe1fa5a7fc72"
+    },
+    {
+      "path": "run-isolation.ps1",
+      "sha256": "2b823c01636b91f032eb29503044445e148e64737f7c29dbec335d56176fed7b"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "isolation-results.json",
+      "sha256": "aecd2bdd648c7bb40eed1b01595881a2a3b681330bb93225ca95eea8f7893694"
+    },
+    {
+      "path": "isolation-stop-transport-results.json",
+      "sha256": "d8223b3ddab0ab5994c5098bc344592a91d3b1d08e313f674587268a5d3bad88"
+    },
+    {
+      "path": "capture-lifecycle-results.json",
+      "sha256": "f674ceb9f47f881a14604d996310d48374f207de12dcec2adcde6a50eea4bb1e"
+    },
+    {
+      "path": "isolation-foreground-blocked.json",
+      "sha256": "dc5831fed51ee75a6ee6d9f24383b92752aa4bf50cc0acb29d5f4b2a24dc593b"
+    },
+    {
+      "path": "isolation-ui-stop-unverified.json",
+      "sha256": "e2dac1528c3e56d01fcec96a1dba5150b3389c950ce3018ee5411d766744f7e8"
+    },
+    {
+      "path": "isolation-permission-diagnostic.json",
+      "sha256": "80593e979317a07c30a7340d1c2b21e8351e899039139fa98eb189987acd170b"
+    }
+  ],
+  "checks": {
+    "rustOfflineLockedBuild": "passed; all prototype bins; incremental-cache hard-link warning falls back to copying",
+    "nodeSyntax": "passed: isolation-driver.mjs, isolation-capture.cjs",
+    "powershellSyntax": "passed: run-isolation.ps1 and local publish.ps1",
+    "evidenceJsonParsing": "passed for all top-level prototype JSON evidence",
+    "currentInteractiveMatrix": "not completed; target_not_foreground prerequisite"
+  },
+  "runtimeProvenance": {
+    "intermediateMatrix": {
+      "passed": 9,
+      "total": 10,
+      "sourceSnapshotAvailable": false,
+      "scope": "Before bounded async diagnostics and kernel ACK; stale-observation blocked by old-epoch driver bug."
+    },
+    "stopTransport": {
+      "passed": true,
+      "sourceScope": "Final helper/driver sources listed here",
+      "inputSent": false,
+      "pendingActionTested": false
+    },
+    "captureLifecycle": {
+      "passed": true,
+      "sourceScope": "Captured before final permission-positive-control epoch and partial-input ACK edits; lifecycle capture/fixture code unchanged",
+      "inputSent": false,
+      "sourceSnapshotAvailable": false
+    }
+  },
+  "remaining": "See VALIDATION_MATRIX.md. No claim of complete Windows support or production readiness."
+}
