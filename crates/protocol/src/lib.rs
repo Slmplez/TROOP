@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-pub const VERSION: u32 = 1;
+pub const VERSION: u32 = 2;
 pub const MAX_FRAME: usize = 65_536;
 pub const METHODS: &[&str] = &[
     "system.hello",
@@ -11,6 +11,15 @@ pub const METHODS: &[&str] = &[
     "workspace.add",
     "workspace.rename",
     "workspace.remove",
+    "provider.list",
+    "provider.save",
+    "provider.remove",
+    "chat.list",
+    "chat.create",
+    "chat.remove",
+    "chat.messages",
+    "chat.send",
+    "chat.cancel",
 ];
 
 #[derive(Debug, Deserialize)]

@@ -5,6 +5,8 @@ use std::{
     path::Path,
     time::Duration,
 };
+mod chat;
+pub use chat::*;
 
 #[derive(Serialize)]
 pub struct Workspace {
@@ -20,7 +22,7 @@ pub struct WorkspacePage {
     pub next_offset: Option<i64>,
 }
 pub struct Store {
-    db: Connection,
+    pub(crate) db: Connection,
     _lock: File,
 }
 impl Store {
@@ -45,7 +47,7 @@ impl Store {
         let version: i64 = db
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .map_err(|e| e.to_string())?;
-        if version > 1 {
+        if version > 2 {
             return Err("Database was created by a newer TROOP version".into());
         }
         db.execute_batch(
@@ -57,6 +59,10 @@ impl Store {
             tx.execute_batch("CREATE TABLE workspaces(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,path TEXT NOT NULL,path_key TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))); PRAGMA user_version=1;").map_err(|e|e.to_string())?;
             tx.commit().map_err(|e| e.to_string())?;
         }
+        if version < 2 {
+            chat::migrate(&mut db)?;
+        }
+        db.execute("UPDATE turns SET status='interrupted',error_kind='core_interrupted',error_message='应用或 Core 上次中断；已保留收到的文本，请手动发送新消息。',finished_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE status='streaming'", []).map_err(|e|e.to_string())?;
         Ok(Self { db, _lock: lock })
     }
     pub fn list(&self, offset: i64) -> Result<WorkspacePage, String> {
@@ -168,7 +174,7 @@ mod tests {
         fs::create_dir_all(&directory).unwrap();
         let database = directory.join("troop.sqlite3");
         let connection = Connection::open(&database).unwrap();
-        connection.execute_batch("PRAGMA user_version=2;").unwrap();
+        connection.execute_batch("PRAGMA user_version=3;").unwrap();
         drop(connection);
         assert!(matches!(Store::open(&directory), Err(message) if message.contains("newer")));
         let connection = Connection::open(database).unwrap();
@@ -179,6 +185,28 @@ mod tests {
         let version: i64 = connection
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .unwrap();
-        assert_eq!(version, 2);
+        assert_eq!(version, 3);
+    }
+
+    #[test]
+    fn version_one_workspaces_survive_chat_migration_and_removal_keeps_conversation() {
+        let directory = std::env::temp_dir().join(format!(
+            "troop-v1-migration-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir_all(&directory).unwrap();
+        let database = Connection::open(directory.join("troop.sqlite3")).unwrap();
+        database.execute_batch("CREATE TABLE workspaces(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,path TEXT NOT NULL,path_key TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL DEFAULT 'original');INSERT INTO workspaces(name,path,path_key) VALUES('旧工作区','C:\\project','c:\\project');PRAGMA user_version=1;").unwrap();
+        drop(database);
+        let store = Store::open(&directory).unwrap();
+        assert_eq!(store.list(0).unwrap().items[0].name, "旧工作区");
+        let id = store.create_conversation("保留对话", Some(1)).unwrap();
+        store.remove(1).unwrap();
+        assert_eq!(store.conversations(0).unwrap()["items"][0]["id"], id);
+        assert!(store.conversations(0).unwrap()["items"][0]["workspace_id"].is_null());
     }
 }

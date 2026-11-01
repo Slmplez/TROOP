@@ -170,6 +170,69 @@ async function bootstrap({ userData, show = true } = {}) {
     await core.stop();
     return core.start();
   });
+  const payload = (input) => {
+    if (
+      !input ||
+      typeof input !== "object" ||
+      Array.isArray(input) ||
+      Buffer.byteLength(JSON.stringify(input)) > 50000
+    )
+      throw Error("请求内容无效或过长。");
+    return input;
+  };
+  handle("providers", () => core.request("provider.list"));
+  handle("save-provider", (input) =>
+    core.request("provider.save", payload(input)),
+  );
+  handle("remove-provider", async (id) => {
+    if (typeof id !== "string" || id.length > 80) throw Error("服务无效。");
+    const answer = await dialog.showMessageBox(win, {
+      type: "question",
+      title: "删除模型服务",
+      message: "删除这个模型服务及其保存的密钥？",
+      detail: "对话记录会保留。",
+      buttons: ["保留", "删除服务"],
+      defaultId: 0,
+      cancelId: 0,
+      noLink: true,
+    });
+    if (answer.response !== 1) return { removed: false };
+    await core.request("provider.remove", { id });
+    return { removed: true };
+  });
+  handle("conversations", (offset = 0) => {
+    if (!Number.isSafeInteger(offset) || offset < 0)
+      throw Error("分页参数无效。");
+    return core.request("chat.list", { offset });
+  });
+  handle("create-conversation", (input) =>
+    core.request("chat.create", payload(input)),
+  );
+  handle("remove-conversation", async (id) => {
+    if (!validId(id)) throw Error("对话无效。");
+    const answer = await dialog.showMessageBox(win, {
+      type: "question",
+      title: "删除对话",
+      message: "删除这份本机对话记录？",
+      buttons: ["保留", "删除对话"],
+      defaultId: 0,
+      cancelId: 0,
+      noLink: true,
+    });
+    if (answer.response !== 1) return { removed: false };
+    await core.request("chat.remove", { id });
+    return { removed: true };
+  });
+  handle("messages", (id, before = null) => {
+    if (!validId(id) || (before !== null && !validId(before)))
+      throw Error("对话分页无效。");
+    return core.request("chat.messages", { conversation_id: id, before });
+  });
+  handle("send-message", (input) => core.request("chat.send", payload(input)));
+  handle("cancel-turn", (id) => {
+    if (!validId(id)) throw Error("生成标识无效。");
+    return core.request("chat.cancel", { turn_id: id });
+  });
   handle("quit", () => {
     app.quit();
     return null;
@@ -177,6 +240,10 @@ async function bootstrap({ userData, show = true } = {}) {
   core.on("status", (value) => {
     if (win && !win.isDestroyed() && !win.webContents.isLoading())
       win.webContents.send("troop:core-status", value);
+  });
+  core.on("chat-event", (value) => {
+    if (win && !win.isDestroyed() && !win.webContents.isLoading())
+      win.webContents.send("troop:chat-event", value);
   });
   const bitmap = Buffer.alloc(16 * 16 * 4);
   for (let y = 0; y < 16; y++)

@@ -6,11 +6,13 @@ const path = require("node:path");
 const assert = require("node:assert/strict");
 const { spawn } = require("node:child_process");
 const { once } = require("node:events");
+const { modelServer } = require("./fixtures/model-server.cjs");
 const profile = process.argv[2];
 const reportPath = path.join(profile, "smoke.json");
 fs.mkdirSync(profile, { recursive: true });
 let runtime;
 let secondary;
+let upstream;
 const checks = [];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function until(predicate) {
@@ -28,7 +30,7 @@ const timeout = setTimeout(() => {
     JSON.stringify({ passed: false, error: "Smoke timeout", checks }),
   );
   app.exit(1);
-}, 45000);
+}, 60000);
 async function run() {
   runtime = await bootstrap({ userData: profile, show: false });
   if (!runtime) {
@@ -39,6 +41,9 @@ async function run() {
   win.webContents.setBackgroundThrottling(false);
   const js = (code) => win.webContents.executeJavaScript(code, true);
   await until(() => core.state === "ready");
+  await js(
+    "[...document.querySelectorAll('nav button')].find(b=>b.textContent==='工作区').click()",
+  );
   await until(() =>
     js(
       "document.querySelector('h1')?.textContent==='工作区' && document.body.textContent.includes('已连接')",
@@ -163,7 +168,9 @@ async function run() {
   checks.push(
     "production entry secondary instance exits while primary Core remains",
   );
-  await js("document.querySelectorAll('nav button')[1].click()");
+  await js(
+    "[...document.querySelectorAll('nav button')].find(b=>b.textContent==='连接').click()",
+  );
   await until(() => js("document.querySelector('h1')?.textContent==='连接'"));
   win.setContentSize(768, 900);
   await sleep(80);
@@ -181,6 +188,140 @@ async function run() {
   win.setContentSize(1120, 740);
   const transport = await js("window.troop.status()");
   assert.equal(transport.value.state, "ready");
+  upstream = await modelServer();
+  runtime.restore();
+  win.setContentSize(1440, 900);
+  const nav = (label) =>
+    js(
+      `[...document.querySelectorAll('nav button')].find(b=>b.textContent===${JSON.stringify(label)}).click()`,
+    );
+  const field = (id, text, type = "HTMLInputElement") =>
+    js(
+      `(()=>{const el=document.getElementById(${JSON.stringify(id)});Object.getOwnPropertyDescriptor(${type}.prototype,'value').set.call(el,${JSON.stringify(text)});el.dispatchEvent(new Event('${type === "HTMLSelectElement" ? "change" : "input"}',{bubbles:true}));})()`,
+    );
+  await nav("模型");
+  await until(() => js("Boolean(document.getElementById('provider-name'))"));
+  await field("provider-name", "本机契约测试");
+  await field("provider-url", upstream.origin + "/ui");
+  await field("provider-model", "owned-fixture-model");
+  await js("document.querySelector('.provider-form').requestSubmit()");
+  await until(() =>
+    js(
+      "document.querySelector('.save-notice')?.textContent==='模型服务已保存。'",
+    ),
+  );
+  const saved = (await core.request("provider.list"))[0];
+  assert.ok(saved);
+  assert.equal(saved.has_key, false);
+  checks.push(
+    "model configuration form -> fixed IPC -> Rust persisted provider",
+  );
+  await sleep(100);
+  fs.writeFileSync(
+    path.join(profile, "models-1440.png"),
+    (await win.webContents.capturePage()).toPNG(),
+  );
+  await nav("对话");
+  await until(() =>
+    js("document.querySelectorAll('#chat-provider option').length===2"),
+  );
+  await field("chat-provider", saved.id, "HTMLSelectElement");
+  await field("chat-input", "检查真实流式对话", "HTMLTextAreaElement");
+  await js("document.querySelector('.composer .primary').click()");
+  await until(() =>
+    js(
+      "[...document.querySelectorAll('.chat-message.assistant')].some(el=>el.dataset.state==='streaming'&&el.querySelector('.message-text').textContent.startsWith('你好'))",
+    ),
+  );
+  checks.push("real HTTP partial text appears before completion");
+  await until(() =>
+    js(
+      "document.querySelector('.chat-message.assistant')?.dataset.state==='completed'",
+    ),
+  );
+  assert.equal(
+    await js(
+      "document.querySelector('.chat-message.assistant .message-text').textContent",
+    ),
+    "你好，来自真实 HTTP 流。",
+  );
+  await sleep(100);
+  fs.writeFileSync(
+    path.join(profile, "chat-1440.png"),
+    (await win.webContents.capturePage()).toPNG(),
+  );
+  const conversation = (await core.request("chat.list")).items[0];
+  assert.equal(conversation.title, "检查真实流式对话");
+  const loaded = once(win.webContents, "did-finish-load");
+  win.webContents.reload();
+  await loaded;
+  await until(() => js("Boolean(document.querySelector('.conversation'))"));
+  await js("document.querySelector('.conversation').click()");
+  await until(() =>
+    js(
+      "document.querySelector('.chat-message.assistant .message-text')?.textContent==='你好，来自真实 HTTP 流。'",
+    ),
+  );
+  checks.push(
+    "renderer reload reconstructs persisted messages without new model request",
+  );
+  assert.equal(upstream.requests.length, 1);
+  await nav("模型");
+  await js("document.querySelector('.provider-choice').click()");
+  await field("provider-url", upstream.origin + "/slow");
+  await js("document.querySelector('.provider-form').requestSubmit()");
+  await until(() => js("Boolean(document.querySelector('.save-notice'))"));
+  await nav("对话");
+  await field("chat-input", "停止这次生成", "HTMLTextAreaElement");
+  await js("document.querySelector('.composer .primary').click()");
+  await until(() =>
+    js(
+      "document.querySelector('.stop-button')&&!document.querySelector('.stop-button').disabled",
+    ),
+  );
+  await until(() =>
+    js(
+      "[...document.querySelectorAll('.chat-message.assistant')].at(-1)?.querySelector('.message-text').textContent==='你好'",
+    ),
+  );
+  await js("document.querySelector('.stop-button').click()");
+  await until(() =>
+    js(
+      "[...document.querySelectorAll('.chat-message.assistant')].at(-1)?.dataset.state==='cancelled'",
+    ),
+  );
+  checks.push(
+    "Stop button cancels real HTTP generation and retains partial text",
+  );
+  const beforeRepeat = upstream.requests.length;
+  await js("[...document.querySelectorAll('.repeat-question')].at(-1).click()");
+  await until(() =>
+    js("document.getElementById('chat-input').value==='停止这次生成'"),
+  );
+  assert.equal(upstream.requests.length, beforeRepeat);
+  checks.push(
+    "repeat action restores question without automatically resending",
+  );
+  win.setContentSize(768, 900);
+  await sleep(100);
+  fs.writeFileSync(
+    path.join(profile, "chat-768.png"),
+    (await win.webContents.capturePage()).toPNG(),
+  );
+  win.setContentSize(390, 844);
+  await sleep(100);
+  fs.writeFileSync(
+    path.join(profile, "chat-390.png"),
+    (await win.webContents.capturePage()).toPNG(),
+  );
+  win.setContentSize(1120, 740);
+  await field("chat-input", "退出时停止正在进行的生成", "HTMLTextAreaElement");
+  await js("document.querySelector('.composer .primary').click()");
+  await until(() => js("Boolean(document.querySelector('.stop-button'))"));
+  const activeChat = (await core.request("chat.list")).items.find(
+    (c) => c.active_turn_id,
+  );
+  assert.ok(activeChat);
   fs.writeFileSync(
     reportPath,
     JSON.stringify(
@@ -192,6 +333,8 @@ async function run() {
         electron: process.versions.electron,
         chromium: process.versions.chrome,
         fontLoaded: true,
+        activeConversation: activeChat.id,
+        activeTurn: activeChat.active_turn_id,
         picker: "owned test fixture; native dialog itself not automated",
         profile,
       },
@@ -200,7 +343,7 @@ async function run() {
     ),
   );
   clearTimeout(timeout);
-  app.quit();
+  await js("window.troop.quit()").catch(() => {});
 }
 run().catch(async (error) => {
   secondary?.kill();
@@ -211,6 +354,7 @@ run().catch(async (error) => {
   );
   try {
     await runtime?.core.stop();
+    await upstream?.close();
   } finally {
     app.exit(1);
   }

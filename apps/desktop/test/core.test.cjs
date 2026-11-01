@@ -111,7 +111,7 @@ test("protocol rejects bad handshakes, stale generations, unknown fields and dup
   });
   assert.equal(v.error.data.kind, "protocol_mismatch");
   v = await send("hello", "system.hello", {
-    protocol: 1,
+    protocol: 2,
     client: "troop-desktop",
   });
   const generation = v.result.generation;
@@ -230,6 +230,21 @@ test("malformed child messages fail closed", async () => {
   await assert.rejects(c.start());
   await c.stop();
   assert.equal(c.child, null);
+});
+test("stale generation notifications cannot reach the renderer projection", async () => {
+  const c = new CoreSupervisor({
+    executable: process.execPath,
+    args: [path.join(__dirname, "fixtures/fake-core.cjs"), "bad-event"],
+  });
+  const events = [];
+  c.on("chat-event", (event) => events.push(event));
+  try {
+    await c.start();
+    await assert.rejects(c.request("workspace.list"));
+    assert.equal(events.length, 0);
+  } finally {
+    await c.stop();
+  }
 });
 test("parent process death closes inherited control pipe and leaves no Core writer", async (t) => {
   const d = dir();

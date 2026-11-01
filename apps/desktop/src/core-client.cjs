@@ -1,12 +1,22 @@
 const { spawn } = require("node:child_process");
 const { EventEmitter } = require("node:events");
 const crypto = require("node:crypto");
+const PROTOCOL = 2;
 const ALLOWED = new Set([
   "system.ping",
   "workspace.list",
   "workspace.add",
   "workspace.rename",
   "workspace.remove",
+  "provider.list",
+  "provider.save",
+  "provider.remove",
+  "chat.list",
+  "chat.create",
+  "chat.remove",
+  "chat.messages",
+  "chat.send",
+  "chat.cancel",
 ]);
 const MAX_FRAME = 65536;
 class CoreSupervisor extends EventEmitter {
@@ -19,7 +29,9 @@ class CoreSupervisor extends EventEmitter {
     this.pending = new Map();
     this.generation = null;
     this.state = "stopped";
+    this.statusRevision = 0;
     this.info = null;
+    this.eventSequence = 0;
     this.lastError = null;
     this.restartTimes = [];
     this.prefix = crypto.randomUUID();
@@ -30,6 +42,7 @@ class CoreSupervisor extends EventEmitter {
   snapshot() {
     return {
       state: this.state,
+      revision: this.statusRevision,
       generation: this.generation,
       pid: this.child?.pid ?? null,
       version: this.info?.core_version ?? null,
@@ -38,6 +51,7 @@ class CoreSupervisor extends EventEmitter {
     };
   }
   _status(state, error = null) {
+    this.statusRevision += 1;
     this.state = state;
     this.lastError = error;
     this.emit("status", this.snapshot());
@@ -92,6 +106,26 @@ class CoreSupervisor extends EventEmitter {
         } catch {
           this._fault(child, "Core 返回了无效消息。");
           return;
+        }
+        if (response.method) {
+          const event = response.params;
+          if (
+            response.jsonrpc !== "2.0" ||
+            response.method !== "chat.changed" ||
+            !event ||
+            event.generation !== this.generation ||
+            !Number.isSafeInteger(event.seq) ||
+            event.seq <= this.eventSequence ||
+            !Number.isSafeInteger(event.conversation_id) ||
+            !Number.isSafeInteger(event.turn_id) ||
+            typeof event.status !== "string"
+          ) {
+            this._fault(child, "Core 返回了无效的对话事件。");
+            return;
+          }
+          this.eventSequence = event.seq;
+          this.emit("chat-event", event);
+          continue;
         }
         const p = this.pending.get(response.id);
         if (!p || p.child !== child) continue;
@@ -148,7 +182,7 @@ class CoreSupervisor extends EventEmitter {
     try {
       const hello = await this._send(
         "system.hello",
-        { protocol: 1, client: "troop-desktop" },
+        { protocol: PROTOCOL, client: "troop-desktop" },
         child,
       );
       if (
@@ -158,12 +192,13 @@ class CoreSupervisor extends EventEmitter {
       )
         throw Error("Core 启动已失效。");
       if (
-        hello.value?.protocol !== 1 ||
+        hello.value?.protocol !== PROTOCOL ||
         !Array.isArray(hello.value.capabilities) ||
         ![...ALLOWED].every((x) => hello.value.capabilities.includes(x))
       )
         throw Error("Core 与桌面版本不兼容。");
       this.generation = hello.generation;
+      this.eventSequence = 0;
       this.info = hello.value;
       this._status("ready");
       return this.snapshot();
@@ -271,4 +306,4 @@ class CoreSupervisor extends EventEmitter {
     if (this.child === child) throw Error("无法确认 Core 已退出。");
   }
 }
-module.exports = { CoreSupervisor, MAX_FRAME, ALLOWED };
+module.exports = { CoreSupervisor, MAX_FRAME, ALLOWED, PROTOCOL };

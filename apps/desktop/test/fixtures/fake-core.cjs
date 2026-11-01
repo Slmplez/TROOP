@@ -22,17 +22,25 @@ readline.createInterface({ input: process.stdin }).on("line", (line) => {
     setTimeout(
       () =>
         send(r, {
-          protocol: 1,
+          protocol: 2,
           core_version: "test",
-          capabilities: [
-            "system.ping",
-            "workspace.list",
-            "workspace.add",
-            "workspace.rename",
-            "workspace.remove",
-          ],
+          capabilities: [...require("../../src/core-client.cjs").ALLOWED],
         }),
       mode === "slow" ? 300 : 0,
+    );
+  } else if (mode === "bad-event" && r.method === "workspace.list") {
+    console.log(
+      JSON.stringify({
+        jsonrpc: "2.0",
+        method: "chat.changed",
+        params: {
+          generation: "stale",
+          seq: 1,
+          conversation_id: 1,
+          turn_id: 1,
+          status: "completed",
+        },
+      }),
     );
   } else if (r.method === "workspace.add") {
   } // Deliberately leave an accepted request pending.

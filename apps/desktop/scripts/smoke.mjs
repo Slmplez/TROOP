@@ -27,8 +27,8 @@ child.stdout.on("data", (b) => process.stdout.write(b));
 const code = await new Promise((resolve, reject) => {
   const timer = setTimeout(() => {
     child.kill();
-    reject(Error("Electron smoke exceeded 60 seconds"));
-  }, 60000);
+    reject(Error("Electron smoke exceeded 90 seconds"));
+  }, 90000);
   child.once("error", reject);
   child.once("exit", (c) => {
     clearTimeout(timer);
@@ -55,6 +55,30 @@ for (let i = 0; i < 50; i++) {
 }
 assert.ok(exited, "Core survived explicit Electron quit");
 report.checks.push("explicit application quit leaves no Core process");
+if (report.activeConversation) {
+  const { CoreSupervisor } = require("./src/core-client.cjs");
+  const reader = new CoreSupervisor({
+    executable: path.join(app, "bin", "troop-core.exe"),
+    args: ["--data-dir", path.join(profile, "core")],
+  });
+  try {
+    await reader.start();
+    const page = await reader.request("chat.messages", {
+      conversation_id: report.activeConversation,
+    });
+    assert.equal(
+      page.items.find(
+        (m) => m.turn_id === report.activeTurn && m.role === "assistant",
+      ).status,
+      "cancelled",
+    );
+  } finally {
+    await reader.stop();
+  }
+  report.checks.push(
+    "renderer Quit stops and persists a live generation before Core exit",
+  );
+}
 // Exercise the package's actual main entry, independently of the imported test bootstrap.
 const productionProfile = fs.mkdtempSync(path.join(temp, "entry-"));
 const production = spawn(

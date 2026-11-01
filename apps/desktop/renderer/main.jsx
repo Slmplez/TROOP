@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./style.css";
+import { call } from "./api";
+import ChatPanel from "./ChatPanel";
+import ModelSettings from "./ModelSettings";
 
 const labels = {
   starting: "正在连接",
@@ -9,13 +12,9 @@ const labels = {
   stopping: "正在退出",
   stopped: "未连接",
 };
-async function call(promise) {
-  const response = await promise;
-  if (!response?.ok) throw Error(response?.error || "操作未完成");
-  return response.value;
-}
 function App() {
-  const [page, setPage] = useState("workspaces");
+  const [page, setPage] = useState("chat");
+  const [providers, setProviders] = useState([]);
   const [status, setStatus] = useState({ state: "starting" });
   const [rows, setRows] = useState([]);
   const [pageInfo, setPageInfo] = useState({ total: 0, next_offset: null });
@@ -25,7 +24,13 @@ function App() {
   const [editing, setEditing] = useState(null);
   const [name, setName] = useState("");
   const generation = useRef(null);
+  const statusRevision = useRef(-1);
   const ready = status.state === "ready";
+  async function refreshProviders() {
+    const expected = generation.current;
+    const list = await call(window.troop.listProviders());
+    if (generation.current === expected) setProviders(list);
+  }
   function applyPage(value, append = false) {
     setRows((old) => (append ? [...old, ...value.items] : value.items));
     setPageInfo({ total: value.total, next_offset: value.next_offset });
@@ -47,10 +52,18 @@ function App() {
   }
   useEffect(() => {
     const accept = (value) => {
+      if (
+        !Number.isSafeInteger(value.revision) ||
+        value.revision < statusRevision.current
+      )
+        return;
+      statusRevision.current = value.revision;
       generation.current = value.generation;
       setStatus(value);
-      if (value.state === "ready") refresh();
-      else {
+      if (value.state === "ready") {
+        refresh();
+        refreshProviders().catch((e) => setError(e.message));
+      } else {
         setLoading(false);
         if (value.error) setError(value.error);
       }
@@ -97,6 +110,20 @@ function App() {
         <div className="scope">本机工作空间</div>
         <nav aria-label="主导航">
           <button
+            className={page === "chat" ? "selected" : ""}
+            onClick={() => setPage("chat")}
+            aria-current={page === "chat" ? "page" : undefined}
+          >
+            对话
+          </button>
+          <button
+            className={page === "models" ? "selected" : ""}
+            onClick={() => setPage("models")}
+            aria-current={page === "models" ? "page" : undefined}
+          >
+            模型
+          </button>
+          <button
             className={page === "workspaces" ? "selected" : ""}
             onClick={() => setPage("workspaces")}
             aria-current={page === "workspaces" ? "page" : undefined}
@@ -130,26 +157,32 @@ function App() {
       </aside>
       <div className="topbar">
         <span>
-          TROOP <span className="version">0.1</span>
+          TROOP <span className="version">0.2</span>
         </span>
         <span>Windows · 本机</span>
       </div>
-      <main className="sheet">
-        <div className="title-row">
-          <div>
-            <h1>{page === "workspaces" ? "工作区" : "连接"}</h1>
-            <p>
-              {page === "workspaces"
-                ? "集中管理这台电脑上的项目文件夹。"
-                : "查看桌面应用与本地核心的连接。"}
-            </p>
+      <main className={"sheet " + (page === "chat" ? "chat-sheet" : "")}>
+        {(page === "workspaces" || page === "connection") && (
+          <div className="title-row">
+            <div>
+              <h1>{page === "workspaces" ? "工作区" : "连接"}</h1>
+              <p>
+                {page === "workspaces"
+                  ? "集中管理这台电脑上的项目文件夹。"
+                  : "查看桌面应用与本地核心的连接。"}
+              </p>
+            </div>
+            {page === "workspaces" && (
+              <button
+                className="primary"
+                disabled={!ready || busy}
+                onClick={add}
+              >
+                添加工作区
+              </button>
+            )}
           </div>
-          {page === "workspaces" && (
-            <button className="primary" disabled={!ready || busy} onClick={add}>
-              添加工作区
-            </button>
-          )}
-        </div>
+        )}
         {error && (
           <div className="error" role="alert">
             <div>
@@ -165,6 +198,23 @@ function App() {
               </button>
             )}
           </div>
+        )}
+        <div className="chat-mount" hidden={page !== "chat"}>
+          <ChatPanel
+            ready={ready}
+            generation={status.generation}
+            providers={providers}
+            workspaces={rows}
+            onOpenModels={() => setPage("models")}
+            visible={page === "chat"}
+          />
+        </div>
+        {page === "models" && (
+          <ModelSettings
+            ready={ready}
+            providers={providers}
+            onSaved={refreshProviders}
+          />
         )}
         {page === "workspaces" ? (
           <>
@@ -283,7 +333,7 @@ function App() {
               工作区登记仅保存名称和位置，不会移动你的文件。
             </div>
           </>
-        ) : (
+        ) : page === "connection" ? (
           <section className="settings" aria-label="连接详情">
             <div>
               <span>本地核心</span>
@@ -296,7 +346,7 @@ function App() {
               <span>{status.version ?? "—"}</span>
             </div>
             <div>
-              <span>连接协议</span>
+              <span>核心通信版本</span>
               <span>{status.protocol ?? "—"}</span>
             </div>
             <div className="setting-action">
@@ -322,10 +372,16 @@ function App() {
               </div>
             </div>
           </section>
-        )}
-        <footer>
+        ) : null}
+        <footer hidden={page === "chat"}>
           <span>TROOP · 本机优先</span>
-          <span>工作区管理</span>
+          <span>
+            {page === "models"
+              ? "模型配置"
+              : page === "workspaces"
+                ? "工作区管理"
+                : "本地核心"}
+          </span>
         </footer>
       </main>
     </div>
