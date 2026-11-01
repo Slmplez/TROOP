@@ -42,12 +42,12 @@ app.whenReady().then(async()=>{
      const snapshot=await win.webContents.executeJavaScript(`(async()=>{
       const video=document.querySelector('video');let oldState=null;
       if(${request.restart===true}){const old=window.troopStream?.getTracks()||[];old.forEach(t=>t.stop());oldState=old.map(t=>t.readyState);window.troopStream=await navigator.mediaDevices.getUserMedia({audio:false,video:{mandatory:{chromeMediaSource:'desktop',chromeMediaSourceId:${JSON.stringify(found[0].id)}}}});video.srcObject=window.troopStream;await video.play();}
-      let timer;const newFrame=await Promise.race([new Promise(r=>video.requestVideoFrameCallback(()=>r(true))),new Promise(r=>{timer=setTimeout(()=>r(false),1000)})]);clearTimeout(timer);
+      let timer;let frameMetadata=null;const newFrame=await Promise.race([new Promise(r=>video.requestVideoFrameCallback((_,meta)=>{frameMetadata={presentedFrames:meta.presentedFrames,mediaTime:meta.mediaTime};r(true);})),new Promise(r=>{timer=setTimeout(()=>r(false),1000)})]);clearTimeout(timer);
       let magenta=0,cyan=0;if(newFrame){const c=document.createElement('canvas');c.width=video.videoWidth;c.height=video.videoHeight;const ctx=c.getContext('2d');ctx.drawImage(video,0,0);const rgba=ctx.getImageData(0,0,c.width,c.height).data;for(let i=0;i<rgba.length;i+=4){if(rgba[i]>220&&rgba[i+1]<50&&rgba[i+2]>220)magenta++;if(rgba[i]<50&&rgba[i+1]>220&&rgba[i+2]>220)cyan++;}}
-      return {newFrame,width:video.videoWidth,height:video.videoHeight,magenta,cyan,oldState,trackStates:window.troopStream?.getTracks().map(t=>t.readyState)||[]};
+      return {newFrame,frameMetadata,width:video.videoWidth,height:video.videoHeight,magenta,cyan,oldState,trackStates:window.troopStream?.getTracks().map(t=>t.readyState)||[]};
      })()`,true);
      const snapshotSources=await desktopCapturer.getSources({types:['window'],thumbnailSize:{width:0,height:0},fetchWindowIcons:false});snapshot.targetEnumerated=snapshotSources.some(s=>s.id.split(':')[1]===String(target.hwnd)&&s.name==='TROOP 独立控制 — 仅专用目标窗口');
-     log('lifecycle_snapshot',{id:request.id,...snapshot});fs.writeFileSync(path.join(dir,`snapshot-${request.id}.json`),JSON.stringify(snapshot));
+     snapshot.captureMainRssBytes=process.memoryUsage().rss;log('lifecycle_snapshot',{id:request.id,...snapshot});fs.writeFileSync(path.join(dir,`snapshot-${request.id}.json`),JSON.stringify(snapshot));
     }catch(e){log('lifecycle_error',{id:request.id,error:String(e)});fs.writeFileSync(path.join(dir,`snapshot-${request.id}.json`),JSON.stringify({error:String(e)}));}finally{snapshotBusy=false;}
    }
   }

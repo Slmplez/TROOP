@@ -1,0 +1,155 @@
+{
+  "date": "2026-11-01",
+  "scope": "Own synthetic target; separate Rust input helper and Electron capture process",
+  "scenarios": [
+    {
+      "name": "capture-soak",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_ack_event": "Local\\TROOP-prototype-stop-11208-1793523010465-ack",
+            "stop_event": "Local\\TROOP-prototype-stop-11208-1793523010465",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 3934992,
+              "integrity": 8192,
+              "marker": 1641842,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 37732,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 11208,
+          "utc_ms": 1793523010518
+        },
+        {
+          "data": {
+            "discarded": false,
+            "epoch": 2,
+            "grant": false,
+            "reason": "driver_exit"
+          },
+          "event": "stop_ack",
+          "pid": 11208,
+          "utc_ms": 1793523017403
+        }
+      ],
+      "helperPid": 11208,
+      "targetPid": 37732,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_ack_event": "Local\\TROOP-prototype-stop-11208-1793523010465-ack",
+        "stop_event": "Local\\TROOP-prototype-stop-11208-1793523010465",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 3934992,
+          "integrity": 8192,
+          "marker": 1641842,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 37732,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "scope": "Capture lifecycle only; no task grant, observation or input",
+      "capturePid": 37992,
+      "initialFrame": {
+        "target_pid": 37732,
+        "frame": {
+          "width": 836,
+          "height": 512,
+          "patch": [
+            32,
+            172,
+            61,
+            201
+          ],
+          "count": 896,
+          "trackState": "live"
+        },
+        "point": [
+          234,
+          307
+        ],
+        "error": [
+          0,
+          0.365234375
+        ],
+        "sourceId": "window:3934992:0"
+      },
+      "soakSamples": [],
+      "soakStartUtcMs": 1793523011272,
+      "passed": false,
+      "error": "Error: Missing sampled frame during soak",
+      "helperStderr": "",
+      "captureStderr": "[37992:1101/165017.408:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capture_session.cc:442] The target source has been closed.\r\n[37992:1101/165017.408:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capturer_win.cc:413] GetFrame failed.\r\n"
+    }
+  ],
+  "sourceHashes": {
+    "Cargo.toml": "a66bf88f0eec27ba82495157ca1e826579f70b5873efe573d6e96b451d23595c",
+    "Cargo.lock": "a2ac30241d62ce6fc814d55bcfec473621fe399b57afc54ec5a4bcc412b872b2",
+    "src/isolation_common.rs": "bf2262e3159fe44f3eb2213c78f1d9bac157b5b87acdead117ff41eb00f53b54",
+    "src/bin/control-helper.rs": "d253812a4ccbbad0dea25ef81089ec0d1a0aa92b5a4f853d2c06c85ff5fb107b",
+    "src/bin/isolation-target.rs": "b3987a47d0059f5ab688f8769f4cc829bb60e9ebd04bffca507a606ca5ce7ffa",
+    "src/bin/permission-probe.rs": "f3ee4b9ce88f3e88404467315e9e97eb60e699c183835f6ae2d09ec3c239ee24",
+    "isolation-capture.cjs": "c539b1f514304168d12cba982d59f0793dc9a9ac73e7d4d4c7c2ad401818af42",
+    "isolation-driver.mjs": "77e4c4943a0800c3c5ebba54e330d67e8e3175424d7fdbf2359d83d57c8fc118",
+    "run-isolation.ps1": "d726a5f7fa3861efb05dc3f959cddf3719db8835dfa3649bd99a28240aa6a54b"
+  },
+  "hashScope": "Local source bytes at run start; Git may normalize line endings.",
+  "failedSnapshot": {
+    "newFrame": false,
+    "frameMetadata": null,
+    "width": 836,
+    "height": 512,
+    "magenta": 0,
+    "cyan": 0,
+    "oldState": null,
+    "trackStates": [
+      "live"
+    ],
+    "targetEnumerated": true,
+    "captureMainRssBytes": 139501568
+  }
+}

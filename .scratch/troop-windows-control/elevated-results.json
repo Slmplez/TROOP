@@ -1,0 +1,30 @@
+{
+  "scope": "Human-approved UAC; passive own fixture; ordinary-inspector read-only refusal",
+  "selfClosed": true,
+  "inspection": {
+    "data": {
+      "osInputCalls": 0,
+      "policyDenied": true,
+      "reason": "higher_integrity_target",
+      "senderIntegrity": 8192,
+      "senderUiAccess": 0,
+      "targetIntegrity": 12288,
+      "targetPid": 40356,
+      "targetUiAccess": 0,
+      "utc_ms": 1793522754965
+    },
+    "event": "administrator_boundary",
+    "pid": 19696,
+    "utc_ms": 1793522754965
+  },
+  "target": {
+    "hwnd": 34212958,
+    "integrity": 12288,
+    "pid": 40356,
+    "scope": "passive own fixture; no input; self-closes in 60 seconds",
+    "uiAccess": 0,
+    "utc_ms": 1793522754738
+  },
+  "passed": true,
+  "utc": "2026-11-01T08:46:54.8970812Z"
+}

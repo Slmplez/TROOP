@@ -1,0 +1,5775 @@
+{
+  "date": "2026-11-01",
+  "scope": "Own synthetic target; separate Rust input helper and Electron capture process",
+  "scenarios": [
+    {
+      "name": "hotkey-stop",
+      "trace": [
+        {
+          "data": {
+            "epoch": 1,
+            "helper_integrity": 8192,
+            "stop_ack_event": "Local\\TROOP-prototype-stop-36860-1793522110644-ack",
+            "stop_event": "Local\\TROOP-prototype-stop-36860-1793522110644",
+            "stop_hotkey_registered": 1,
+            "target": {
+              "dpi": 96,
+              "dwm_hr": 0,
+              "extended_rect": [
+                187,
+                120,
+                1023,
+                633
+              ],
+              "hwnd": 7081030,
+              "integrity": 8192,
+              "marker": 9899048,
+              "marker_rect": [
+                208,
+                281,
+                568,
+                351
+              ],
+              "pid": 32888,
+              "window_rect": [
+                180,
+                120,
+                1030,
+                640
+              ]
+            },
+            "target_job_fenced": true
+          },
+          "event": "helper_ready",
+          "pid": 36860,
+          "utc_ms": 1793522110684
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "not_authorized"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522110697
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "integrity": [
+              8192,
+              8192
+            ]
+          },
+          "event": "granted",
+          "pid": 36860,
+          "utc_ms": 1793522110719
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522110736
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522111157
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522111578
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522111998
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522112423
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522112843
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522113261
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522113684
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522114104
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522114527
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522114944
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522115363
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522115787
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522116204
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522116633
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522117049
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522117471
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522117893
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522118312
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522118732
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522119155
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522119574
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522119993
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522120413
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522120832
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522121262
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522121678
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522122099
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522122523
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522122940
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522123360
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522123782
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522124206
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522124624
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522125046
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522125466
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522125890
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522126306
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522126731
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522127147
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522127571
+        },
+        {
+          "data": {
+            "detail": "target_not_foreground",
+            "grant": true,
+            "op": "observe",
+            "reason": "observation_gate"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522127999
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 36860,
+          "utc_ms": 1793522128412
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "stale_epoch"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522128429
+        },
+        {
+          "data": {
+            "op": "enqueue",
+            "reason": "target_identity"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522128435
+        },
+        {
+          "data": {
+            "epoch": 1,
+            "point": [
+              234,
+              307
+            ],
+            "rect": [
+              180,
+              120,
+              1030,
+              640
+            ]
+          },
+          "event": "observed",
+          "pid": 36860,
+          "utc_ms": 1793522129206
+        },
+        {
+          "data": {
+            "delay_ms": 60000,
+            "epoch": 1
+          },
+          "event": "queued",
+          "pid": 36860,
+          "utc_ms": 1793522129224
+        },
+        {
+          "data": {
+            "discarded": true,
+            "epoch": 2,
+            "grant": false,
+            "reason": "independent_stop_event"
+          },
+          "event": "stop_ack",
+          "pid": 36860,
+          "utc_ms": 1793522139249
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522139255
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "grant",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522139260
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "enqueue",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522139266
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522139352
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522139455
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522139558
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522139656
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522139758
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522139861
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522139963
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522140061
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522140164
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522140261
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522140364
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522140460
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522140562
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522140665
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522140763
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522140861
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522140964
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522141061
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522141163
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522141266
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522141364
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522141465
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522141567
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522141665
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522141767
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522141866
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522141968
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522142067
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522142170
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522142271
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522142369
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522142472
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522142572
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522142674
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522142772
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522142870
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522142973
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522143072
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522143175
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522143278
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522143375
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522143477
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522143574
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522143678
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522143776
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522143879
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522143977
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522144081
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522144180
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522144283
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522144380
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522144482
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522144579
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522144681
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522144779
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522144884
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522144983
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522145081
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522145186
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522145284
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522145382
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522145483
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522145586
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522145684
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522145787
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522145885
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522145984
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522146084
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522146188
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522146285
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522146388
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522146488
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522146586
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522146689
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522146787
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522146886
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522146989
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522147087
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522147188
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522147288
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522147386
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522147490
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522147591
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522147690
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522147792
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522147889
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522147989
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522148092
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522148191
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522148295
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522148394
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522148493
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522148596
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522148696
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522148793
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522148892
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522148992
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522149094
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522149195
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522149300
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522149395
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522149495
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522149594
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522149697
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522149796
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522149898
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522150001
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522150099
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522150201
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522150300
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522150400
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522150502
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522150601
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522150700
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522150804
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522150901
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522151001
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522151099
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522151200
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522151303
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522151402
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522151504
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522151603
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522151706
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522151805
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522151904
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522152002
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522152106
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522152204
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522152307
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522152406
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522152506
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522152608
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522152710
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522152811
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522152907
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522153011
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522153107
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522153213
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522153308
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522153410
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522153509
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522153611
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522153709
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522153812
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522153912
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522154010
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522154112
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522154210
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522154311
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522154414
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522154513
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522154615
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522154715
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522154816
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522154916
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522155019
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522155119
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522155218
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522155317
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522155419
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522155521
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522155620
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522155720
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522155818
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522155922
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522156022
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522156124
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522156227
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522156325
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522156427
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522156525
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522156628
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522156730
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522156828
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522156931
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522157027
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522157130
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522157230
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522157334
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522157434
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522157537
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522157635
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522157743
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522157837
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522157936
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522158040
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522158137
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522158236
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522158338
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522158438
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522158542
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522158639
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522158743
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522158841
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522158944
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522159046
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522159143
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522159247
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522159345
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522159447
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522159547
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522159649
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522159752
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522159849
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522159951
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522160050
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522160152
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522160250
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522160354
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522160453
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522160551
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522160653
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522160750
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522160852
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522160955
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522161053
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522161152
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522161256
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522161352
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522161456
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522161559
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522161660
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522161760
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522161858
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522161957
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522162057
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522162157
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522162261
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522162358
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522162461
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522162562
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522162656
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522162761
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522162862
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522162961
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522163057
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522163164
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522163266
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522163362
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522163467
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522163570
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522163669
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522163768
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522163868
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522163972
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522164073
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522164168
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522164268
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522164372
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522164472
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522164575
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522164673
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522164773
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522164872
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522164975
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522165073
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522165177
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522165278
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522165375
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522165476
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522165580
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522165683
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522165782
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522165884
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522165981
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522166084
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522166180
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522166281
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522166382
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522166482
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522166580
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522166684
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522166779
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522166880
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522166984
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522167081
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522167184
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522167286
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522167388
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522167486
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522167584
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522167688
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522167784
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522167883
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522167987
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522168083
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522168184
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522168286
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522168387
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522168485
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522168589
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522168686
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522168784
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522168890
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522168985
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522169087
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522169189
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522169290
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522169391
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522169496
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522169590
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522169694
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522169792
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522169896
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522169991
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522170095
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522170193
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522170291
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522170398
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522170494
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522170599
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522170697
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522170798
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522170899
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522170997
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522171102
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522171198
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522171302
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522171399
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522171498
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522171598
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522171702
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522171800
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522171901
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522172001
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522172100
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522172206
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522172305
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522172404
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522172502
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522172606
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522172706
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522172810
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522172910
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522173007
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522173107
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522173206
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522173310
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522173409
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522173512
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522173611
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522173711
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522173814
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522173911
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522174011
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522174115
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522174218
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522174314
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522174418
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522174518
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522174616
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522174715
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522174814
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522174918
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522175017
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522175116
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522175218
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522175321
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522175418
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522175520
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522175622
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522175724
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522175821
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522175921
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522176024
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522176124
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522176221
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522176323
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522176421
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522176520
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522176622
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522176725
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522176824
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522176922
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522177024
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522177121
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522177223
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522177326
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522177425
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522177524
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522177623
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522177726
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522177825
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522177929
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522178028
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522178127
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522178229
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522178327
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522178430
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522178526
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522178629
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522178727
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522178833
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522178932
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522179036
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522179135
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522179237
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522179336
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522179433
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522179537
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522179636
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522179735
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522179835
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522179939
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522180034
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522180136
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522180234
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522180337
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522180439
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522180536
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522180640
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522180740
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522180839
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522180937
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522181041
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522181143
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522181244
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522181341
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522181445
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522181543
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522181644
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522181742
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522181847
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522181947
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522182044
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522182147
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522182244
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522182349
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522182448
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522182547
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522182650
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522182747
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522182847
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522182952
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522183051
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522183153
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522183252
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522183356
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522183456
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522183555
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522183657
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522183756
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522183859
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522183961
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522184056
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522184162
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522184261
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522184358
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522184461
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522184559
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522184662
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522184760
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522184861
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522184960
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522185063
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522185159
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522185260
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522185366
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522185461
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522185565
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522185663
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522185766
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522185868
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522185965
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522186064
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522186168
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522186266
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522186364
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522186467
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522186565
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522186668
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522186768
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522186870
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522186969
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522187072
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522187171
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522187272
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522187370
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522187470
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522187573
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522187677
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522187778
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522187879
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522187977
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522188078
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522188177
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522188280
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522188375
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522188477
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522188580
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522188677
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522188777
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522188878
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522188984
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522189079
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522189183
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522189279
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522189382
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522189484
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522189584
+        },
+        {
+          "data": {
+            "epoch": 2,
+            "op": "heartbeat",
+            "reason": "stopped_requires_new_run"
+          },
+          "event": "command_denied",
+          "pid": 36860,
+          "utc_ms": 1793522189686
+        }
+      ],
+      "helperPid": 36860,
+      "targetPid": 32888,
+      "identity": {
+        "epoch": 1,
+        "helper_integrity": 8192,
+        "stop_ack_event": "Local\\TROOP-prototype-stop-36860-1793522110644-ack",
+        "stop_event": "Local\\TROOP-prototype-stop-36860-1793522110644",
+        "stop_hotkey_registered": 1,
+        "target": {
+          "dpi": 96,
+          "dwm_hr": 0,
+          "extended_rect": [
+            187,
+            120,
+            1023,
+            633
+          ],
+          "hwnd": 7081030,
+          "integrity": 8192,
+          "marker": 9899048,
+          "marker_rect": [
+            208,
+            281,
+            568,
+            351
+          ],
+          "pid": 32888,
+          "window_rect": [
+            180,
+            120,
+            1030,
+            640
+          ]
+        },
+        "target_job_fenced": true
+      },
+      "capturePid": 35180,
+      "captureFrame": {
+        "target_pid": 32888,
+        "frame": {
+          "width": 836,
+          "height": 512,
+          "patch": [
+            32,
+            172,
+            61,
+            201
+          ],
+          "count": 896,
+          "trackState": "live"
+        },
+        "point": [
+          234,
+          307
+        ],
+        "error": [
+          0,
+          0.365234375
+        ],
+        "sourceId": "window:7081030:0"
+      },
+      "uiStopWaitingUtcMs": 1793522129264,
+      "stopAckUtcMs": 1793522139249,
+      "observedBeyondOriginalDeadline": true,
+      "captureTrace": [
+        {
+          "event": "capture_ready",
+          "data": {
+            "target_pid": 32888,
+            "frame": {
+              "width": 836,
+              "height": 512,
+              "patch": [
+                32,
+                172,
+                61,
+                201
+              ],
+              "count": 896,
+              "trackState": "live"
+            },
+            "point": [
+              234,
+              307
+            ],
+            "error": [
+              0,
+              0.365234375
+            ],
+            "sourceId": "window:7081030:0"
+          },
+          "utc_ms": 1793522129192,
+          "pid": 35180
+        },
+        {
+          "event": "capture_hang_injected",
+          "data": {
+            "kind": "blocked main event loop after real capture"
+          },
+          "utc_ms": 1793522129254,
+          "pid": 35180
+        }
+      ],
+      "passed": true,
+      "helperStderr": "",
+      "captureStderr": "[35180:1101/163629.748:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capture_session.cc:442] The target source has been closed.\r\n[35180:1101/163629.748:ERROR:third_party\\webrtc\\modules\\desktop_capture\\win\\wgc_capturer_win.cc:413] GetFrame failed.\r\n"
+    }
+  ],
+  "sourceHashes": {
+    "Cargo.toml": "a66bf88f0eec27ba82495157ca1e826579f70b5873efe573d6e96b451d23595c",
+    "Cargo.lock": "a2ac30241d62ce6fc814d55bcfec473621fe399b57afc54ec5a4bcc412b872b2",
+    "src/isolation_common.rs": "bf2262e3159fe44f3eb2213c78f1d9bac157b5b87acdead117ff41eb00f53b54",
+    "src/bin/control-helper.rs": "6f242a2a31695a62d6742885359ff4688bdb10b183641ca05b5fff1934a12fbc",
+    "src/bin/isolation-target.rs": "b3987a47d0059f5ab688f8769f4cc829bb60e9ebd04bffca507a606ca5ce7ffa",
+    "src/bin/permission-probe.rs": "f3ee4b9ce88f3e88404467315e9e97eb60e699c183835f6ae2d09ec3c239ee24",
+    "isolation-capture.cjs": "8f2c6566ed3f6434ca9583fa0358cf3efeb6d78b98e2876a1b1ec32854dc1587",
+    "isolation-driver.mjs": "4247e2d6b1cc0749ecf1f428c0b30a3df476f4523110d150f0635ffdfa661c94",
+    "run-isolation.ps1": "2b823c01636b91f032eb29503044445e148e64737f7c29dbec335d56176fed7b"
+  },
+  "hashScope": "Local source bytes at run start; Git may normalize line endings."
+}

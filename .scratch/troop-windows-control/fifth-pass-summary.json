@@ -1,0 +1,165 @@
+{
+  "recordedUtc": "2026-11-01T09:03:04.855Z",
+  "controlMatrix": {
+    "passed": 12,
+    "total": 12,
+    "sourceHashesMatchCurrent": true
+  },
+  "uiStops": {
+    "hotkey": true,
+    "button": true,
+    "beyondOriginalDeadline": true
+  },
+  "manualLock": {
+    "passed": true,
+    "sessionSampling": "WTS/input-desktop composite, not notification callbacks",
+    "oldInputCount": 0,
+    "newExplicitInputCount": 1,
+    "newPointSource": "Fresh native observation; image color is a freshness prerequisite, not a new image-coordinate mapping sample"
+  },
+  "administrator": {
+    "osInputCalls": 0,
+    "policyDenied": true,
+    "reason": "higher_integrity_target",
+    "senderIntegrity": 8192,
+    "senderUiAccess": 0,
+    "targetIntegrity": 12288,
+    "targetPid": 40356,
+    "targetUiAccess": 0,
+    "utc_ms": 1793522754965,
+    "selfClosed": true
+  },
+  "partialResult": {
+    "faultInjected": true,
+    "realOsCall": false,
+    "retryDenied": true,
+    "kernelAck": true
+  },
+  "dynamicCapture": {
+    "samples": 24,
+    "elapsedMs": 126188,
+    "firstPresentedFrames": 24,
+    "lastPresentedFrames": 513,
+    "captureMainRssBytes": {
+      "min": 143130624,
+      "max": 152104960
+    },
+    "limitation": "Only capture-main RSS, not renderer/GPU/whole-system memory; bounded changing-fixture sample, not long-duration certification"
+  },
+  "staticCaptureFirstAttempt": {
+    "newFrame": false,
+    "verdict": "Preserved observation; no-frame timeout on static content alone is not proof of a capture crash"
+  },
+  "allWindowsVerificationComplete": false,
+  "remaining": [
+    "mixed-DPI multi-monitor and device changes",
+    "long-duration and fully occluded capture",
+    "declared RDP/UIA support boundaries",
+    "real OS partial-delivery effects and final-check race"
+  ],
+  "provenance": "Earlier UI/manual records keep their own run-start source hashes; current hashes do not retroactively identify older runs. Local-byte and canonical-LF digests are both provided.",
+  "sources": [
+    {
+      "path": "Cargo.toml",
+      "localBytesSha256": "a66bf88f0eec27ba82495157ca1e826579f70b5873efe573d6e96b451d23595c",
+      "canonicalLfSha256": "a66bf88f0eec27ba82495157ca1e826579f70b5873efe573d6e96b451d23595c"
+    },
+    {
+      "path": "Cargo.lock",
+      "localBytesSha256": "a2ac30241d62ce6fc814d55bcfec473621fe399b57afc54ec5a4bcc412b872b2",
+      "canonicalLfSha256": "a2ac30241d62ce6fc814d55bcfec473621fe399b57afc54ec5a4bcc412b872b2"
+    },
+    {
+      "path": "src/isolation_common.rs",
+      "localBytesSha256": "bf2262e3159fe44f3eb2213c78f1d9bac157b5b87acdead117ff41eb00f53b54",
+      "canonicalLfSha256": "bf2262e3159fe44f3eb2213c78f1d9bac157b5b87acdead117ff41eb00f53b54"
+    },
+    {
+      "path": "src/bin/control-helper.rs",
+      "localBytesSha256": "3ef6bd8709a756892af75659af87703fc23e1339adabdc41b9fc3f254e44205d",
+      "canonicalLfSha256": "3ef6bd8709a756892af75659af87703fc23e1339adabdc41b9fc3f254e44205d"
+    },
+    {
+      "path": "src/bin/isolation-target.rs",
+      "localBytesSha256": "818071b76cd20cc47a1800fffcad71280a725d223f7cc04c584d8790219dbd6f",
+      "canonicalLfSha256": "818071b76cd20cc47a1800fffcad71280a725d223f7cc04c584d8790219dbd6f"
+    },
+    {
+      "path": "src/bin/permission-probe.rs",
+      "localBytesSha256": "f3ee4b9ce88f3e88404467315e9e97eb60e699c183835f6ae2d09ec3c239ee24",
+      "canonicalLfSha256": "f3ee4b9ce88f3e88404467315e9e97eb60e699c183835f6ae2d09ec3c239ee24"
+    },
+    {
+      "path": "src/bin/elevated-fixture.rs",
+      "localBytesSha256": "5d82bc5df5cbc72a39b930400c5227287a0d89181909136aa7365c2b43ecefc0",
+      "canonicalLfSha256": "5d82bc5df5cbc72a39b930400c5227287a0d89181909136aa7365c2b43ecefc0"
+    },
+    {
+      "path": "src/bin/integrity-inspector.rs",
+      "localBytesSha256": "e927ff4f27c0923f2fd22bb6787d5a271fef0cb24d40bb4bdef013b32c6b8aa8",
+      "canonicalLfSha256": "e927ff4f27c0923f2fd22bb6787d5a271fef0cb24d40bb4bdef013b32c6b8aa8"
+    },
+    {
+      "path": "isolation-capture.cjs",
+      "localBytesSha256": "c539b1f514304168d12cba982d59f0793dc9a9ac73e7d4d4c7c2ad401818af42",
+      "canonicalLfSha256": "c539b1f514304168d12cba982d59f0793dc9a9ac73e7d4d4c7c2ad401818af42"
+    },
+    {
+      "path": "isolation-driver.mjs",
+      "localBytesSha256": "133ac4b6c715b332968a768b55489b51273da098796fd4584ebc73368c8decf0",
+      "canonicalLfSha256": "133ac4b6c715b332968a768b55489b51273da098796fd4584ebc73368c8decf0"
+    },
+    {
+      "path": "run-isolation.ps1",
+      "localBytesSha256": "d726a5f7fa3861efb05dc3f959cddf3719db8835dfa3649bd99a28240aa6a54b",
+      "canonicalLfSha256": "d726a5f7fa3861efb05dc3f959cddf3719db8835dfa3649bd99a28240aa6a54b"
+    },
+    {
+      "path": "run-elevated.ps1",
+      "localBytesSha256": "d2bfc4bef5771e8ecca1e52a493f236dc9da378e562b9b0f63d949e73c028c78",
+      "canonicalLfSha256": "d2bfc4bef5771e8ecca1e52a493f236dc9da378e562b9b0f63d949e73c028c78"
+    },
+    {
+      "path": "collect-fifth-pass.mjs",
+      "localBytesSha256": "380d0304349639d615abc911b7484b27e2151e4234c975d25234bf83fdcb6913",
+      "canonicalLfSha256": "380d0304349639d615abc911b7484b27e2151e4234c975d25234bf83fdcb6913"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "isolation-current-results.json",
+      "localBytesSha256": "c2a3cdf5ad94ee5392ff0d96020a8f1358b7ab1bc8e3a6d7fc2cc520061f39a3",
+      "canonicalLfSha256": "c2a3cdf5ad94ee5392ff0d96020a8f1358b7ab1bc8e3a6d7fc2cc520061f39a3"
+    },
+    {
+      "path": "isolation-hotkey-results.json",
+      "localBytesSha256": "92838ea5b399a389f907f782c4792b2a61c09811b76116bf282a014feb2ab643",
+      "canonicalLfSha256": "92838ea5b399a389f907f782c4792b2a61c09811b76116bf282a014feb2ab643"
+    },
+    {
+      "path": "isolation-button-results.json",
+      "localBytesSha256": "5b71d1759d7241825d7b6455cf774820bb8f3f3ac7322ee4174441d8a1342d40",
+      "canonicalLfSha256": "5b71d1759d7241825d7b6455cf774820bb8f3f3ac7322ee4174441d8a1342d40"
+    },
+    {
+      "path": "isolation-lock-results.json",
+      "localBytesSha256": "c31d6d01baeb9164cdfa7dfcc6ec239fb76545f25e8fefd9b302bfe6270eb225",
+      "canonicalLfSha256": "c31d6d01baeb9164cdfa7dfcc6ec239fb76545f25e8fefd9b302bfe6270eb225"
+    },
+    {
+      "path": "elevated-results.json",
+      "localBytesSha256": "6c63a5c18822e5ac648fade806bc1a23ea3865d5f3b70dc17065ca14aa94ee62",
+      "canonicalLfSha256": "f46719851ce211c85353cceaba7793a9ab1b4c8187f4cfe4b8094f4a8191748c"
+    },
+    {
+      "path": "capture-soak-results.json",
+      "localBytesSha256": "36ecb339c3fd0300ef851720a676d48d30e1879e9feb2da778281cdb2c6d0f9b",
+      "canonicalLfSha256": "36ecb339c3fd0300ef851720a676d48d30e1879e9feb2da778281cdb2c6d0f9b"
+    },
+    {
+      "path": "capture-soak-static-result.json",
+      "localBytesSha256": "67cb252429062017d38d5b61ac30e472f69afb088c5b0e1e86858b3de5977e1f",
+      "canonicalLfSha256": "4eb47823315f1c430e355705ce1814c92ffc4fe912d2e19033bb0605905465ca"
+    }
+  ]
+}

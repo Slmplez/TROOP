@@ -1,4 +1,4 @@
-param([ValidateSet('normal','focus-pulse','stale-observation','capture-hang','capture-exit','channel-eof','lease-timeout','helper-crash','target-crash','output-backpressure','stop-transport','capture-lifecycle','permission','hotkey-stop','button-stop','all')][string]$Scenario='all')
+param([ValidateSet('normal','focus-pulse','stale-observation','capture-hang','capture-exit','channel-eof','lease-timeout','helper-crash','target-crash','output-backpressure','stop-transport','capture-lifecycle','capture-soak','permission','partial-result','hotkey-stop','button-stop','manual-lock','all')][string]$Scenario='all')
 $ErrorActionPreference='Stop'
 $root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 cargo build --offline --locked --manifest-path (Join-Path $PSScriptRoot 'Cargo.toml') --target-dir (Join-Path $root '.tmp-host-control/build')

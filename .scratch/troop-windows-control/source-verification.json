@@ -1,6 +1,6 @@
 {
   "recordedUtc": "2026-11-01T08:27:26.7404257Z",
-  "purpose": "Source and evidence inventory at publication; not retrospective source attribution for older runtime samples.",
+  "purpose": "Historical fourth-pass publication snapshot. Its source hashes and incomplete-matrix status describe that date only; see fifth-pass-summary.json for the latest verification. Not retrospective source attribution for older runtime samples.",
   "currentSources": [
     {
       "path": "Cargo.toml",

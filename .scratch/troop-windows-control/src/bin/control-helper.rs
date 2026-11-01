@@ -23,6 +23,7 @@ fn main(){unsafe{
  if args.get(1).map(String::as_str)==Some("--signal-stop"){
   let name=args.get(2).expect("event");assert!(name.starts_with("Local\\TROOP-prototype-stop-"));let h=OpenEventW(EVENT_MODIFY_STATE,0,wide(name).as_ptr());if h.is_null(){emit("signal_failed",json!({"error":GetLastError()}));std::process::exit(2);}let at=now();let ok=SetEvent(h);CloseHandle(h);let ack=if let Some(name)=args.get(3){let h=OpenEventW(SYNCHRONIZATION_SYNCHRONIZE,0,wide(name).as_ptr());let acknowledged=!h.is_null()&&WaitForSingleObject(h,2000)==WAIT_OBJECT_0;if !h.is_null(){CloseHandle(h);}acknowledged}else{false};emit("signal_sent",json!({"set_event":ok,"signal_utc_ms":at,"kernel_ack":ack,"ack_utc_ms":now()}));if args.len()>3&&!ack{std::process::exit(2);}return;
  }
+ let inject_partial=args.get(1).map(String::as_str)==Some("--inject-partial-result");
  init_async_events();
  let target_exe=PathBuf::from(std::env::current_exe().unwrap()).with_file_name("isolation-target.exe");
  let stop_name=format!("Local\\TROOP-prototype-stop-{}-{}",std::process::id(),now());let event=CreateEventW(null(),1,0,wide(&stop_name).as_ptr());assert!(!event.is_null());
@@ -40,7 +41,7 @@ fn main(){unsafe{
  let (tx,rx)=mpsc::sync_channel::<Value>(8);let eof_state=shared.clone();thread::spawn(move||{for l in std::io::stdin().lock().lines(){match l{Ok(l) if l.len()<=8192=>{if let Ok(v)=serde_json::from_str(&l){if tx.send(v).is_err(){return;}}},_=>break}}stop(&eof_state,"command_channel_eof");});
  let hotkey=RegisterHotKey(null_mut(),1,MOD_CONTROL|MOD_SHIFT|MOD_NOREPEAT,VK_F12 as u32);
  emit("helper_ready",json!({"target":identity["data"],"stop_event":stop_name,"stop_ack_event":ack_name,"epoch":1,"helper_integrity":integrity(GetCurrentProcessId()),"stop_hotkey_registered":hotkey,"target_job_fenced":true}));
- let deadline=Instant::now()+Duration::from_secs(90);let mut last_session_poll=Instant::now();let mut session_ok=active_session();
+ let deadline=Instant::now()+Duration::from_secs(180);let mut last_session_poll=Instant::now();let mut session_ok=active_session();
  loop{
   if Instant::now()>deadline{stop(&shared,"prototype_timeout");break;}
   if target.try_wait().unwrap().is_some(){stop(&shared,"target_exit");break;}
@@ -53,6 +54,7 @@ fn main(){unsafe{
    if op=="diagnostic-fill-output"{for _ in 0..2000{emit("diagnostic_filler",json!({"padding":"x".repeat(4096)}));}continue;}
    if op=="exercise-focus-loss"{if let Some(input)=target.stdin.as_mut(){let _=writeln!(input,"focus-pulse");}continue;}
    if op=="fixture-minimize"||op=="fixture-restore-change"{if let Some(input)=target.stdin.as_mut(){let _=writeln!(input,"{}",if op=="fixture-minimize"{"minimize"}else{"restore-change"});}continue;}
+   if op=="fixture-animate"{if let Some(input)=target.stdin.as_mut(){let _=writeln!(input,"animate");}continue;}
    // OS queries stay outside the shared stop lock; only apply their result if the run remains live.
    let levels=if op=="grant"{Some(integrity_allowed(target_pid))}else{None};
    let r=rect(hwnd);let marker=rect(GetDlgItem(hwnd,201));let point=[marker[0]+26,marker[1]+26];
@@ -75,7 +77,7 @@ fn main(){unsafe{
   if let Some((a,observation))=snapshot{
    let validity=match observation{Some((when,r)) if when.elapsed()<Duration::from_secs(5)=>input_gate(hwnd,target_pid,r,a.point).and_then(|_|integrity_allowed(target_pid).map(|_|())),_=>Err("observation_expired")};
    let mut s=shared.lock().unwrap();
-   if !s.stopped&&s.grant&&s.epoch==a.epoch&&s.pending.is_some(){s.pending=None;if let Err(reason)=validity{s.observed=None;s.epoch+=1;emit("dispatch_denied",json!({"reason":reason,"epoch":s.epoch}));}else{let (inserted,error)=click(a.point);emit("os_submission",json!({"inserted":inserted,"requested":3,"error":error,"epoch":s.epoch}));if inserted!=3{s.grant=false;s.stopped=true;s.observed=None;s.epoch+=1;SetEvent(ack_event);emit("indeterminate",json!({"no_retry":true}));}}}
+   if !s.stopped&&s.grant&&s.epoch==a.epoch&&s.pending.is_some(){s.pending=None;if let Err(reason)=validity{s.observed=None;s.epoch+=1;emit("dispatch_denied",json!({"reason":reason,"epoch":s.epoch}));}else{let (inserted,error)=if inject_partial{(1,0)}else{click(a.point)};emit(if inject_partial{"simulated_os_result"}else{"os_submission"},json!({"inserted":inserted,"requested":3,"error":error,"epoch":s.epoch,"fault_injected":inject_partial}));if inserted!=3{s.grant=false;s.stopped=true;s.observed=None;s.epoch+=1;SetEvent(ack_event);emit("indeterminate",json!({"no_retry":true}));}}}
   }
   thread::sleep(Duration::from_millis(5));
  }
