@@ -1,0 +1,83 @@
+{
+  "origin": "synthetic-only",
+  "node": "v26.5.0",
+  "sqliteSchemaSha256": "b0494996238d5d2061b3b5b706951d9385d5a73c2382fe65da86503dde36aa14",
+  "findings": [
+    {
+      "kind": "plain-chat",
+      "sqliteBlobs": 4,
+      "contentHashChecks": true,
+      "sourceUnchanged": true,
+      "turns": 1,
+      "contentItems": 2,
+      "attachmentRefs": 0,
+      "childRefs": 0,
+      "pendingCalls": 0
+    },
+    {
+      "kind": "tool-attachment-summary",
+      "sqliteBlobs": 6,
+      "contentHashChecks": true,
+      "sourceUnchanged": true,
+      "turns": 1,
+      "contentItems": 2,
+      "attachmentRefs": 1,
+      "childRefs": 0,
+      "pendingCalls": 0
+    },
+    {
+      "kind": "subagent-incomplete",
+      "sqliteBlobs": 5,
+      "contentHashChecks": true,
+      "sourceUnchanged": true,
+      "turns": 1,
+      "contentItems": 2,
+      "attachmentRefs": 0,
+      "childRefs": 1,
+      "pendingCalls": 1
+    }
+  ],
+  "encryptedObservation": {
+    "evidence": "inspected artifact class + synthetic input; not real historical ciphertext",
+    "artifactPath": "src/app/dist/host/host-main.cjs",
+    "regionSha256": "71f4be3af8b103c92a86079beeb22e667426fa3263cfe126336890e1104fc869",
+    "algorithm": "AES-GCM",
+    "derivation": "SHA-256(UTF-8 key string)",
+    "ivPrefixBytes": 12,
+    "additionalAuthenticatedData": false,
+    "correctKeyRoundtrip": true,
+    "wrongKeyRejected": true,
+    "alteredTagRejected": true,
+    "decryptFallbackWorks": true,
+    "missingKeyPolicy": "do not generate or guess a replacement key",
+    "ciphertextBytes": 70
+  },
+  "unknownFieldObservation": {
+    "unknownCount": 1,
+    "binaryRetained": true,
+    "jsonLosesUnknown": true
+  },
+  "fixedRootObservation": {
+    "rootAddressing": "fixed-slot",
+    "sourceSlot": "sand-live-conversation-root-v1__",
+    "slotHex": "73616e642d6c6976652d636f6e766572736174696f6e2d726f6f742d76315f5f",
+    "payloadSha256": "d9be7029fbe169cdb00e1b58894126a606cc457f7dd683d14a86233ae08bd0c2",
+    "decodable": true,
+    "note": "Artificial fixed-slot vector; real legacy root lookup is not tested."
+  },
+  "storeDbObservation": {
+    "schema": "actual source SCHEMA, synthetic rows",
+    "metadataEncoding": "kv.metadata = hex(UTF-8 JSON)",
+    "rawKeyPresent": false,
+    "generatedReplacementKey": false,
+    "fixedSlotRootResolved": true,
+    "sourceUnchanged": true
+  },
+  "notVerified": [
+    "real legacy SQLite exports and WAL consistency",
+    "real encrypted history/key provenance",
+    "complete reference graph for arbitrary legacy types",
+    "cross-source identity equivalence",
+    "production transactions, crash recovery and UI import"
+  ]
+}
