@@ -1,6 +1,6 @@
 # 模型网关与流式对话验收
 
-2026-11-01；版本 0.2.0；[任务 #14](https://github.com/Slmplez/TROOP/issues/14)。Windows x64，Node 24.4.1 / npm 11.4.2 / Rust 1.92.0 MSVC / Electron 42.1.0。
+2026-11-01；版本 0.2.0；[实现 #14](https://github.com/Slmplez/TROOP/issues/14) / [真实提供方验收 #15](https://github.com/Slmplez/TROOP/issues/15)。Windows x64，Node 24.4.1 / npm 11.4.2 / Rust 1.92.0 MSVC / Electron 42.1.0。
 
 ## 证据范围
 
@@ -12,7 +12,25 @@
 | Clippy / 格式 | workspace/all-targets `-D warnings`，Rustfmt 与 Prettier |
 | 界面 | 实际 Electron 两页面 × 1440 / 768 / 390 宽度测量、截图检查；静态 app lint 无 FAIL/WARN |
 
-网络测试是由本机 Node HTTP 服务提供的确定性 SSE，而非预置到 Renderer 的文字：请求真实经过 Rust HTTP 客户端、协议适配、流解析、Core 持久化、IPC 和 React。三协议分别验证文本分片、上下文、结束与基本用量；本轮没有调用商业模型或使用真实用户 API key，不能据此声称任意提供方/模型已实测兼容。
+以上自动回归使用本机 Node HTTP 服务提供的确定性 SSE，而非预置到 Renderer 的文字：请求真实经过 Rust HTTP 客户端、协议适配、流解析、Core 持久化、IPC 和 React。三协议分别验证文本分片、上下文、结束与基本用量；这些回归不调用商业模型或使用真实用户 API key，不能据此声称任意提供方/模型已实测兼容。
+
+## 用户所选真实服务
+
+2026-11-01 12:37–12:39 UTC，用户已在应用内保存一个 Anthropic Messages 服务后，使用同一配置和 Windows Credential Manager 引用完成实测。未更换模型、地址、输出上限或超时，也未设置失败重试或替代提供方。服务地址、模型标识及凭据引用不公开。
+
+| 检查 | 真实服务结果 |
+| --- | --- |
+| Core 正常流式请求 | completed / end_turn；230 字符；13 次非空文本长度变化，4 次 streaming 通知；用量 input 69 / output 177 |
+| Core 停止 | 收到文本后取消；确认耗时 3ms；cancelled；保留 5 字符，延后读取无增长；控制接口仍响应 |
+| 重复提交 | 相同 client turn ID 返回原回合，duplicate=true；未创建额外本地回合 |
+| Core 重启 | 正常和停止回合的文本 SHA-256、状态及用量一致；观察窗口内无主动对话事件 |
+| Electron 发送与增量 | 正式 Renderer、preload、固定 IPC 和 Rust Core；完成前已显示部分文本，6 次渲染文本长度变化；completed / end_turn；440 字符；用量 input 68 / output 339 |
+| Electron 停止按钮 | 真实点击 DOM 按钮，经正式 IPC 取消；界面 30ms 内显示 cancelled；保留 29 字符 |
+| Electron 恢复 | Core 停止并重启，Renderer 重载并重新选择会话；两回合状态和显示文本 SHA-256 一致，未新增回合 |
+
+两个独立验收进程各发起一次正常请求和一次取消请求，共四次真实模型请求。Core 验收通过正式控制客户端；Electron 验收使用隐藏的独立窗口，避免占用用户前台，未伪造桥接或提供方响应。测试配置只复制本应用已保存的非秘密配置和系统凭据引用到隔离的本地目录；密钥仅由正式 Rust Core 在内部读取，未导出到脚本参数、环境变量、聊天或报告。未修改用户原会话或删除其凭据；验收 Core 均已确认停止。
+
+忽略目录 `.tmp-troop-provider/` 保留执行脚本、隔离数据库与脱敏 JSON 结果；这些文件不发布。此结论仅适用于本次用户所选服务和配置，其他真实提供方以及 Chat Completions、Responses 的远程服务尚未实测。取消确认代表本地中止与记录保留，不能证明代理上游推理或计费立即停止。
 
 ## 故障与秘密检查
 
@@ -34,4 +52,4 @@
 
 原始报告和截图在忽略的 `.tmp-troop-bootstrap/`，本轮 HTTP 测试配置在 `.tmp-troop-chat/`。这些目录不进入源码分支。原生目录选择器仍由自有夹具替换；新删除确认的业务拒绝/执行路径有 Core 验证，未宣称所有原生系统对话框均已人工操作。
 
-尚需用户在新版“模型”页填写所选服务地址、协议、模型 ID 和密钥，才能进行指定真实提供方的兼容验收。应在应用内输入密钥，不需要发送到开发聊天。没有签名安装包或干净机器验收；Agent/记忆/Skills/MCP 与 Docker 不在本次结果内。
+用户所选真实服务的增量、正常结束、停止和重启历史验收已完成。没有签名安装包或干净机器验收；Agent/记忆/Skills/MCP 与 Docker 不在本次结果内。

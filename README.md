@@ -85,4 +85,4 @@ npm --prefix apps/desktop run smoke
 
 冒烟报告和截图保存在被忽略的 `.tmp-troop-bootstrap/`，`latest-smoke.json` 指向最近一次完整成功结果；HTTP 测试配置在 `.tmp-troop-chat/`。测试使用自有 loopback HTTP/SSE 服务和随机假密钥，不调用商业模型；固定 IPC、Rust、SQLite、Windows 凭据、Renderer、托盘和正式入口使用真实实现。原生目录选择器仍由自有夹具替换。
 
-真实提供方兼容验收需要你在应用内配置 endpoint/model/key，不需要把密钥发送到开发聊天。当前没有签名安装包或干净机器验收。下一功能包是 Agent 执行账本与工具，再按已确认契约接入记忆、Skills、MCP。Windows 保持单屏基线，Docker 暂停。
+2026-11-01 已使用用户在应用内保存的 Anthropic Messages 服务，通过真实流式回复、Core 与界面停止、Core 重启及 Renderer 重载历史验收，详见[验收记录](docs/implementation/TROOP_MODEL_GATEWAY_VALIDATION.md)。结论限于该服务与配置，其他真实提供方尚未实测。配置密钥只在应用内输入，不需要发送到开发聊天。当前没有签名安装包或干净机器验收。下一功能包是 Agent 执行账本与工具，再按已确认契约接入记忆、Skills、MCP。Windows 保持单屏基线，Docker 暂停。
