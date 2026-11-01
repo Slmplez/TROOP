@@ -1,0 +1,16 @@
+{
+  "checkedDate": "2026-11-01",
+  "scope": "Local Windows Docker only; remote sandbox deferred; host desktop remains single-screen",
+  "dockerCommandFound": false,
+  "podmanCommandFound": false,
+  "dockerInstallationFoundInCheckedLocations": false,
+  "checkedLocations": ["PATH", "Program Files Docker", "LocalAppData Programs DockerDesktop", "LocalAppData Docker"],
+  "wslStatus": {"exitCode": 50, "message": "未安装适用于 Linux 的 Windows 子系统"},
+  "hypervisorPresent": true,
+  "firmwareVirtualizationConclusion": "Not inferred from isolated processor flags; existing hypervisor was reported",
+  "dockerImageBuilt": false,
+  "containerStarted": false,
+  "desktopViewed": false,
+  "stopAndRebuildVerified": false,
+  "systemRuntimeInstalledByAgent": false
+}

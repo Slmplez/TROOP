@@ -1,0 +1,51 @@
+{
+  "note": "Type checks and source preparation only. No container success inferred.",
+  "checks": {
+    "rustSyntax": "passed",
+    "linuxCargoCheck": "passed: x86_64-unknown-linux-gnu",
+    "dockerBuild": "not run: no runtime",
+    "desktopAndRecovery": "not run",
+    "hostCargoCheck": "passed",
+    "pythonSyntax": "passed",
+    "linuxExecution": "not run"
+  },
+  "sourceHashes": [
+    {
+      "path": "Cargo.toml",
+      "sha256": "70c0623152c049490fee6aaa294f746c1c9e769ab4949fdc941b75b0f6237991"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "3c55eae956c35bba83922b46ff2212c16b05e8d05c689f2538cd7412a3fef409"
+    },
+    {
+      "path": "src/main.rs",
+      "sha256": "5d95cf36a909ad105bf3dc072751dabed49040525e7eeef3c461c5e7fd628710"
+    },
+    {
+      "path": "src/linux.rs",
+      "sha256": "1dd1d0fd21ad5730812d60ed80cc5781b51695a4470d7f6aa0be1083419803c1"
+    },
+    {
+      "path": "Dockerfile",
+      "sha256": "6b58640126ac69121c783ce8c1b46a220a37e4ec0f3fe7103086724e6c6948f7"
+    },
+    {
+      "path": "start.py",
+      "sha256": "4dfe0545166be7ef0ef4e17ef901de849a9753bbbf567e2e2b303bb23640afc0"
+    },
+    {
+      "path": ".dockerignore",
+      "sha256": "44e492fe99cc292389ec599ae1a76a9083e609520e8b413fd24e3e0ec42e5d53"
+    },
+    {
+      "path": "README.md",
+      "sha256": "fe10853ac670a5596c4fb6486154b078190411a30a5f68fe0cc4a210f475ae36"
+    },
+    {
+      "path": "environment.json",
+      "sha256": "2592e63cfe6a14ea39e71524683e4e88a77ae35739d86838c08c2dc7488d9c45"
+    }
+  ],
+  "recordedUtc": "2026-11-01T09:45:20.8131084Z"
+}
