@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
+import { createRequire } from "node:module";
+const { coreBinary } = createRequire(import.meta.url)("../src/core-path.cjs");
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const root = path.resolve(app, "../..");
 const result = spawnSync(
@@ -22,7 +24,7 @@ if (result.status !== 0) process.exit(result.status ?? 1);
 fs.mkdirSync(path.join(app, "bin"), { recursive: true });
 const binary = process.platform === "win32" ? "troop-core.exe" : "troop-core";
 const source = path.join(root, "target/debug", binary);
-const destination = path.join(app, "bin", binary);
+const destination = path.join(app, "bin", coreBinary);
 if (
   !fs.existsSync(destination) ||
   !fs.readFileSync(source).equals(fs.readFileSync(destination))

@@ -6,11 +6,8 @@ const { spawn } = require("node:child_process");
 const readline = require("node:readline");
 const { once } = require("node:events");
 const { CoreSupervisor } = require("../src/core-client.cjs");
-const executable = path.resolve(
-  __dirname,
-  "../bin",
-  process.platform === "win32" ? "troop-core.exe" : "troop-core",
-);
+const { coreBinary } = require("../src/core-path.cjs");
+const executable = path.resolve(__dirname, "../bin", coreBinary);
 const temp = path.resolve(__dirname, "../../../.tmp-troop-bootstrap/tests");
 fs.mkdirSync(temp, { recursive: true });
 const dir = () => fs.mkdtempSync(path.join(temp, "case-"));
@@ -111,7 +108,7 @@ test("protocol rejects bad handshakes, stale generations, unknown fields and dup
   });
   assert.equal(v.error.data.kind, "protocol_mismatch");
   v = await send("hello", "system.hello", {
-    protocol: 2,
+    protocol: 3,
     client: "troop-desktop",
   });
   const generation = v.result.generation;

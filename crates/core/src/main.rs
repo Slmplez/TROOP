@@ -12,6 +12,8 @@ use troop_protocol::{error, result, Request, MAX_FRAME, METHODS, VERSION};
 use troop_storage::Store;
 use uuid::Uuid;
 use zeroize::Zeroize;
+mod agent;
+mod tools;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -116,6 +118,7 @@ struct Core {
     sequence: u64,
     active: HashMap<i64, Active>,
     updates: mpsc::Sender<Update>,
+    agents: agent::Manager,
 }
 impl Core {
     fn notify(&mut self, turn: i64, conversation: i64, status: &str) -> Result<(), String> {
@@ -195,9 +198,16 @@ impl Core {
         Ok(())
     }
     async fn dispatch(&mut self, method: &str, p: Value) -> Result<(Value, bool), String> {
+        if method.starts_with("agent.") {
+            return Ok((
+                self.agents.dispatch(&mut self.store, method, p).await?,
+                false,
+            ));
+        }
         let answer = match method {
             "system.ping" => json!({"ready":true}),
             "system.shutdown" => {
+                self.agents.shutdown(&mut self.store).await?;
                 self.stop_all("cancelled", "应用退出，已停止本次生成。部分文本已保留。")
                     .await?;
                 return Ok((json!({"stopped":true}), true));
@@ -208,7 +218,13 @@ impl Core {
                 let a = params::<Rename>(p)?;
                 value(self.store.rename(a.id, &a.name)?)?
             }
-            "workspace.remove" => value(self.store.remove(params::<Id>(p)?.id)?)?,
+            "workspace.remove" => {
+                let id = params::<Id>(p)?.id;
+                if self.agents.owns_workspace(&self.store, id) {
+                    return Err("请先停止使用此工作区的任务。".into());
+                }
+                value(self.store.remove(id)?)?
+            }
             "provider.list" => value(self.store.providers()?)?,
             "provider.save" => {
                 let mut a = params::<SaveProvider>(p)?;
@@ -220,10 +236,10 @@ impl Core {
                     Some(id) => Some(self.store.provider(id)?),
                     None => None,
                 };
-                if old
-                    .as_ref()
-                    .is_some_and(|p| self.active.values().any(|a| a.provider == p.id))
-                {
+                if old.as_ref().is_some_and(|p| {
+                    self.active.values().any(|a| a.provider == p.id)
+                        || self.agents.owns_provider(&self.store, &p.id)
+                }) {
                     return Err("请先停止使用此服务的生成，再编辑配置。".into());
                 }
                 if a.clear_key && a.api_key.is_some() {
@@ -264,7 +280,9 @@ impl Core {
             }
             "provider.remove" => {
                 let a = params::<ProviderId>(p)?;
-                if self.active.values().any(|v| v.provider == a.id) {
+                if self.active.values().any(|v| v.provider == a.id)
+                    || self.agents.owns_provider(&self.store, &a.id)
+                {
                     return Err("请先停止使用此服务的生成。".into());
                 }
                 let old = self.store.provider(&a.id)?;
@@ -317,7 +335,7 @@ impl Core {
                 )? {
                     return Ok((value(previous)?, false));
                 }
-                if self.active.len() >= 4 {
+                if self.active.len() + self.agents.model_count() >= 4 {
                     return Err("最多同时生成 4 个回复，请先停止或等待已有生成。".into());
                 }
                 if self
@@ -356,6 +374,7 @@ impl Core {
                     config,
                     secret,
                     messages,
+                    tools: None,
                 };
                 let turn = receipt.turn_id;
                 let updates = self.updates.clone();
@@ -431,6 +450,7 @@ async fn run() -> Result<(), String> {
         }
     });
     let mut core = Core {
+        agents: agent::Manager::new(PathBuf::from(&args[2]))?,
         store,
         generation,
         sequence: 0,
@@ -439,6 +459,7 @@ async fn run() -> Result<(), String> {
     };
     let mut seen = HashSet::new();
     let mut handshaken = false;
+    let mut schedule = tokio::time::interval(std::time::Duration::from_millis(100));
     loop {
         tokio::select! {
             incoming=input.recv()=>{
@@ -461,17 +482,29 @@ async fn run() -> Result<(), String> {
                 if shutdown||seen.len()>=131_072{break;}
             }
             Some(message)=update.recv()=>core.accept(message)?,
+            Some(message)=core.agents.receiver.recv()=>core.agents.accept(&mut core.store,message)?,
+            _=schedule.tick()=>{},
         }
+        core.agents
+            .pump(&mut core.store, 4usize.saturating_sub(core.active.len()))?;
     }
     core.stop_all(
         "interrupted",
         "控制连接已断开；已保留接收的文本，不会自动续发。",
     )
     .await?;
+    core.agents.shutdown(&mut core.store).await?;
     Ok(())
 }
 #[tokio::main]
 async fn main() {
+    if std::env::args().nth(1).as_deref() == Some("--tool-worker") {
+        let code = match tools::worker() {
+            Ok(()) => 0,
+            Err(_) => 1,
+        };
+        std::process::exit(code);
+    }
     if let Err(message) = run().await {
         eprintln!("TROOP Core: {message}");
         std::process::exit(1);

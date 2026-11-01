@@ -1,3 +1,4 @@
+pub mod agent;
 pub mod credentials;
 mod sse;
 
@@ -95,16 +96,21 @@ pub struct Request {
     pub config: Config,
     pub secret: Option<Secret>,
     pub messages: Vec<Message>,
+    pub tools: Option<agent::ToolWire>,
 }
-#[derive(Default, Clone, Serialize)]
+#[derive(Default, Clone, Serialize, Deserialize)]
 pub struct Usage {
     pub input_tokens: Option<u64>,
     pub output_tokens: Option<u64>,
 }
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Summary {
     pub usage: Usage,
     pub finish_reason: String,
+    pub calls: Vec<agent::ToolCall>,
+    pub output_items: Vec<Value>,
 }
+#[derive(Debug)]
 pub struct Failure {
     pub kind: &'static str,
     pub message: String,
@@ -123,6 +129,7 @@ struct Parser {
     usage: Usage,
     finish_reason: Option<String>,
     complete: bool,
+    allow_tools: bool,
 }
 impl Parser {
     fn consume(&mut self, event: sse::Event) -> Result<Option<String>, Failure> {
@@ -145,11 +152,12 @@ impl Parser {
                     self.usage.output_tokens = usage["completion_tokens"].as_u64();
                 }
                 let choice = &v["choices"][0];
-                if choice["delta"].get("tool_calls").is_some_and(|calls| {
-                    !calls.is_null() && calls.as_array().is_none_or(|items| !items.is_empty())
-                }) || choice["delta"]
-                    .get("function_call")
-                    .is_some_and(|call| !call.is_null())
+                if !self.allow_tools
+                    && (choice["delta"].get("tool_calls").is_some_and(|calls| {
+                        !calls.is_null() && calls.as_array().is_none_or(|items| !items.is_empty())
+                    }) || choice["delta"]
+                        .get("function_call")
+                        .is_some_and(|call| !call.is_null()))
                 {
                     return Err(Failure::new(
                         "unsupported_capability",
@@ -157,7 +165,7 @@ impl Parser {
                     ));
                 }
                 if let Some(reason) = choice["finish_reason"].as_str() {
-                    if reason == "tool_calls" || reason == "function_call" {
+                    if (reason == "tool_calls" && !self.allow_tools) || reason == "function_call" {
                         return Err(Failure::new(
                             "unsupported_capability",
                             "此版本尚未接入 Agent 工具调用。",
@@ -172,7 +180,9 @@ impl Parser {
             Protocol::Responses => match v["type"].as_str().unwrap_or(&event.event) {
                 "response.output_text.delta" | "response.refusal.delta" => v["delta"].as_str(),
                 "response.output_item.added"
-                    if v["item"]["type"] != "message" && v["item"]["type"] != "reasoning" =>
+                    if v["item"]["type"] != "message"
+                        && v["item"]["type"] != "reasoning"
+                        && !(self.allow_tools && v["item"]["type"] == "function_call") =>
                 {
                     return Err(Failure::new(
                         "unsupported_capability",
@@ -207,10 +217,11 @@ impl Parser {
                     None
                 }
                 "content_block_start"
-                    if !matches!(
-                        v["content_block"]["type"].as_str(),
-                        Some("text" | "thinking" | "redacted_thinking")
-                    ) =>
+                    if !((self.allow_tools && v["content_block"]["type"] == "tool_use")
+                        || matches!(
+                            v["content_block"]["type"].as_str(),
+                            Some("text" | "thinking" | "redacted_thinking")
+                        )) =>
                 {
                     return Err(Failure::new(
                         "unsupported_capability",
@@ -259,7 +270,10 @@ impl Parser {
     }
 }
 
-pub async fn stream(request: Request, output: mpsc::Sender<String>) -> Result<Summary, Failure> {
+pub async fn stream(
+    mut request: Request,
+    output: mpsc::Sender<String>,
+) -> Result<Summary, Failure> {
     let endpoint = request.config.endpoint().map_err(|m| Failure {
         kind: "invalid_config",
         message: m,
@@ -297,6 +311,11 @@ pub async fn stream(request: Request, output: mpsc::Sender<String>) -> Result<Su
             .remove("max_completion_tokens");
         body["max_tokens"] = json!(config.max_output_tokens);
     }
+    let allow_tools = request.tools.is_some();
+    if let Some(wire) = request.tools.take() {
+        agent::configure(&mut body, config.protocol, wire);
+    }
+    let mut collector = agent::Collector::default();
     let mut http = client
         .post(endpoint)
         .header("Accept", "text/event-stream")
@@ -363,6 +382,7 @@ pub async fn stream(request: Request, output: mpsc::Sender<String>) -> Result<Su
         usage: Usage::default(),
         finish_reason: None,
         complete: false,
+        allow_tools,
     };
     let mut received = 0usize;
     let mut text_bytes = 0usize;
@@ -389,6 +409,9 @@ pub async fn stream(request: Request, output: mpsc::Sender<String>) -> Result<Su
             kind: "invalid_stream",
             message: m,
         })? {
+            if allow_tools {
+                collector.consume(config.protocol, &event.data)?;
+            }
             if let Some(text) = parser.consume(event)? {
                 text_bytes += text.len();
                 if text_bytes > 24_000 {
@@ -403,9 +426,26 @@ pub async fn stream(request: Request, output: mpsc::Sender<String>) -> Result<Su
                     .map_err(|_| Failure::new("cancelled", "请求已停止。"))?;
             }
             if parser.complete {
+                let (calls, output_items) = collector.finish()?;
+                if !calls.is_empty()
+                    && match config.protocol {
+                        Protocol::ChatCompletions => {
+                            parser.finish_reason.as_deref() != Some("tool_calls")
+                        }
+                        Protocol::Anthropic => parser.finish_reason.as_deref() != Some("tool_use"),
+                        Protocol::Responses => parser.finish_reason.as_deref() != Some("stop"),
+                    }
+                {
+                    return Err(Failure::new(
+                        "incomplete_tool_call",
+                        "工具计划未完整生成，未执行工具。",
+                    ));
+                }
                 return Ok(Summary {
                     usage: parser.usage,
                     finish_reason: parser.finish_reason.unwrap_or_else(|| "stop".into()),
+                    calls,
+                    output_items,
                 });
             }
         }

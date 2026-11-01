@@ -11,6 +11,7 @@ const {
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { CoreSupervisor } = require("./core-client.cjs");
+const { coreBinary } = require("./core-path.cjs");
 const ROOT = path.resolve(__dirname, "..");
 async function bootstrap({ userData, show = true } = {}) {
   app.setName("TROOP");
@@ -39,7 +40,7 @@ async function bootstrap({ userData, show = true } = {}) {
     app.isPackaged
       ? path.join(process.resourcesPath, "bin")
       : path.join(ROOT, "bin"),
-    process.platform === "win32" ? "troop-core.exe" : "troop-core",
+    coreBinary,
   );
   const dataDir = path.join(app.getPath("userData"), "core");
   const core = new CoreSupervisor({
@@ -229,6 +230,24 @@ async function bootstrap({ userData, show = true } = {}) {
     return core.request("chat.messages", { conversation_id: id, before });
   });
   handle("send-message", (input) => core.request("chat.send", payload(input)));
+  for (const action of [
+    "list",
+    "get",
+    "content",
+    "events",
+    "event",
+    "invocation",
+    "start",
+    "cancel",
+    "approve",
+    "steer",
+    "reconcile",
+    "resume",
+  ]) {
+    handle("agent-" + action, (input = {}) =>
+      core.request("agent." + action, payload(input)),
+    );
+  }
   handle("cancel-turn", (id) => {
     if (!validId(id)) throw Error("生成标识无效。");
     return core.request("chat.cancel", { turn_id: id });

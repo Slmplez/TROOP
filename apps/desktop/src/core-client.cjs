@@ -1,7 +1,7 @@
 const { spawn } = require("node:child_process");
 const { EventEmitter } = require("node:events");
 const crypto = require("node:crypto");
-const PROTOCOL = 2;
+const PROTOCOL = 3;
 const ALLOWED = new Set([
   "system.ping",
   "workspace.list",
@@ -17,6 +17,18 @@ const ALLOWED = new Set([
   "chat.messages",
   "chat.send",
   "chat.cancel",
+  "agent.list",
+  "agent.get",
+  "agent.content",
+  "agent.events",
+  "agent.event",
+  "agent.invocation",
+  "agent.start",
+  "agent.cancel",
+  "agent.approve",
+  "agent.steer",
+  "agent.reconcile",
+  "agent.resume",
 ]);
 const MAX_FRAME = 65536;
 class CoreSupervisor extends EventEmitter {

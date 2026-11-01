@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { randomUUID } = require("node:crypto");
 const { CoreSupervisor } = require("../src/core-client.cjs");
+const { coreBinary } = require("../src/core-path.cjs");
 const { modelServer, sleep } = require("./fixtures/model-server.cjs");
 const temp = path.resolve(__dirname, "../../../.tmp-troop-chat/tests");
 fs.mkdirSync(temp, { recursive: true });
@@ -20,7 +21,7 @@ async function setup(t) {
   const directory = fs.mkdtempSync(path.join(temp, "case-"));
   const server = await modelServer();
   const core = new CoreSupervisor({
-    executable: path.resolve(__dirname, "../bin/troop-core.exe"),
+    executable: path.resolve(__dirname, "../bin", coreBinary),
     args: ["--data-dir", directory],
   });
   await core.start();

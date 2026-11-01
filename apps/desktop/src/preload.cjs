@@ -18,6 +18,19 @@ contextBridge.exposeInMainWorld(
     listMessages: (id, before = null) => call("troop:messages", id, before),
     sendMessage: (input) => call("troop:send-message", input),
     cancelTurn: (id) => call("troop:cancel-turn", id),
+    listRuns: (offset = 0) => call("troop:agent-list", { offset }),
+    getRun: (id) => call("troop:agent-get", { id }),
+    getRunContent: (id, field) => call("troop:agent-content", { id, field }),
+    listRunEvents: (id, before = null) =>
+      call("troop:agent-events", { id, before }),
+    getRunEvent: (id) => call("troop:agent-event", { id }),
+    getInvocation: (id) => call("troop:agent-invocation", { id }),
+    startRun: (input) => call("troop:agent-start", input),
+    cancelRun: (id) => call("troop:agent-cancel", { id }),
+    approveInvocation: (input) => call("troop:agent-approve", input),
+    steerRun: (input) => call("troop:agent-steer", input),
+    reconcileInvocation: (input) => call("troop:agent-reconcile", input),
+    resumeRun: (id) => call("troop:agent-resume", { id }),
     quit: () => call("troop:quit"),
     onStatus: (callback) => {
       if (typeof callback !== "function") throw Error("Callback required");

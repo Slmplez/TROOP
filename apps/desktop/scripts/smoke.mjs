@@ -10,6 +10,7 @@ const root = path.resolve(
 );
 const app = path.join(root, "apps/desktop");
 const require = createRequire(path.join(app, "package.json"));
+const { coreBinary } = require("./src/core-path.cjs");
 const electron = require("electron");
 const temp = path.join(root, ".tmp-troop-bootstrap");
 fs.mkdirSync(temp, { recursive: true });
@@ -58,7 +59,7 @@ report.checks.push("explicit application quit leaves no Core process");
 if (report.activeConversation) {
   const { CoreSupervisor } = require("./src/core-client.cjs");
   const reader = new CoreSupervisor({
-    executable: path.join(app, "bin", "troop-core.exe"),
+    executable: path.join(app, "bin", coreBinary),
     args: ["--data-dir", path.join(profile, "core")],
   });
   try {
@@ -98,11 +99,7 @@ const productionExit = new Promise((resolve, reject) => {
   production.once("error", reject);
   production.once("close", resolve);
 });
-const core = path.join(
-  app,
-  "bin",
-  process.platform === "win32" ? "troop-core.exe" : "troop-core",
-);
+const core = path.join(app, "bin", coreBinary);
 const coreData = path.join(productionProfile, "core");
 const probe = () =>
   spawnSync(core, ["--data-dir", coreData], {

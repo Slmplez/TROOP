@@ -1,6 +1,6 @@
 {
   "name": "troop-desktop",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "TROOP independent Rust and Electron desktop",
   "main": "src/entry.cjs",
@@ -11,7 +11,8 @@
     "test": "node --test test/*.test.cjs",
     "format": "prettier --write src renderer scripts test package.json",
     "format:check": "prettier --check src renderer scripts test package.json",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "smoke:agent": "node scripts/agent-smoke.mjs"
   },
   "dependencies": {
     "react": "19.2.1",

@@ -1,8 +1,8 @@
 # TROOP
 
-TROOP 0.2.0：Rust Core + Electron 桌面应用。当前提供模型服务配置、真实 HTTP 流式对话、停止与会话持久化，以及本机工作区管理、Core 恢复、托盘和单实例。
+TROOP 0.3.0：Rust Core + Electron 桌面应用。提供模型服务配置、流式对话，以及 Windows 本机 Agent 任务、工具审批、执行账本、停止与核对恢复；保留工作区管理、托盘和单实例。
 
-开发任务：[网关规格 #13](https://github.com/Slmplez/TROOP/issues/13)、[实现 #14](https://github.com/Slmplez/TROOP/issues/14)。基础版本记录见 #11/#12。Agent 工具、记忆、Skills、MCP 与自动化尚未接入。启动不需要 Docker 或产品账号；发送模型请求需要配置你使用的服务。
+开发任务：[本机 Agent 规格 #18](https://github.com/Slmplez/TROOP/issues/18)、[实现 #19](https://github.com/Slmplez/TROOP/issues/19)。网关与真实对话验收见 #13–#15，基础版本见 #11/#12。子代理、后台作业、记忆、Skills、Hooks、MCP 与自动化留待后续开发。启动不需要 Docker 或产品账号；发送模型请求需要配置你使用的服务。
 
 ## 本机启动
 
@@ -29,6 +29,22 @@ npm --prefix apps/desktop start
 
 ## 使用
 
+### 执行本机任务
+
+1. 在“工作区”登记项目文件夹，在“模型”配置服务。
+2. 到“任务”选择服务与工作区，输入目标并开始。模型可读取所选工作区；文件写入、PowerShell 命令和 Git 查询需要逐次批准具体操作。
+3. 工具记录展示冻结的参数、执行状态和结果。可拒绝某次操作，也可随时停止任务；停止保留已经发生的文件修改和其他效果。
+4. “执行账本”可查看历史模型步骤、审批和工具事件。补充指令在下一个安全边界采纳，已经开始的工具不会被普通消息强行中断。
+5. 异常退出或显式退出后的未完成任务等待核对，之后手动继续。优先核对 Worker 回执；回执仍无法确定效果时，核对实际效果和相关命令的停止状态并记录说明。已取消或失败的任务不通过“继续”重新激活。
+
+工具包括列目录、UTF-8 文件读取、文字搜索、带 SHA-256 前置条件的文件写入、Windows PowerShell 和 Git 状态查询。文件读写上限 8KB；已有文件先读取取得哈希，新文件使用 `missing`。目录和搜索结果有界并标注截断；拒绝越界路径、Windows 重解析点与直接访问 `.git`。Git 状态使用工作区外的 PATH 程序，禁用 fsmonitor 和子模块递归；因仓库过滤器仍可能执行程序，该查询也必须逐次审批。其他 Git 操作通过审批后的命令执行。
+
+命令以当前 Windows 用户权限运行，可访问工作区外的宿主资源，不是 OS 沙箱；不自动提权。单条命令限时 60 秒，stdout/stderr 各保留 3000 字节并标注截断；PowerShell 配置 UTF-8 输出。独立 Worker 管理进程树，退出或停止后不保留后台命令。所有本机工具共用一个执行队列，涵盖重叠目录和共享 Git 元数据的冲突域；外部编辑器不会遵守内部队列，文件工具仍需核对版本。
+
+每次任务最多 16 个模型步骤、32 次工具调用，每次响应最多 8 个工具；最多 16 个活动任务，与普通对话合计最多 4 个模型流。没有自动重试或提供方切换。具体接口与恢复规则见[本机 Agent 规格](docs/implementation/TROOP_AGENT_SPEC.md)。
+
+### 普通对话
+
 1. 在“模型”页填写服务名称、协议、基础地址、模型 ID 和可选 API 密钥。基础地址例如 `https://api.openai.com/v1`，不包含 `/responses` 等最终接口后缀；实际请求地址会显示在输入框下方。
 2. 支持 OpenAI 兼容 Chat Completions、Responses、Anthropic Messages。兼容服务和已运行的 Magpie 可按其接口配置；不自动安装、扫描或启动外部网关。
 3. 保存后到“对话”页选择服务并发送。Ctrl+Enter 发送，多行输入保留；生成期间可停止，也可切换到其他对话。
@@ -51,7 +67,7 @@ Chat Completions 默认使用 `max_completion_tokens`；服务需要旧版参数
 npm --prefix apps/desktop start -- --user-data-dir=E:\TroopData\Development
 ```
 
-同一数据目录只允许一个 Core 写入。本版本事务升级 SQLite schema 1→2，保留已有工作区。旧 0.1.0 Core 会拒绝新版数据库，请使用匹配的桌面/Core，不做降级打开。
+同一数据目录只允许一个 Core 写入。本版本按版本事务迁移 SQLite schema 1/2→3，保留已有工作区、模型服务与会话。旧 Core 会拒绝新版数据库，请使用匹配的桌面/Core，不做降级打开。
 
 ## 开发结构
 
@@ -68,7 +84,9 @@ npm --prefix apps/desktop start -- --user-data-dir=E:\TroopData\Development
 | `apps/desktop/renderer` | React 对话、模型、工作区和连接界面 |
 | `docs/implementation` | 本次范围、验收与来源记录 |
 
-内部协议为逐行 JSON-RPC，每帧最多 64 KiB，握手版本为 2。非握手调用必须匹配 Core generation，流通知带代际和递增序号；界面读取 Core 持久化快照。最多 64 个未决控制请求。Core 不开放网络监听，也不提供 Shell 或文件执行方法。
+内部协议为逐行 JSON-RPC，每帧最多 64 KiB，握手版本为 3。非握手调用必须匹配 Core generation，流通知带代际和递增序号；界面读取 Core 持久化快照。最多 64 个未决控制请求。Core 不开放网络监听；Agent 工具只能经固定任务接口派发，Renderer 没有通用 Shell、文件或 invoke 入口。
+
+SQLite schema 为 3，自动迁移 v1/v2 并保留工作区、服务配置和会话；更高版本数据库拒绝打开。升级前备份应用数据，升级后不要用旧 Core 写入同一数据目录。开发构建使用带版本号的 Core 文件；运行中的旧窗口保持旧版本，需从托盘明确退出后再启动新版。
 
 ## 检查
 
@@ -81,8 +99,9 @@ npm --prefix apps/desktop run build
 npm --prefix apps/desktop test
 npm --prefix apps/desktop run format:check
 npm --prefix apps/desktop run smoke
+npm --prefix apps/desktop run smoke:agent
 ```
 
 冒烟报告和截图保存在被忽略的 `.tmp-troop-bootstrap/`，`latest-smoke.json` 指向最近一次完整成功结果；HTTP 测试配置在 `.tmp-troop-chat/`。测试使用自有 loopback HTTP/SSE 服务和随机假密钥，不调用商业模型；固定 IPC、Rust、SQLite、Windows 凭据、Renderer、托盘和正式入口使用真实实现。原生目录选择器仍由自有夹具替换。
 
-2026-11-01 已使用用户在应用内保存的 Anthropic Messages 服务，通过真实流式回复、Core 与界面停止、Core 重启及 Renderer 重载历史验收，详见[验收记录](docs/implementation/TROOP_MODEL_GATEWAY_VALIDATION.md)。结论限于该服务与配置，其他真实提供方尚未实测。配置密钥只在应用内输入，不需要发送到开发聊天。当前没有签名安装包或干净机器验收。下一功能包是 Agent 执行账本与工具，再按已确认契约接入记忆、Skills、MCP。Windows 保持单屏基线，Docker 暂停。
+2026-11-01 已使用用户在应用内保存的 Anthropic Messages 服务，通过真实对话及 Agent 写入→读取→结果总结验收；工具回合保留并回传签名思考块。详见[Agent 验收](docs/implementation/TROOP_AGENT_VALIDATION.md)与[对话验收](docs/implementation/TROOP_MODEL_GATEWAY_VALIDATION.md)。结论限于此次服务配置，其他真实提供方尚未实测。密钥只在应用内输入，不需要发送到开发聊天。没有签名安装包或干净机器验收。下一功能包是子代理与后台作业，再按契约接入记忆、Skills、MCP。Windows 保持单屏基线，Docker 与 UI 优化继续暂停。

@@ -4,6 +4,7 @@ import "./style.css";
 import { call } from "./api";
 import ChatPanel from "./ChatPanel";
 import ModelSettings from "./ModelSettings";
+import AgentPanel from "./AgentPanel";
 
 const labels = {
   starting: "正在连接",
@@ -110,6 +111,13 @@ function App() {
         <div className="scope">本机工作空间</div>
         <nav aria-label="主导航">
           <button
+            className={page === "agent" ? "selected" : ""}
+            onClick={() => setPage("agent")}
+            aria-current={page === "agent" ? "page" : undefined}
+          >
+            任务
+          </button>
+          <button
             className={page === "chat" ? "selected" : ""}
             onClick={() => setPage("chat")}
             aria-current={page === "chat" ? "page" : undefined}
@@ -157,7 +165,7 @@ function App() {
       </aside>
       <div className="topbar">
         <span>
-          TROOP <span className="version">0.2</span>
+          TROOP <span className="version">0.3</span>
         </span>
         <span>Windows · 本机</span>
       </div>
@@ -207,6 +215,15 @@ function App() {
             workspaces={rows}
             onOpenModels={() => setPage("models")}
             visible={page === "chat"}
+          />
+        </div>
+        <div hidden={page !== "agent"}>
+          <AgentPanel
+            ready={ready}
+            generation={status.generation}
+            providers={providers}
+            workspaces={rows}
+            visible={page === "agent"}
           />
         </div>
         {page === "models" && (
