@@ -1,0 +1,274 @@
+const { spawn } = require("node:child_process");
+const { EventEmitter } = require("node:events");
+const crypto = require("node:crypto");
+const ALLOWED = new Set([
+  "system.ping",
+  "workspace.list",
+  "workspace.add",
+  "workspace.rename",
+  "workspace.remove",
+]);
+const MAX_FRAME = 65536;
+class CoreSupervisor extends EventEmitter {
+  constructor({ executable, args = [], timeout = 5000 }) {
+    super();
+    this.executable = executable;
+    this.args = args;
+    this.timeout = timeout;
+    this.child = null;
+    this.pending = new Map();
+    this.generation = null;
+    this.state = "stopped";
+    this.info = null;
+    this.lastError = null;
+    this.restartTimes = [];
+    this.prefix = crypto.randomUUID();
+    this.nextId = 0;
+    this.starting = null;
+    this.stopping = null;
+  }
+  snapshot() {
+    return {
+      state: this.state,
+      generation: this.generation,
+      pid: this.child?.pid ?? null,
+      version: this.info?.core_version ?? null,
+      protocol: this.info?.protocol ?? null,
+      error: this.lastError,
+    };
+  }
+  _status(state, error = null) {
+    this.state = state;
+    this.lastError = error;
+    this.emit("status", this.snapshot());
+  }
+  async start() {
+    if (this.starting) return this.starting;
+    if (this.state === "ready") return this.snapshot();
+    if (this.child || this.stopping) throw Error("Core 正在停止，请稍后重试。");
+    const now = Date.now();
+    this.restartTimes = this.restartTimes.filter((t) => now - t < 60000);
+    if (this.restartTimes.length >= 3)
+      throw Error("Core 已多次启动失败。请检查运行环境后重新打开应用。");
+    this.restartTimes.push(now);
+    this.shutdownRequested = false;
+    this._status("starting");
+    this.starting = this._start().finally(() => {
+      this.starting = null;
+    });
+    return this.starting;
+  }
+  async _start() {
+    const child = spawn(this.executable, this.args, {
+      stdio: ["pipe", "pipe", "pipe"],
+      windowsHide: true,
+    });
+    this.child = child;
+    this.generation = null;
+    this.info = null;
+    let buffer = Buffer.alloc(0);
+    let stderr = "";
+    child.stdin.on("error", () => {});
+    child.stderr.on("data", (chunk) => {
+      stderr = (stderr + chunk.toString("utf8")).slice(-4096);
+    });
+    child.on("error", (error) =>
+      this._fault(child, `无法启动 Core：${error.message}`),
+    );
+    child.stdout.on("data", (chunk) => {
+      if (this.child !== child) return;
+      buffer = Buffer.concat([buffer, chunk]);
+      let index;
+      while ((index = buffer.indexOf(10)) !== -1) {
+        const line = buffer.subarray(0, index);
+        buffer = buffer.subarray(index + 1);
+        if (line.length > MAX_FRAME) {
+          this._fault(child, "Core 返回了过大的消息。");
+          return;
+        }
+        let response;
+        try {
+          response = JSON.parse(line.toString("utf8"));
+        } catch {
+          this._fault(child, "Core 返回了无效消息。");
+          return;
+        }
+        const p = this.pending.get(response.id);
+        if (!p || p.child !== child) continue;
+        if (response.jsonrpc !== "2.0") {
+          this._fault(child, "Core 协议无效。");
+          return;
+        }
+        if (response.error) {
+          if (
+            p.method !== "system.hello" &&
+            response.error.data?.generation !== p.generation
+          ) {
+            this._fault(child, "Core 错误消息的连接版本不匹配。");
+            return;
+          }
+          this.pending.delete(response.id);
+          clearTimeout(p.timer);
+          const error = Error(response.error.message || "Core 请求失败");
+          error.code = response.error.code;
+          error.kind = response.error.data?.kind;
+          p.reject(error);
+          continue;
+        }
+        const result = response.result;
+        if (
+          !result ||
+          typeof result.generation !== "string" ||
+          !result.generation ||
+          (p.method !== "system.hello" && result.generation !== p.generation)
+        ) {
+          this._fault(child, "Core 连接版本已变化，请重新连接。");
+          return;
+        }
+        this.pending.delete(response.id);
+        clearTimeout(p.timer);
+        p.resolve(result);
+      }
+      if (buffer.length > MAX_FRAME)
+        this._fault(child, "Core 消息超过大小限制。");
+    });
+    child.on("close", (code, signal) => {
+      if (this.child !== child) return;
+      this.child = null;
+      this.generation = null;
+      this.info = null;
+      this._rejectAll(child, Error("Core 已退出；未完成操作不会自动重试。"));
+      if (this.state === "stopping") this._status("stopped");
+      else if (this.state !== "faulted")
+        this._status(
+          "faulted",
+          stderr.trim() || `Core 意外退出（${signal ?? code}）。`,
+        );
+    });
+    try {
+      const hello = await this._send(
+        "system.hello",
+        { protocol: 1, client: "troop-desktop" },
+        child,
+      );
+      if (
+        this.child !== child ||
+        this.state === "faulted" ||
+        this.shutdownRequested
+      )
+        throw Error("Core 启动已失效。");
+      if (
+        hello.value?.protocol !== 1 ||
+        !Array.isArray(hello.value.capabilities) ||
+        ![...ALLOWED].every((x) => hello.value.capabilities.includes(x))
+      )
+        throw Error("Core 与桌面版本不兼容。");
+      this.generation = hello.generation;
+      this.info = hello.value;
+      this._status("ready");
+      return this.snapshot();
+    } catch (error) {
+      this._fault(child, error.message);
+      throw error;
+    }
+  }
+  _rejectAll(child, error) {
+    for (const [id, p] of this.pending) {
+      if (p.child === child) {
+        clearTimeout(p.timer);
+        this.pending.delete(id);
+        p.reject(error);
+      }
+    }
+  }
+  _fault(child, message) {
+    if (this.child !== child) return;
+    if (this.state !== "stopping") this._status("faulted", message);
+    this._rejectAll(child, Error(message));
+    child.kill();
+  }
+  _send(method, params, child = this.child) {
+    if (!child || child.stdin.destroyed)
+      return Promise.reject(Error("Core 未连接。"));
+    if (this.pending.size >= 64)
+      return Promise.reject(Error("请求过多，请稍后重试。"));
+    const id = `${this.prefix}:${++this.nextId}`;
+    const frame =
+      JSON.stringify({
+        jsonrpc: "2.0",
+        id,
+        method,
+        params,
+        ...(method === "system.hello" ? {} : { generation: this.generation }),
+      }) + "\n";
+    if (Buffer.byteLength(frame) > MAX_FRAME)
+      return Promise.reject(Error("请求内容过大。"));
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(
+        () =>
+          this._fault(child, "Core 请求超时；操作结果需要核对，不会自动重试。"),
+        this.timeout,
+      );
+      this.pending.set(id, {
+        resolve,
+        reject,
+        timer,
+        child,
+        method,
+        generation: this.generation,
+      });
+      child.stdin.write(frame, (error) => {
+        if (error) this._fault(child, "Core 控制连接已中断。");
+      });
+    });
+  }
+  async request(method, params = {}) {
+    if (!ALLOWED.has(method)) throw Error("该接口不可调用。");
+    if (this.state !== "ready") throw Error("Core 尚未就绪。");
+    const result = await this._send(method, params);
+    return result.value;
+  }
+  async stop() {
+    if (this.stopping) return this.stopping;
+    this.stopping = this._stop().finally(() => {
+      this.stopping = null;
+    });
+    return this.stopping;
+  }
+  async _stop() {
+    const child = this.child;
+    if (!child) {
+      this._status("stopped");
+      return;
+    }
+    this.shutdownRequested = true;
+    this._status("stopping");
+    const exited = new Promise((resolve) => {
+      if (child.exitCode !== null || child.signalCode !== null) resolve();
+      else child.once("close", resolve);
+    });
+    try {
+      await this._send("system.shutdown", {}, child);
+    } catch {}
+    child.stdin.end();
+    let timer;
+    await Promise.race([
+      exited,
+      new Promise((resolve) => {
+        timer = setTimeout(() => {
+          child.kill();
+          resolve();
+        }, 2000);
+      }),
+    ]);
+    clearTimeout(timer);
+    if (this.child === child) {
+      await Promise.race([
+        exited,
+        new Promise((resolve) => setTimeout(resolve, 1000)),
+      ]);
+    }
+    if (this.child === child) throw Error("无法确认 Core 已退出。");
+  }
+}
+module.exports = { CoreSupervisor, MAX_FRAME, ALLOWED };

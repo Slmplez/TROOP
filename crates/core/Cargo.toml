@@ -1,0 +1,11 @@
+[package]
+name = "troop-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+[dependencies]
+troop-protocol = { path = "../protocol" }
+troop-storage = { path = "../storage" }
+serde.workspace = true
+serde_json.workspace = true

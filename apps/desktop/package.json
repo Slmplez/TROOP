@@ -1,0 +1,28 @@
+{
+  "name": "troop-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TROOP independent Rust and Electron desktop",
+  "main": "src/entry.cjs",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "node scripts/start.mjs",
+    "prepare:electron": "node node_modules/electron/install.js",
+    "test": "node --test test/*.test.cjs",
+    "format": "prettier --write src renderer scripts test package.json",
+    "format:check": "prettier --check src renderer scripts test package.json",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "react": "19.2.1",
+    "react-dom": "19.2.1"
+  },
+  "devDependencies": {
+    "electron": "42.1.0",
+    "esbuild": "0.28.2",
+    "prettier": "3.6.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
