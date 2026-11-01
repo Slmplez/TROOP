@@ -1,0 +1,495 @@
+{
+  "schemaVersion": 1,
+  "node": "v26.5.0",
+  "sourceSha256": {
+    "source/packages/agent-kv/agent-store.ts": "501255d1774a691727a8bfb64d09dd5683a4d54cb33c06bc86c969d909cbfbc4",
+    "source/packages/agent-kv/serde.ts": "baa0f6a245ec6418028fc8a63ffc228d1b1cb6a081d96233c65480d5df1d936d",
+    "source/packages/agent-kv/subagent-states.ts": "8f434a01c07807803293c54bba935950071d59fb91492b13d951335955ec04a5",
+    "source/packages/agent-kv/blob-store.ts": "5c04c1335a49c8ce89d3d4b8351924e1acb4196cedc29436c0c9a40fb2bc37fc",
+    "source/packages/proto/generated/agent/v1/agent_pb.ts": "c40de2e7fbeeac4329585a46f5471304162593a3e7d93b79212fbd25f899dd17",
+    "source/packages/proto/generated/agent/v1/selected_context_pb.ts": "61eccdd65700265764fc40ef0d5cdd3587d9ca57458fd5bd22ede48066873f54",
+    "source/packages/proto/generated/agent/v1/read_tool_pb.ts": "a90838dbaed0eb7b23fa046f5ac2f7beee767d2ae3a6eec0f4e6d6d5190ea83f"
+  },
+  "scope": "source-codec-memory-only; no legacy engine execution, encryption, SQLite or UI import tested",
+  "artifact": {
+    "asarSha256": "8e19fdc0337317e7e17012a05dd6a5b307a66f8c4012ae23615427e46ff53b39",
+    "packagedBuildSha256": "ae49a1bacc6e00ae2fa699cab322b0548cead415febe86f75c774f06bd402646",
+    "localBuildSha256": "ae49a1bacc6e00ae2fa699cab322b0548cead415febe86f75c774f06bd402646",
+    "composition": [
+      {
+        "runtime": "electron-main",
+        "mode": "clean-source",
+        "source": "source/electron-main/main.ts",
+        "path": "dist/electron-main/main.cjs"
+      },
+      {
+        "runtime": "electron-dev-controls",
+        "mode": "clean-source",
+        "source": "source/electron-dev-controls/main.ts",
+        "path": "dist/electron-dev-controls/main.cjs"
+      },
+      {
+        "runtime": "primary-preload",
+        "mode": "clean-source",
+        "source": "source/electron-preload/preload.ts",
+        "path": "dist/electron-preload/preload.cjs"
+      },
+      {
+        "runtime": "dev-controls-preload",
+        "mode": "clean-source",
+        "source": "source/electron-preload/preload-dev-controls.ts",
+        "path": "dist/electron-preload/preload-dev-controls.cjs"
+      },
+      {
+        "runtime": "webview-preload",
+        "mode": "clean-source",
+        "source": "source/electron-preload/preload-webview.ts",
+        "path": "dist/electron-preload/preload-webview.cjs"
+      },
+      {
+        "runtime": "vnc-preload",
+        "mode": "clean-source",
+        "source": "source/electron-preload/preload-vnc.ts",
+        "path": "dist/electron-preload/preload-vnc.cjs"
+      },
+      {
+        "runtime": "node-agent-coordinator",
+        "mode": "clean-source",
+        "source": "source/node-agent-coordinator/main.ts",
+        "path": "dist/node-agent-coordinator/main.cjs"
+      },
+      {
+        "runtime": "host",
+        "mode": "clean-source",
+        "source": "source/host/main.ts",
+        "path": "dist/host/host-main.cjs"
+      },
+      {
+        "runtime": "host-agent-store-worker",
+        "mode": "clean-source",
+        "source": "source/host/agent-isolation/agent-store-worker.ts",
+        "path": "dist/host/agent-isolation/agent-store-worker.cjs"
+      },
+      {
+        "runtime": "host-transcript-mirror-worker",
+        "mode": "clean-source",
+        "source": "source/host/agent-isolation/transcript-mirror-worker.ts",
+        "path": "dist/host/agent-isolation/transcript-mirror-worker.cjs"
+      },
+      {
+        "runtime": "host-box-store-vacuum-worker",
+        "mode": "clean-source",
+        "source": "source/host/extensions/box-store-sync/box-store-vacuum-worker.ts",
+        "path": "dist/host/extensions/box-store-sync/box-store-vacuum-worker.cjs"
+      },
+      {
+        "runtime": "host-search-index-worker",
+        "mode": "clean-source",
+        "source": "source/host/extensions/content-search/search-index-worker.ts",
+        "path": "dist/host/extensions/content-search/search-index-worker.cjs"
+      },
+      {
+        "runtime": "box-exec-daemon",
+        "mode": "clean-source",
+        "source": "source/box-exec-daemon/main.ts",
+        "path": "dist/box-exec-daemon/main.cjs"
+      },
+      {
+        "runtime": "local-exec-daemon",
+        "mode": "clean-source",
+        "source": "source/local-exec-daemon/main.ts",
+        "path": "dist/local-exec-daemon/main.cjs"
+      },
+      {
+        "runtime": "renderer",
+        "mode": "clean-source",
+        "source": "frontend/src/main.tsx",
+        "path": "dist/renderer"
+      },
+      {
+        "runtime": "electron-runtime-dependencies",
+        "mode": "artifact-runtime",
+        "path": "dist/deps"
+      },
+      {
+        "runtime": "electron-runtime-resolution-closure",
+        "mode": "generated-runtime",
+        "path": "dist/deps/node_modules"
+      },
+      {
+        "runtime": "node-runtime-dependencies",
+        "mode": "generated-runtime",
+        "path": "dist/node-deps"
+      },
+      {
+        "runtime": "native-runtime-tools",
+        "mode": "artifact-runtime",
+        "path": "dist/native"
+      },
+      {
+        "runtime": "electron-shell",
+        "mode": "artifact-runtime",
+        "path": "Grok Bot.exe"
+      }
+    ],
+    "nativeModules": [
+      "@anysphere/tree-chunk-napi/tree-chunk-napi.win32-x64-msvc.node",
+      "better-sqlite3/build/Release/better_sqlite3.node",
+      "cursor-proclist/build/Release/cursor_proclist.node",
+      "tree-sitter-bash/prebuilds/win32-x64/tree-sitter-bash.node",
+      "tree-sitter/build/Release/tree_sitter_runtime_binding.node",
+      "whichlang-node-win32-x64-msvc/whichlang-node.win32-x64-msvc.node"
+    ],
+    "auditSummary": {
+      "cleanAccepted": [
+        "electron-main",
+        "electron-dev-controls",
+        "primary-preload",
+        "dev-controls-preload",
+        "webview-preload",
+        "vnc-preload",
+        "node-agent-coordinator",
+        "host",
+        "host-agent-store-worker",
+        "host-transcript-mirror-worker",
+        "host-box-store-vacuum-worker",
+        "host-search-index-worker",
+        "box-exec-daemon",
+        "local-exec-daemon",
+        "renderer"
+      ],
+      "cleanNotEvaluated": [],
+      "blockedFallbacks": []
+    }
+  },
+  "results": [
+    {
+      "kind": "plain-chat",
+      "observations": {
+        "normalRestore": true,
+        "restoredTurns": 1,
+        "projectedRequestId": null,
+        "requestIdThroughDedicatedGetter": "synthetic-request",
+        "stepsAfterMissingStep": 0,
+        "turnsAfterMissingUser": 0
+      },
+      "trace": [
+        {
+          "operation": "set",
+          "id": "0b897a09c3d319d6123ab2f07ba0daaebb25d4cbd4137fbe254c21a63f9ad877",
+          "bytes": 42
+        },
+        {
+          "operation": "set",
+          "id": "49ed3ea876925c6c8af518682ae0d661cb1048ede64df5636ea7117c196576d4",
+          "bytes": 19
+        },
+        {
+          "operation": "set",
+          "id": "4a53d59e1a721679be5b5e6fb4061556bdb1005b548dcbfb03b284d378f11402",
+          "bytes": 89
+        },
+        {
+          "operation": "set",
+          "id": "d9be7029fbe169cdb00e1b58894126a606cc457f7dd683d14a86233ae08bd0c2",
+          "bytes": 34
+        },
+        {
+          "operation": "get",
+          "id": "d9be7029fbe169cdb00e1b58894126a606cc457f7dd683d14a86233ae08bd0c2",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "4a53d59e1a721679be5b5e6fb4061556bdb1005b548dcbfb03b284d378f11402",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "0b897a09c3d319d6123ab2f07ba0daaebb25d4cbd4137fbe254c21a63f9ad877",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "49ed3ea876925c6c8af518682ae0d661cb1048ede64df5636ea7117c196576d4",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "4a53d59e1a721679be5b5e6fb4061556bdb1005b548dcbfb03b284d378f11402",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "4a53d59e1a721679be5b5e6fb4061556bdb1005b548dcbfb03b284d378f11402",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "0b897a09c3d319d6123ab2f07ba0daaebb25d4cbd4137fbe254c21a63f9ad877",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "49ed3ea876925c6c8af518682ae0d661cb1048ede64df5636ea7117c196576d4",
+          "found": false
+        },
+        {
+          "operation": "get",
+          "id": "4a53d59e1a721679be5b5e6fb4061556bdb1005b548dcbfb03b284d378f11402",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "0b897a09c3d319d6123ab2f07ba0daaebb25d4cbd4137fbe254c21a63f9ad877",
+          "found": false
+        }
+      ]
+    },
+    {
+      "kind": "tool-attachment-summary",
+      "observations": {
+        "normalRestore": true,
+        "restoredTurns": 1,
+        "projectedRequestId": null,
+        "requestIdThroughDedicatedGetter": "synthetic-request",
+        "attachmentReferenceRetainedWithoutPayload": true,
+        "stepsAfterMissingStep": 0,
+        "turnsAfterMissingUser": 0
+      },
+      "trace": [
+        {
+          "operation": "set",
+          "id": "87904ae79ce5d9eb41cf3b96ffe7a1fcf9360e2a78f8575bdb5e1c58adadf6bb",
+          "bytes": 106
+        },
+        {
+          "operation": "set",
+          "id": "12c6f36d5eb67881ae02255eb87c7e0cb63c324544a8088c904bce08d307cc9d",
+          "bytes": 151
+        },
+        {
+          "operation": "set",
+          "id": "f05b84b518673275bbd85925dace32be587f6e53105eaf1ab8ddbe1b93c39e9f",
+          "bytes": 72
+        },
+        {
+          "operation": "set",
+          "id": "75fd5ccdeb17bf60a086ab2403a0ddd991041f9ef095b50d0a0117686aba3a1b",
+          "bytes": 89
+        },
+        {
+          "operation": "set",
+          "id": "1948a13f7af40f99a1d97b0b76c23282540bb637c70793cc7e1b5fc5c7aa5a17",
+          "bytes": 19
+        },
+        {
+          "operation": "set",
+          "id": "8e12526bc77b8c7f15229690bf6bca10a421356398263500ad9eea1ea9fbfcdb",
+          "bytes": 68
+        },
+        {
+          "operation": "get",
+          "id": "8e12526bc77b8c7f15229690bf6bca10a421356398263500ad9eea1ea9fbfcdb",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "75fd5ccdeb17bf60a086ab2403a0ddd991041f9ef095b50d0a0117686aba3a1b",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "12c6f36d5eb67881ae02255eb87c7e0cb63c324544a8088c904bce08d307cc9d",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "f05b84b518673275bbd85925dace32be587f6e53105eaf1ab8ddbe1b93c39e9f",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "1948a13f7af40f99a1d97b0b76c23282540bb637c70793cc7e1b5fc5c7aa5a17",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "75fd5ccdeb17bf60a086ab2403a0ddd991041f9ef095b50d0a0117686aba3a1b",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "75fd5ccdeb17bf60a086ab2403a0ddd991041f9ef095b50d0a0117686aba3a1b",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "12c6f36d5eb67881ae02255eb87c7e0cb63c324544a8088c904bce08d307cc9d",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "f05b84b518673275bbd85925dace32be587f6e53105eaf1ab8ddbe1b93c39e9f",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "1948a13f7af40f99a1d97b0b76c23282540bb637c70793cc7e1b5fc5c7aa5a17",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "75fd5ccdeb17bf60a086ab2403a0ddd991041f9ef095b50d0a0117686aba3a1b",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "12c6f36d5eb67881ae02255eb87c7e0cb63c324544a8088c904bce08d307cc9d",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "f05b84b518673275bbd85925dace32be587f6e53105eaf1ab8ddbe1b93c39e9f",
+          "found": false
+        },
+        {
+          "operation": "get",
+          "id": "1948a13f7af40f99a1d97b0b76c23282540bb637c70793cc7e1b5fc5c7aa5a17",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "75fd5ccdeb17bf60a086ab2403a0ddd991041f9ef095b50d0a0117686aba3a1b",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "12c6f36d5eb67881ae02255eb87c7e0cb63c324544a8088c904bce08d307cc9d",
+          "found": false
+        },
+        {
+          "operation": "get",
+          "id": "1948a13f7af40f99a1d97b0b76c23282540bb637c70793cc7e1b5fc5c7aa5a17",
+          "found": true
+        }
+      ]
+    },
+    {
+      "kind": "subagent-incomplete",
+      "observations": {
+        "normalRestore": true,
+        "restoredTurns": 1,
+        "projectedRequestId": null,
+        "requestIdThroughDedicatedGetter": "synthetic-request",
+        "pendingCallsRetainedInCheckpoint": true,
+        "subagentsRestored": 1,
+        "missingChildRef": "BlobNotFoundError",
+        "stepsAfterMissingStep": 0,
+        "turnsAfterMissingUser": 0
+      },
+      "trace": [
+        {
+          "operation": "set",
+          "id": "ddc58553d302e6a09840fa719f87dea7b7068a5c777c7842adc4cb2d3a951fa9",
+          "bytes": 60
+        },
+        {
+          "operation": "set",
+          "id": "49ed3ea876925c6c8af518682ae0d661cb1048ede64df5636ea7117c196576d4",
+          "bytes": 19
+        },
+        {
+          "operation": "set",
+          "id": "5d1b42cc9d87864ae73a12b54ca608e332f305a536722a22187cdc9366a9a3d2",
+          "bytes": 89
+        },
+        {
+          "operation": "set",
+          "id": "362c9c6c2db0b96987c2db517df34cbbae3910f1978d0d6f4c45c96b9fa271ed",
+          "bytes": 40
+        },
+        {
+          "operation": "set",
+          "id": "8902fa0bb83f69b921c8d74d0333df936f23f4581e5c184513fefe32884ae3e7",
+          "bytes": 115
+        },
+        {
+          "operation": "get",
+          "id": "8902fa0bb83f69b921c8d74d0333df936f23f4581e5c184513fefe32884ae3e7",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "5d1b42cc9d87864ae73a12b54ca608e332f305a536722a22187cdc9366a9a3d2",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "ddc58553d302e6a09840fa719f87dea7b7068a5c777c7842adc4cb2d3a951fa9",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "49ed3ea876925c6c8af518682ae0d661cb1048ede64df5636ea7117c196576d4",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "362c9c6c2db0b96987c2db517df34cbbae3910f1978d0d6f4c45c96b9fa271ed",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "5d1b42cc9d87864ae73a12b54ca608e332f305a536722a22187cdc9366a9a3d2",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "ddc58553d302e6a09840fa719f87dea7b7068a5c777c7842adc4cb2d3a951fa9",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "49ed3ea876925c6c8af518682ae0d661cb1048ede64df5636ea7117c196576d4",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "5d1b42cc9d87864ae73a12b54ca608e332f305a536722a22187cdc9366a9a3d2",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "362c9c6c2db0b96987c2db517df34cbbae3910f1978d0d6f4c45c96b9fa271ed",
+          "found": false
+        },
+        {
+          "operation": "get",
+          "id": "5d1b42cc9d87864ae73a12b54ca608e332f305a536722a22187cdc9366a9a3d2",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "ddc58553d302e6a09840fa719f87dea7b7068a5c777c7842adc4cb2d3a951fa9",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "49ed3ea876925c6c8af518682ae0d661cb1048ede64df5636ea7117c196576d4",
+          "found": false
+        },
+        {
+          "operation": "get",
+          "id": "5d1b42cc9d87864ae73a12b54ca608e332f305a536722a22187cdc9366a9a3d2",
+          "found": true
+        },
+        {
+          "operation": "get",
+          "id": "ddc58553d302e6a09840fa719f87dea7b7068a5c777c7842adc4cb2d3a951fa9",
+          "found": false
+        }
+      ]
+    }
+  ]
+}
