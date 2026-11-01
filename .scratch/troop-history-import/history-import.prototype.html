@@ -16,7 +16,7 @@
 <details class="card"><summary>查看证据范围与拟议的数据规则</summary>
 <p>基础样本来自 2026-11-01 的实际源码存储实验：普通对话 4 个 blob、工具/附件/摘要 6 个、子代理/未完成态 5 个。此页面嵌入其规范化内容，按钮只模拟导入决策。</p>
 <p>另外已进行人工 SQLite / 元数据 JSON / 固定根槽读取，以及独立执行原 artifact 中加密类的人工向量实验：正确密钥可恢复，错误密钥和篡改被拒绝。本次人工未知字段在二进制往返中保留、经 JSON 投影后丢失。因此必须留存原字节。</p>
-<ul><li>完整性：完整 / 部分 / 无法恢复；执行状态：一律“仅历史，不续跑”。仅有文本时显示“部分 · 仅文本可读”。</li><li>同来源、同旧 ID、同版本：跳过。相同 ID 内容变化：保留两个版本，用户选择，不覆盖。来源不同且缺少明确关联时，不能按文本相同自动合并。</li><li>根记录要区分内容哈希与固定槽；未知来源不能仅凭解析失败就推断为加密。</li><li>缺失的记录、未识别字段与原始密文保留在隔离资料中；密钥不进入中间导出或报告。</li><li>生产实现还须验证真实历史、SQLite/WAL 一致快照、完整引用闭包、跨源 ID 关系和事务恢复；本演示没有证明这些能力。</li></ul>
+<ul><li>完整性：完整 / 部分 / 无法恢复；执行状态：一律“仅历史，不续跑”。仅有文本时显示“部分 · 仅文本可读”。</li><li>同来源、同旧 ID、同版本：跳过。相同 ID 内容变化：在同一会话下保留版本，当前版本不变，用户查看后选择。来源不同且缺少明确关联时，不能按文本相同自动合并。</li><li>根记录要区分内容哈希与固定槽；未知来源不能仅凭解析失败就推断为加密。</li><li>缺失的记录、未识别字段与原始密文保留在隔离资料中；密钥不进入中间导出或报告。</li><li>生产实现还须验证真实历史、SQLite/WAL 一致快照、完整引用闭包、跨源 ID 关系和事务恢复；本演示没有证明这些能力。</li></ul>
 <p class="small">页面中的 A/B 是演示版本标签；正式版本指纹应由明确的规范化清单与内容校验产生。原型的“故障回滚”是内存状态模型，不是数据库崩溃实验。</p>
 </details>
 </main>
@@ -25,7 +25,7 @@ const fixtureRecords = [{"schemaVersion":"troop-history-prototype/0","source":{"
 // Pure decision model. This block has no DOM, file, clock or network access.
 const ImportModel = (() => {
   const names=['普通对话','工具、附件与摘要','子代理与未完成态'];
-  const initial=()=>({sample:0,flags:{},phase:'未扫描',report:null,accepted:false,ledger:[],drafts:[],log:['已载入人工样本。'],note:'先扫描，查看能恢复什么。'});
+  const initial=()=>({sample:0,flags:{},phase:'未扫描',report:null,accepted:false,ledger:[],activeVersions:{},selectedId:null,drafts:[],log:['已载入人工样本。'],note:'先扫描，查看能恢复什么。'});
   const describe=s=>names[s.sample];
   function scan(s){
     const f=s.flags, record=fixtureRecords[s.sample];
@@ -72,13 +72,18 @@ const ImportModel = (() => {
       if(s.phase!=='待提交')message='没有准备好的批次，请先扫描并准备导入。';
       else if(action.fail){s.phase='已预览';message='模拟提交故障：本批次未写入，已有导入记录保持不变。';}
       else if(s.report.duplicate){s.phase='已提交';message='同来源同版本已导入：跳过，新增 0 条。';}
-      else{s.ledger.push({...s.report,name:describe(s),targetId:'history-'+(s.ledger.length+1)});s.phase='已提交';message=s.report.conflict?'已保留第二版本，旧版本仍在；没有自动合并。':'已导入 1 条历史记录；没有执行旧工具。';}
+      else{const item={...s.report,name:describe(s),targetId:'history-'+(s.ledger.length+1)};s.ledger.push(item);s.activeVersions[item.identity]??=item.targetId;s.selectedId=s.activeVersions[item.identity];s.phase='已提交';message=s.report.conflict?'新版本已加入同一会话，当前版本保持不变；可查看并手动选择，不自动合并。':'已导入 1 条历史记录；没有执行旧工具。';}
     }
     if(action.type==='cancel'){invalidate();message='已取消当前批次，目标区保留此前提交的记录。';}
+    if(action.type==='selectVersion'){
+      const item=s.ledger.find(x=>x.targetId===action.id);
+      if(!item)message='该历史版本不存在。';
+      else{s.activeVersions[item.identity]=item.targetId;s.selectedId=item.targetId;message='已选中 '+item.targetId+'；其他版本与原件仍保留。';}
+    }
     if(action.type==='draft'){
-      const item=s.ledger.at(-1);
-      if(!item||!item.readable)message='请先导入可读历史，再基于选定版本创建新任务草稿。';
-      else{s.drafts.push({id:'draft-'+(s.drafts.length+1),from:item.targetId});message='已从最后导入版本创建全新草稿；未继承 pending 调用、授权或运行状态，也未执行。';}
+      const item=s.ledger.find(x=>x.targetId===s.selectedId);
+      if(!item||!item.readable)message='请先选择一个可读历史版本。';
+      else{s.drafts.push({id:'draft-'+(s.drafts.length+1),from:item.targetId});message='已从所选版本 '+item.targetId+' 创建全新草稿；未继承 pending 调用、授权或运行状态，也未执行。';}
     }
     s.note=message;s.log.push(message);return s;
   }
@@ -96,15 +101,15 @@ const actions=[
  ['快照不一致',{type:'flag',flag:'unsafeSnapshot',label:'快照不一致'}],['来源乙',{type:'flag',flag:'otherSource',label:'来源乙'}],
  ['内容版本 B',{type:'flag',flag:'revised',label:'内容版本 B'}],['扫描预览',{type:'scan'}],['确认部分恢复',{type:'accept'}],
  ['准备导入',{type:'stage'}],['提交本批次',{type:'commit'}],['模拟提交故障',{type:'commit',fail:true}],
- ['取消批次',{type:'cancel'}],['从最后导入版本新建任务草稿',{type:'draft'}],['清空演示',{type:'reset'}],
+ ['取消批次',{type:'cancel'}],['从所选历史版本新建任务草稿',{type:'draft'}],['清空演示',{type:'reset'}],
 ];
 const act=label=>actions.find(a=>a[0]===label)[1];
 const scenarios=[
- {name:'完整历史',text:'普通消息完整可读。导入后建立的是历史记录，新任务仍需从草稿开始。',steps:['普通对话','扫描预览','准备导入','提交本批次','从最后导入版本新建任务草稿']},
+ {name:'完整历史',text:'普通消息完整可读。导入后建立的是历史记录，新任务仍需从草稿开始。',steps:['普通对话','扫描预览','准备导入','提交本批次','从所选历史版本新建任务草稿']},
  {name:'缺失附件',text:'消息与工具结果还在，图片内容不在。先看缺失清单，再决定接受部分恢复。',steps:['工具/附件/摘要','缺失附件','扫描预览','准备导入','确认部分恢复','准备导入','提交本批次']},
  {name:'没有原密钥',text:'解密不了时不能生成一个新密钥后声称恢复成功。原件留存，当前批次禁止导入。',steps:['工具/附件/摘要','密钥不可用','扫描预览','准备导入']},
- {name:'子代理未完成',text:'保留父子引用与未完成状态。新建的是全新任务，不重放之前的工具调用。',steps:['子代理/未完成态','扫描预览','准备导入','提交本批次','从最后导入版本新建任务草稿']},
- {name:'重复与新版本',text:'同一份资料再次导入不增加记录；同旧 ID 有新内容时保留两个版本。',steps:['普通对话','扫描预览','准备导入','提交本批次','扫描预览','准备导入','提交本批次','内容版本 B','扫描预览','准备导入','提交本批次']},
+ {name:'子代理未完成',text:'保留父子引用与未完成状态。新建的是全新任务，不重放之前的工具调用。',steps:['子代理/未完成态','扫描预览','准备导入','提交本批次','从所选历史版本新建任务草稿']},
+ {name:'重复与新版本',text:'同一份资料再次导入不增加记录；同旧 ID 有新内容时保留两个版本，当前版本不变；可在右侧查看并选择版本。',steps:['普通对话','扫描预览','准备导入','提交本批次','扫描预览','准备导入','提交本批次','内容版本 B','扫描预览','准备导入','提交本批次']},
  {name:'未知字段与文本',text:'未知字段保留原始字节；文本来源不能被宣传为整个旧会话完整恢复。',steps:['普通对话','未知字段','扫描预览','确认部分恢复','准备导入','提交本批次','仅文本来源','扫描预览']},
  {name:'固定槽与坏快照',text:'固定根槽不是内容哈希，不能误判损坏；一致性未知的数据库快照则应阻止导入。',steps:['普通对话','固定根槽','扫描预览','快照不一致','扫描预览','准备导入']},
  {name:'失败与回滚',text:'先导入一份。新批次遇到模拟故障时，既有记录保持不变；取消也不删除原件。',steps:['普通对话','扫描预览','准备导入','提交本批次','工具/附件/摘要','扫描预览','准备导入','模拟提交故障','取消批次']},
@@ -117,7 +122,7 @@ function dispatch(action){state=ImportModel.reduce(state,action);render();}
 function button(label,fn,cls=''){const el=text('button',label,cls);el.type='button';el.onclick=fn;return el;}
 function fields(target,values){target.replaceChildren();for(const [key,value]of values){target.append(text('dt',key),text('dd',value));}}
 function render(){
- fields($('state'),[['当前样本',ImportModel.describe(state)],['导入阶段',state.phase],['恢复等级',state.report?.grade??'待扫描'],['执行策略','仅历史；旧执行不续跑'],['当前变体',Object.entries(state.flags).map(([key])=>actions.find(a=>a[1].flag===key)?.[0]).join('、')||'原始人工样本'],['部分确认',state.accepted?'已确认当前预览':'未确认'],['目标区',state.ledger.length+' 条历史版本 · '+state.drafts.length+' 个新任务草稿']]);
+ fields($('state'),[['当前样本',ImportModel.describe(state)],['导入阶段',state.phase],['恢复等级',state.report?.grade??'待扫描'],['执行策略','仅历史；旧执行不续跑'],['当前变体',Object.entries(state.flags).map(([key])=>actions.find(a=>a[1].flag===key)?.[0]).join('、')||'原始人工样本'],['部分确认',state.accepted?'已确认当前预览':'未确认'],['目标区',new Set(state.ledger.map(x=>x.identity)).size+' 个会话 · '+state.ledger.length+' 个版本'],['所选版本',state.selectedId??'尚未选择'],['新任务草稿',state.drafts.length+' 个（未执行）']]);
  $('change').textContent=state.note;
  const report=$('report');report.replaceChildren();const r=state.report;
  if(!r)report.append(text('p','尚未扫描。改变来源后，旧预览和确认均失效。','muted'));
@@ -129,7 +134,17 @@ function render(){
  }
  const ledger=$('ledger');ledger.replaceChildren();
  if(!state.ledger.length)ledger.append(text('p','尚无导入记录。扫描与准备阶段不会修改目标区。','muted'));
- else for(const item of state.ledger){const row=document.createElement('div');row.className='divider';row.append(text('strong',item.name+' · 版本 '+item.revision),text('p',item.identity+' → '+item.targetId,'small'),text('p',item.grade+' / 历史记录 / 不续跑','muted'));ledger.append(row);}
+ else for(const identity of new Set(state.ledger.map(x=>x.identity))){
+   const versions=state.ledger.filter(x=>x.identity===identity),group=document.createElement('div');group.className='divider';
+   group.append(text('h3',versions[0].name+' · '+versions.length+' 个版本'),text('p',identity,'small'));
+   for(const item of versions){const row=document.createElement('div');row.className='divider';const active=state.activeVersions[identity]===item.targetId;
+     row.append(text('strong','版本 '+item.revision+' · '+item.targetId+(active?'（当前版本）':'')),text('p',item.grade+' / 历史记录 / 不续跑','muted'));
+     const detail=document.createElement('details');detail.append(text('summary','查看此版本内容与缺失'));
+     for(const entry of item.content)detail.append(text('p',entry.kind+'：'+entry.text,'history'));
+     for(const issue of item.issues)detail.append(text('p',issue,'notice warn'));
+     row.append(detail,button(state.selectedId===item.targetId?'已选中此版本':'选作当前版本',()=>dispatch({type:'selectVersion',id:item.targetId}),state.selectedId===item.targetId?'primary':''));group.append(row);
+   }ledger.append(group);
+ }
  $('drafts').textContent=state.drafts.length?state.drafts.map(d=>d.id+' ← '+d.from+'（未执行）').join('；'):'没有新任务草稿。';
  $('actions').replaceChildren(...actions.map(([label,action])=>{const b=button(label,()=>{step=-1;dispatch(action);},label==='扫描预览'?'primary':'');if(action.type==='flag')b.setAttribute('aria-pressed',String(!!state.flags[action.flag]));return b;}));
  $('tabs').replaceChildren(...scenarios.map((scenario,i)=>{const b=button(scenario.name,()=>{state=ImportModel.initial();tab=i;step=0;render();});b.setAttribute('role','tab');b.setAttribute('aria-selected',String(tab===i));return b;}));
