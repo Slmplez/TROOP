@@ -10,6 +10,7 @@ use std::{
     mem::{size_of, zeroed},
     path::PathBuf,
     ptr::{null, null_mut},
+    sync::atomic::{AtomicU32, Ordering},
     time::Instant,
 };
 use windows_sys::Win32::Storage::Xps::PrintWindow;
@@ -57,7 +58,13 @@ struct State {
     frame_round: u32,
     frame_observed_at: u128,
     mapping_only: bool,
+    frame_armed: bool,
+    recovery_probe: bool,
+    recovery_stage: u8,
+    recovery_observed_at: u128,
+    recovery_consumed: bool,
 }
+static PATCH_COLOR: AtomicU32 = AtomicU32::new(0x00ff00ff);
 thread_local! {static STATE:RefCell<Option<State>>=const{RefCell::new(None)};}
 fn event(s: &mut State, name: &str, data: Value) {
     let v = json!({"ms":s.start.elapsed().as_millis(),"event":name,"epoch":s.epoch,"grant":s.grant,"observed":s.observed,"queued":s.queue.len(),"data":data});
@@ -118,13 +125,16 @@ fn invalidate(s: &mut State, reason: &str, revoke: bool) {
     s.epoch += 1;
     s.observed = false;
     s.queue.clear();
+    if reason != "frame_trial_transition" { s.frame_armed = false; }
     if revoke {
         s.grant = false;
+        s.recovery_stage = 0;
     }
     event(s, reason, json!({"pending_discarded":true,"discarded_count":discarded}));
 }
 unsafe fn render(s: &State) {
-    let label=format!("宿主测试窗口 · 授权={} · 新观测={} · epoch={} · 队列={}\r\n命中={} · OS 已插入事件={} · {}\r\n模拟锁定={} · OS 会话可用={} · 仅此窗口；GDI 样本非 WGC",s.grant,s.observed,s.epoch,s.queue.len(),s.clicks,s.sent,if s.hotkey{"Ctrl+Shift+F12 停止"}else{"快捷键不可用，请用立即停止按钮"},s.simulated,s.os_ok);
+    let phase=if s.recovery_probe {match s.recovery_stage{0=>"请开始捕获恢复演练",1=>"等待捕获准备完成，再手动锁屏",2=>"已锁定：旧观测失效",3=>"已解锁：请点重新观察并验证新帧",4=>"正在验证新帧与新点击",5=>"新帧点击已命中：恢复演练完成",_=>"未知阶段"}}else{"仅此窗口；GDI 样本非 WGC"};
+    let label=format!("宿主测试窗口 · 授权={} · 新观测={} · epoch={} · 队列={}\r\n命中={} · OS 已插入事件={} · {}\r\n模拟锁定={} · OS 会话可用={} · {}",s.grant,s.observed,s.epoch,s.queue.len(),s.clicks,s.sent,if s.hotkey{"Ctrl+Shift+F12 停止"}else{"快捷键不可用，请用立即停止按钮"},s.simulated,s.os_ok,phase);
     SetWindowTextW(s.status, wide(&label).as_ptr());
 }
 unsafe fn observe(s: &mut State) {
@@ -266,6 +276,7 @@ unsafe fn extended(h:HWND)->Option<[i32;4]>{
     if hr<0||r.right<=r.left||r.bottom<=r.top{None}else{Some([r.left,r.top,r.right,r.bottom])}
 }
 unsafe fn frame_tick(s:&mut State){
+    if !s.frame_armed{return;}
     if s.frame_round>2{return;}
     if s.frame_consumed {
         if s.mapping_only||s.clicks>=s.frame_round {
@@ -278,7 +289,7 @@ unsafe fn frame_tick(s:&mut State){
     }
     if !s.frame_ready {
         if !s.os_ok{return;}
-        if !s.mapping_only {if GetForegroundWindow()!=s.hwnd{return;}s.grant=true;observe(s);if !s.observed{return;}}
+        if !s.mapping_only {if GetForegroundWindow()!=s.hwnd{return;}if !s.grant{return;}observe(s);if !s.observed{return;}}
         let Some(bounds)=extended(s.hwnd) else{return;};
         let m=rect(s.marker);s.frame_observed_at=s.start.elapsed().as_millis();
         let data=json!({"round":s.frame_round,"epoch":s.epoch,"window_rect":rect(s.hwnd),"extended_rect":bounds,"marker_rect":m,"patch_rect":[m[0]+10,m[1]+10,m[0]+42,m[1]+42],"dpi":GetDpiForWindow(s.hwnd)});
@@ -297,6 +308,31 @@ unsafe fn frame_tick(s:&mut State){
     }
     event(s,"frame_point_received",packet);
     if !s.mapping_only{dispatch(s,Action{epoch:s.epoch,rect:s.last_rect,due:0,kind:"click",point});}
+}
+unsafe fn recovery_geometry(s: &mut State, after: bool) {
+    let Some(bounds)=extended(s.hwnd) else{return;};
+    let m=rect(s.marker);
+    s.recovery_observed_at=s.start.elapsed().as_millis();
+    let data=json!({"epoch":s.epoch,"extended_rect":bounds,"window_rect":rect(s.hwnd),"patch_rect":[m[0]+10,m[1]+10,m[0]+42,m[1]+42],"dpi":GetDpiForWindow(s.hwnd),"patch_rgb":if after{[0,255,255]}else{[255,0,255]},"after_unlock":after});
+    fs::write(s.out.join(if after{"recovery-after.json"}else{"recovery-before.json"}),data.to_string()).unwrap();
+    event(s,"recovery_geometry_ready",data);
+}
+unsafe fn recovery_tick(s: &mut State) {
+    if s.recovery_stage!=4{return;}
+    if s.recovery_consumed {
+        if s.clicks>0{s.recovery_stage=5;event(s,"recovery_click_verified",json!({"clicks":s.clicks}));}
+        return;
+    }
+    let file=s.out.join("recovery-click.json");
+    if !file.exists(){return;}
+    s.recovery_consumed=true;
+    let packet:Value=match fs::read(&file).ok().and_then(|b|if b.len()<8192{serde_json::from_slice(&b).ok()}else{None}){Some(v)=>v,None=>{event(s,"recovery_packet_rejected",json!({"reason":"format"}));return;}};
+    let point=packet.get("point").and_then(Value::as_array).and_then(|p|if p.len()==2{Some([i32::try_from(p[0].as_i64()?).ok()?,i32::try_from(p[1].as_i64()?).ok()?])}else{None});
+    if point.is_none()||packet["epoch"].as_u64()!=Some(s.epoch)||packet["extended_rect"]!=json!(extended(s.hwnd))||s.start.elapsed().as_millis()-s.recovery_observed_at>15000{
+        event(s,"recovery_packet_rejected",json!({"reason":"stale_or_invalid"}));return;
+    }
+    event(s,"recovery_new_point_received",packet);
+    dispatch(s,Action{epoch:s.epoch,rect:s.last_rect,due:0,kind:"click",point});
 }
 unsafe fn capture(s: &mut State) {
     // Render ONLY our synthetic client using WM_PRINT/PrintWindow, not a desktop screenshot.
@@ -356,7 +392,7 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
         if item.CtlID==201 {
             FillRect(item.hDC,&item.rcItem,GetSysColorBrush(COLOR_BTNFACE));
             let patch=RECT{left:10,top:10,right:42,bottom:42};
-            let brush=CreateSolidBrush(0x00ff00ff);FillRect(item.hDC,&patch,brush);DeleteObject(brush);
+            let brush=CreateSolidBrush(PATCH_COLOR.load(Ordering::Relaxed));FillRect(item.hDC,&patch,brush);DeleteObject(brush);
             let mut label=RECT{left:52,top:10,right:item.rcItem.right-8,bottom:52};
             DrawTextW(item.hDC,wide("图像定位色块 / 命中计数").as_ptr(),-1,&mut label,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
             return 1;
@@ -388,16 +424,19 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
  107=>{invalidate(s,"simulated_stale_frame",false);},108=>observe(s),109=>capture(s),
  110=>{invalidate(s,"probe_reset",true);s.simulated=false;s.clicks=0;s.sent=0;s.step=0;s.start=Instant::now();s.probe=true;SetWindowTextW(s.edit,wide("").as_ptr());},
  111=>{invalidate(s,"lock_trial_reset",true);s.grant=true;observe(s);event(s,"task_granted",json!({"scope":"own-test-window","exercise":"real-lock-with-queued-action"}));enqueue(s,"click",60000);},
+ 112=>{if s.recovery_probe&&s.recovery_stage==0{invalidate(s,"recovery_start",true);s.grant=true;observe(s);if s.observed{s.clicks=0;s.recovery_stage=1;PATCH_COLOR.store(0x00ff00ff,Ordering::Relaxed);InvalidateRect(s.marker,null(),1);recovery_geometry(s,false);}}},
+ 113=>{if s.recovery_probe&&s.recovery_stage==3&&s.grant{invalidate(s,"recovery_manual_reobserve",false);observe(s);if s.observed{s.recovery_stage=4;s.recovery_consumed=false;recovery_geometry(s,true);}}},
  201=>{s.clicks+=1;event(s,"target_click_received",json!({"clicks":s.clicks}));},_=>{}
  }},
  WM_HOTKEY=>invalidate(s,"emergency_hotkey",true),
- WM_WTSSESSION_CHANGE=>{invalidate(s,"wts_event",false);event(s,"wts_detail",json!({"change":wp,"session":lp}));},
+ WM_WTSSESSION_CHANGE=>{invalidate(s,"wts_event",false);event(s,"wts_detail",json!({"change":wp,"session":lp}));if s.recovery_probe&&s.grant{if wp==WTS_SESSION_LOCK as usize&&s.recovery_stage>0&&s.recovery_stage<5{s.recovery_stage=2;}else if wp==WTS_SESSION_UNLOCK as usize&&s.recovery_stage==2{s.recovery_stage=3;PATCH_COLOR.store(0x00ffff00,Ordering::Relaxed);InvalidateRect(s.marker,null(),1);event(s,"recovery_awaiting_manual_observation",json!({"new_patch_rgb":[0,255,255]}));}}},
  WM_DISPLAYCHANGE|WM_DPICHANGED=>invalidate(s,"display_changed",false),
  WM_TIMER=>{
   let (ok,_)=session();if !ok&&s.os_ok{invalidate(s,"session_unavailable",false);}s.os_ok=ok;
   if s.observed&&(GetForegroundWindow()!=s.hwnd||rect(s.hwnd)!=s.last_rect){invalidate(s,"focus_or_geometry_changed",false);}
   let now=s.start.elapsed().as_millis();
   if s.frame_probe {frame_tick(s);}
+  if s.recovery_probe {recovery_tick(s);}
   if s.probe {let threshold=[300,600,1000,1500,2000,2500,3000,3500,4100,4700,5300,5900,6500];
    if (s.step as usize)<threshold.len()&&now>=threshold[s.step as usize]{match s.step{
     0=>enqueue(s,"click",0),
@@ -449,6 +488,7 @@ fn main() {
     unsafe {
         let args: Vec<_> = std::env::args().collect();
         let lock_only=args.iter().any(|a|a=="--lock-probe");
+        let recovery_only=args.iter().any(|a|a=="--recovery-probe");
         let out = PathBuf::from(args.get(1).expect("output directory required"));
         fs::create_dir_all(&out).unwrap();
         let dpi_ok = SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
@@ -477,7 +517,7 @@ fn main() {
         );
         assert!(!hwnd.is_null());
         let status = child(hwnd, "STATIC", "尚未授权", 1, 20, 15, 860, 85, 0);
-        if !lock_only { for (i, (label, id)) in [
+        if !lock_only && !recovery_only { for (i, (label, id)) in [
             ("授权并观察", 101),
             ("延迟点击标记", 102),
             ("延迟输入中文", 103),
@@ -515,7 +555,7 @@ fn main() {
             65,
             BS_OWNERDRAW as u32,
         );
-        if !lock_only { child(
+        if !lock_only && !recovery_only { child(
             hwnd,
             "BUTTON",
             "运行 7 秒受控演练",
@@ -537,9 +577,10 @@ fn main() {
             44,
             WS_BORDER | ES_AUTOHSCROLL as u32,
         );
-        child(hwnd,"STATIC",if lock_only {"1. 点击上方开始按钮，确认授权=true、队列=1。\r\n2. 在 60 秒内手动锁屏，然后解锁。\r\n3. 解锁后不要点任何按钮，回聊天回复“已完成”。\r\n若没有锁屏且目标一直在前台，60 秒后最多点击自身标记一次。"}else{"试用：授权 → 延迟动作 → 立即停止；或模拟锁定后解锁，旧动作不会重放。\r\n切换到其他窗口会暂停；回来后需重新观察。按钮“模拟”不改变 Windows 锁屏。\r\n此原型不测试 UAC，不操作其他软件；短动作已进入 OS 后无法撤回。"},203,20,430,850,100,0);
-        child(hwnd,"BUTTON",if lock_only{"开始锁屏演练：授权并排队 60 秒"}else{"锁屏演练：授权并排队 60 秒"},111,20,if lock_only{115}else{540},830,if lock_only{60}else{36},BS_PUSHBUTTON as u32);
+        child(hwnd,"STATIC",if recovery_only{"1. 开始后等待捕获面板显示“已准备，可手动锁屏”。\r\n2. 手动锁屏并解锁；旧输入不会重放。\r\n3. 返回此窗，点击“重新观察并验证新帧”，保持前台数秒。\r\n只点击此窗口自身色块；颜色在解锁后变为青色，用来排除旧帧。"}else if lock_only {"1. 点击上方开始按钮，确认授权=true、队列=1。\r\n2. 在 60 秒内手动锁屏，然后解锁。\r\n3. 解锁后不要点任何按钮，回聊天回复“已完成”。\r\n若没有锁屏且目标一直在前台，60 秒后最多点击自身标记一次。"}else{"试用：授权 → 延迟动作 → 立即停止；或模拟锁定后解锁，旧动作不会重放。\r\n切换到其他窗口会暂停；回来后需重新观察。按钮“模拟”不改变 Windows 锁屏。\r\n此原型不测试 UAC，不操作其他软件；短动作已进入 OS 后无法撤回。"},203,20,430,850,100,0);
+        if !recovery_only {child(hwnd,"BUTTON",if lock_only{"开始锁屏演练：授权并排队 60 秒"}else{"锁屏演练：授权并排队 60 秒"},111,20,if lock_only{115}else{540},830,if lock_only{60}else{36},BS_PUSHBUTTON as u32);}
         if lock_only {child(hwnd,"BUTTON","停止 / 取消这次演练",104,20,195,830,48,BS_PUSHBUTTON as u32);}
+        if recovery_only {for (label,id,y) in [("开始捕获恢复演练",112,115),("重新观察并验证新帧（解锁后）",113,163),("立即停止",104,211)]{child(hwnd,"BUTTON",label,id,20,y,830,38,BS_PUSHBUTTON as u32);}}
         let (ok, detail) = session();
         let log = File::create(out.join("events.jsonl")).unwrap();
         let mut s = State {
@@ -568,6 +609,11 @@ fn main() {
             frame_round:1,
             frame_observed_at:0,
             mapping_only:args.iter().any(|a|a=="--mapping-only"),
+            frame_armed:args.iter().any(|a|a=="--frame-probe"),
+            recovery_probe:recovery_only,
+            recovery_stage:0,
+            recovery_observed_at:0,
+            recovery_consumed:false,
         };
         event(
             &mut s,
@@ -582,6 +628,7 @@ fn main() {
             VK_F12 as u32,
         );
         s.hotkey = hotkey != 0;
+        if s.frame_probe&&!s.mapping_only{s.grant=true;event(&mut s,"frame_probe_launch_grant",json!({"scope":"own-test-window","revoked_on_stop":true}));}
         event(
             &mut s,
             "notifications",

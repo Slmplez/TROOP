@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-01",
+  "timeZone": "Asia/Shanghai",
+  "scope": "Own synthetic HWND; current local console only",
+  "frameClick": {
+    "verifiedClicks": 2,
+    "osInsertedEvents": 6,
+    "maxMappingErrorPhysicalPixels": 0.5249221183800614,
+    "source": "frame-click-results.json"
+  },
+  "recovery": {
+    "locks": 1,
+    "unlocks": 1,
+    "oldTrackStateWhenReleaseRequested": "ended",
+    "oldTrackStateAfterRelease": "ended",
+    "newStreamGeneration": 3,
+    "newObservationEpoch": 5,
+    "osSubmissionsBeforeManualObservation": 0,
+    "newClicksAfterObservation": 1,
+    "manualObservationToSubmissionMs": 831,
+    "source": "capture-recovery-results.json"
+  },
+  "failedAttempt": {
+    "source": "recovery-first-failure.json",
+    "error": "Error: An object could not be cloned.",
+    "lockObserved": true,
+    "resolution": "Renamed prototype event buffer from the existing Window.captureEvents member to troopCaptureEvents; added release/recreate preflight before asking for a real lock."
+  },
+  "hardware": {
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2560,
+          "height": 1440
+        },
+        "scaleFactor": 1,
+        "rotation": 0
+      }
+    ],
+    "nativeMonitorCount": 1,
+    "targetDpi": 96,
+    "multiMonitorMixedDpi": "deferred_pending_hardware",
+    "userDecision": "暂时没有，记录为待硬件验证",
+    "systemDisplaySettingsChanged": false
+  },
+  "notProven": [
+    "Mixed DPI and multiple physical monitors",
+    "Negative monitor coordinates, hotplug and display rotation",
+    "All final-gate/SendInput races",
+    "Native Rust WGC backend",
+    "Independent input-helper fault isolation",
+    "UIPI elevated targets, RDP and UIA fallback"
+  ],
+  "sha256": {
+    "src/main.rs": "35d119ee3e92d9730913200bb71865ea37ec4d1530bb5465c10acf5f644f9ce5",
+    "electron-capture.cjs": "850b826a98f20fda331e3d304dc2d43f392606b6df5550495ec98505d185eb0c",
+    "frame-click-results.json": "9714a3481b87c2c7a35e45a4247598448ff3f3232fabb2625821643ad5d33aa0",
+    "capture-recovery-results.json": "0848c7d36795270f4bedbbac4ff95b7365f012bc387121184a41acce1ef84662",
+    "recovery-first-failure.json": "3c2521560573c4365db17f421d7bbec0f9ad12ccb339c2ad0496a894d29e05b2"
+  }
+}

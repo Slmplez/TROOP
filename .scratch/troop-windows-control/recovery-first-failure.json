@@ -1,0 +1,277 @@
+{
+  "electron": "42.1.0",
+  "chrome": "148.0.7778.97",
+  "scope": "Zero-thumbnail enumeration followed by media capture of exact own synthetic HWND",
+  "hardwareAcceleration": true,
+  "displays": [
+    {
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 2560,
+        "height": 1440
+      },
+      "scaleFactor": 1,
+      "rotation": 0
+    }
+  ],
+  "captures": [
+    {
+      "label": "before-lock",
+      "targetFound": true,
+      "sourceId": "window:2886714:0",
+      "size": {
+        "width": 906,
+        "height": 642
+      },
+      "nonempty": true,
+      "generation": 1,
+      "trackId": "f8afefe9-616d-4ffc-a7bb-d8a0d737810e",
+      "trackState": "live",
+      "atUtc": "2026-11-01T07:10:03.258Z",
+      "mapping": {
+        "geometry": {
+          "after_unlock": false,
+          "dpi": 96,
+          "epoch": 1,
+          "extended_rect": [
+            87,
+            80,
+            993,
+            723
+          ],
+          "patch_rect": [
+            118,
+            401,
+            150,
+            433
+          ],
+          "patch_rgb": [
+            255,
+            0,
+            255
+          ],
+          "window_rect": [
+            80,
+            80,
+            1000,
+            730
+          ]
+        },
+        "patch": {
+          "minX": 32,
+          "minY": 322,
+          "maxX": 61,
+          "maxY": 351,
+          "count": 900
+        },
+        "pixel": [
+          47,
+          337
+        ],
+        "mapped": [
+          134,
+          417.52492211838006
+        ],
+        "expected": [
+          134,
+          417
+        ],
+        "error": [
+          0,
+          0.5249221183800614
+        ]
+      }
+    }
+  ],
+  "stage": "ready-for-manual-lock",
+  "recoveryProbe": true,
+  "displayChanges": [],
+  "mappingOnly": false,
+  "lockObservedAtUtc": "2026-11-01T07:10:41.708Z",
+  "error": "Error: An object could not be cloned.",
+  "nativeTrace": [
+    {
+      "data": {
+        "dpi": 96,
+        "dpi_context_set": 1,
+        "hwnd": 2886714,
+        "monitor_count": 1,
+        "pid": 41584,
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        },
+        "virtual_rect": [
+          0,
+          0,
+          2560,
+          1440
+        ]
+      },
+      "epoch": 0,
+      "event": "startup",
+      "grant": false,
+      "ms": 0,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "stop_hotkey_registered": 1,
+        "wts_registered": 1
+      },
+      "epoch": 0,
+      "event": "notifications",
+      "grant": false,
+      "ms": 1,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "foreground_owned": true,
+        "iconic": 0,
+        "visible": 1
+      },
+      "epoch": 0,
+      "event": "window_visibility",
+      "grant": false,
+      "ms": 54,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "discarded_count": 0,
+        "pending_discarded": true
+      },
+      "epoch": 1,
+      "event": "recovery_start",
+      "grant": false,
+      "ms": 35117,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "dpi": 96,
+        "rect": [
+          80,
+          80,
+          1000,
+          730
+        ],
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        }
+      },
+      "epoch": 1,
+      "event": "observed",
+      "grant": true,
+      "ms": 35117,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "after_unlock": false,
+        "dpi": 96,
+        "epoch": 1,
+        "extended_rect": [
+          87,
+          80,
+          993,
+          723
+        ],
+        "patch_rect": [
+          118,
+          401,
+          150,
+          433
+        ],
+        "patch_rgb": [
+          255,
+          0,
+          255
+        ],
+        "window_rect": [
+          80,
+          80,
+          1000,
+          730
+        ]
+      },
+      "epoch": 1,
+      "event": "recovery_geometry_ready",
+      "grant": true,
+      "ms": 35118,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "discarded_count": 0,
+        "pending_discarded": true
+      },
+      "epoch": 2,
+      "event": "focus_or_geometry_changed",
+      "grant": true,
+      "ms": 44493,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "discarded_count": 0,
+        "pending_discarded": true
+      },
+      "epoch": 3,
+      "event": "session_unavailable",
+      "grant": true,
+      "ms": 74304,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "discarded_count": 0,
+        "pending_discarded": true
+      },
+      "epoch": 4,
+      "event": "wts_event",
+      "grant": true,
+      "ms": 74319,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "change": 7,
+        "session": 1
+      },
+      "epoch": 4,
+      "event": "wts_detail",
+      "grant": true,
+      "ms": 74319,
+      "observed": false,
+      "queued": 0
+    }
+  ],
+  "childStderr": ""
+}

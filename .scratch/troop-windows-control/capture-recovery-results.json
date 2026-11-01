@@ -1,0 +1,642 @@
+{
+  "electron": "42.1.0",
+  "chrome": "148.0.7778.97",
+  "scope": "Zero-thumbnail enumeration followed by media capture of exact own synthetic HWND",
+  "hardwareAcceleration": true,
+  "displays": [
+    {
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 2560,
+        "height": 1440
+      },
+      "scaleFactor": 1,
+      "rotation": 0
+    }
+  ],
+  "captures": [
+    {
+      "label": "before-lock",
+      "targetFound": true,
+      "sourceId": "window:528678:0",
+      "size": {
+        "width": 906,
+        "height": 642
+      },
+      "nonempty": true,
+      "generation": 1,
+      "trackId": "62db6284-6859-480c-89b2-dde7ce73a846",
+      "trackState": "live",
+      "atUtc": "2026-11-01T07:12:28.975Z",
+      "mapping": {
+        "geometry": {
+          "after_unlock": false,
+          "dpi": 96,
+          "epoch": 1,
+          "extended_rect": [
+            87,
+            80,
+            993,
+            723
+          ],
+          "patch_rect": [
+            118,
+            401,
+            150,
+            433
+          ],
+          "patch_rgb": [
+            255,
+            0,
+            255
+          ],
+          "window_rect": [
+            80,
+            80,
+            1000,
+            730
+          ]
+        },
+        "patch": {
+          "minX": 32,
+          "minY": 322,
+          "maxX": 61,
+          "maxY": 351,
+          "count": 900
+        },
+        "pixel": [
+          47,
+          337
+        ],
+        "mapped": [
+          134,
+          417.52492211838006
+        ],
+        "expected": [
+          134,
+          417
+        ],
+        "error": [
+          0,
+          0.5249221183800614
+        ]
+      }
+    },
+    {
+      "label": "before-lock-recreated",
+      "targetFound": true,
+      "sourceId": "window:528678:0",
+      "size": {
+        "width": 906,
+        "height": 642
+      },
+      "nonempty": true,
+      "generation": 2,
+      "trackId": "1ce322c8-8d80-4581-b575-4a560ea36200",
+      "trackState": "live",
+      "atUtc": "2026-11-01T07:12:29.380Z",
+      "mapping": {
+        "geometry": {
+          "after_unlock": false,
+          "dpi": 96,
+          "epoch": 1,
+          "extended_rect": [
+            87,
+            80,
+            993,
+            723
+          ],
+          "patch_rect": [
+            118,
+            401,
+            150,
+            433
+          ],
+          "patch_rgb": [
+            255,
+            0,
+            255
+          ],
+          "window_rect": [
+            80,
+            80,
+            1000,
+            730
+          ]
+        },
+        "patch": {
+          "minX": 32,
+          "minY": 322,
+          "maxX": 61,
+          "maxY": 351,
+          "count": 900
+        },
+        "pixel": [
+          47,
+          337
+        ],
+        "mapped": [
+          134,
+          417.52492211838006
+        ],
+        "expected": [
+          134,
+          417
+        ],
+        "error": [
+          0,
+          0.5249221183800614
+        ]
+      }
+    },
+    {
+      "label": "after-unlock-new-observation",
+      "targetFound": true,
+      "sourceId": "window:528678:0",
+      "size": {
+        "width": 906,
+        "height": 642
+      },
+      "nonempty": true,
+      "generation": 3,
+      "trackId": "99196186-96b7-4b2d-871b-436b14f7fbb4",
+      "trackState": "live",
+      "atUtc": "2026-11-01T07:12:50.354Z",
+      "mapping": {
+        "geometry": {
+          "after_unlock": true,
+          "dpi": 96,
+          "epoch": 5,
+          "extended_rect": [
+            87,
+            80,
+            993,
+            723
+          ],
+          "patch_rect": [
+            118,
+            401,
+            150,
+            433
+          ],
+          "patch_rgb": [
+            0,
+            255,
+            255
+          ],
+          "window_rect": [
+            80,
+            80,
+            1000,
+            730
+          ]
+        },
+        "patch": {
+          "minX": 32,
+          "minY": 322,
+          "maxX": 61,
+          "maxY": 351,
+          "count": 900
+        },
+        "pixel": [
+          47,
+          337
+        ],
+        "mapped": [
+          134,
+          417.52492211838006
+        ],
+        "expected": [
+          134,
+          417
+        ],
+        "error": [
+          0,
+          0.5249221183800614
+        ]
+      }
+    },
+    {
+      "label": "after-target-close",
+      "targetFound": false,
+      "ownTitleCandidates": []
+    }
+  ],
+  "stage": "enumerating-after-target-close",
+  "recoveryProbe": true,
+  "displayChanges": [],
+  "mappingOnly": false,
+  "preflightRelease": {
+    "atUtc": "2026-11-01T07:12:28.978Z",
+    "before": [
+      {
+        "id": "62db6284-6859-480c-89b2-dde7ce73a846",
+        "state": "live"
+      }
+    ],
+    "after": [
+      {
+        "id": "62db6284-6859-480c-89b2-dde7ce73a846",
+        "state": "ended"
+      }
+    ],
+    "events": []
+  },
+  "lockObservedAtUtc": "2026-11-01T07:12:40.954Z",
+  "release": {
+    "atUtc": "2026-11-01T07:12:40.956Z",
+    "before": [
+      {
+        "id": "1ce322c8-8d80-4581-b575-4a560ea36200",
+        "state": "ended"
+      }
+    ],
+    "after": [
+      {
+        "id": "1ce322c8-8d80-4581-b575-4a560ea36200",
+        "state": "ended"
+      }
+    ],
+    "events": [
+      {
+        "event": "ended",
+        "generation": 2,
+        "atUtc": "2026-11-01T07:12:40.885Z"
+      }
+    ]
+  },
+  "nativeTrace": [
+    {
+      "data": {
+        "dpi": 96,
+        "dpi_context_set": 1,
+        "hwnd": 528678,
+        "monitor_count": 1,
+        "pid": 41260,
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        },
+        "virtual_rect": [
+          0,
+          0,
+          2560,
+          1440
+        ]
+      },
+      "epoch": 0,
+      "event": "startup",
+      "grant": false,
+      "ms": 0,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "stop_hotkey_registered": 1,
+        "wts_registered": 1
+      },
+      "epoch": 0,
+      "event": "notifications",
+      "grant": false,
+      "ms": 1,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "foreground_owned": false,
+        "iconic": 0,
+        "visible": 1
+      },
+      "epoch": 0,
+      "event": "window_visibility",
+      "grant": false,
+      "ms": 19,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "discarded_count": 0,
+        "pending_discarded": true
+      },
+      "epoch": 1,
+      "event": "recovery_start",
+      "grant": false,
+      "ms": 13169,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "dpi": 96,
+        "rect": [
+          80,
+          80,
+          1000,
+          730
+        ],
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        }
+      },
+      "epoch": 1,
+      "event": "observed",
+      "grant": true,
+      "ms": 13169,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "after_unlock": false,
+        "dpi": 96,
+        "epoch": 1,
+        "extended_rect": [
+          87,
+          80,
+          993,
+          723
+        ],
+        "patch_rect": [
+          118,
+          401,
+          150,
+          433
+        ],
+        "patch_rgb": [
+          255,
+          0,
+          255
+        ],
+        "window_rect": [
+          80,
+          80,
+          1000,
+          730
+        ]
+      },
+      "epoch": 1,
+      "event": "recovery_geometry_ready",
+      "grant": true,
+      "ms": 13170,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "discarded_count": 0,
+        "pending_discarded": true
+      },
+      "epoch": 2,
+      "event": "wts_event",
+      "grant": true,
+      "ms": 25710,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "change": 7,
+        "session": 1
+      },
+      "epoch": 2,
+      "event": "wts_detail",
+      "grant": true,
+      "ms": 25711,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "discarded_count": 0,
+        "pending_discarded": true
+      },
+      "epoch": 3,
+      "event": "session_unavailable",
+      "grant": true,
+      "ms": 25715,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "discarded_count": 0,
+        "pending_discarded": true
+      },
+      "epoch": 4,
+      "event": "wts_event",
+      "grant": true,
+      "ms": 28926,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "change": 8,
+        "session": 1
+      },
+      "epoch": 4,
+      "event": "wts_detail",
+      "grant": true,
+      "ms": 28926,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "new_patch_rgb": [
+          0,
+          255,
+          255
+        ]
+      },
+      "epoch": 4,
+      "event": "recovery_awaiting_manual_observation",
+      "grant": true,
+      "ms": 28928,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "discarded_count": 0,
+        "pending_discarded": true
+      },
+      "epoch": 5,
+      "event": "recovery_manual_reobserve",
+      "grant": true,
+      "ms": 34398,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "dpi": 96,
+        "rect": [
+          80,
+          80,
+          1000,
+          730
+        ],
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        }
+      },
+      "epoch": 5,
+      "event": "observed",
+      "grant": true,
+      "ms": 34398,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "after_unlock": true,
+        "dpi": 96,
+        "epoch": 5,
+        "extended_rect": [
+          87,
+          80,
+          993,
+          723
+        ],
+        "patch_rect": [
+          118,
+          401,
+          150,
+          433
+        ],
+        "patch_rgb": [
+          0,
+          255,
+          255
+        ],
+        "window_rect": [
+          80,
+          80,
+          1000,
+          730
+        ]
+      },
+      "epoch": 5,
+      "event": "recovery_geometry_ready",
+      "grant": true,
+      "ms": 34399,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "epoch": 5,
+        "extended_rect": [
+          87,
+          80,
+          993,
+          723
+        ],
+        "point": [
+          134,
+          418
+        ]
+      },
+      "epoch": 5,
+      "event": "recovery_new_point_received",
+      "grant": true,
+      "ms": 35226,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "normalized": [
+          3431,
+          19036
+        ],
+        "point": [
+          134,
+          418
+        ],
+        "virtual_rect": [
+          0,
+          0,
+          2560,
+          1440
+        ]
+      },
+      "epoch": 5,
+      "event": "coordinate_mapping",
+      "grant": true,
+      "ms": 35226,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "inserted": 3,
+        "kind": "click",
+        "last_error": 0,
+        "requested": 3
+      },
+      "epoch": 5,
+      "event": "os_submission",
+      "grant": true,
+      "ms": 35229,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "clicks": 1
+      },
+      "epoch": 5,
+      "event": "target_click_received",
+      "grant": true,
+      "ms": 35232,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "clicks": 1
+      },
+      "epoch": 5,
+      "event": "recovery_click_verified",
+      "grant": true,
+      "ms": 35275,
+      "observed": true,
+      "queued": 0
+    }
+  ],
+  "completedAtUtc": "2026-11-01T07:12:50.460Z",
+  "childExit": {
+    "code": null,
+    "signal": "SIGTERM"
+  },
+  "childStderr": ""
+}

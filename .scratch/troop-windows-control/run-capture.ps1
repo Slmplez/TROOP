@@ -1,5 +1,6 @@
-param([switch]$FrameProbe,[switch]$MappingOnly)
+param([switch]$FrameProbe,[switch]$MappingOnly,[switch]$RecoveryProbe)
 $ErrorActionPreference='Stop'
+if($RecoveryProbe -and ($FrameProbe -or $MappingOnly)){throw 'RecoveryProbe must run separately'}
 $root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $carrier=Join-Path $root 'dist/Grok Bot 0.18 Reconstructed-win32-x64'
 $shellDir=Join-Path $root '.tmp-host-control/electron-shell'
@@ -20,6 +21,7 @@ if($LASTEXITCODE -ne 0){throw 'Prototype ASAR packaging failed'}
 $env:TROOP_PROTOTYPE_ROOT=$root
 $env:TROOP_FRAME_PROBE=if($FrameProbe){'1'}else{'0'}
 $env:TROOP_MAPPING_ONLY=if($MappingOnly){'1'}else{'0'}
+$env:TROOP_RECOVERY_PROBE=if($RecoveryProbe){'1'}else{'0'}
 $captureProcess=Start-Process -FilePath (Join-Path $shellDir 'troop-capture-prototype.exe') -WorkingDirectory $root -RedirectStandardError (Join-Path $root '.tmp-host-control/capture-stderr.log') -RedirectStandardOutput (Join-Path $root '.tmp-host-control/capture-stdout.log') -PassThru
 $finished=$captureProcess.WaitForExit(15000)
 [pscustomobject]@{finishedWithin15Seconds=$finished;exitCode=if($finished){$captureProcess.ExitCode}else{$null};pid=$captureProcess.Id} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $root '.tmp-host-control/capture-process.json') -Encoding utf8
