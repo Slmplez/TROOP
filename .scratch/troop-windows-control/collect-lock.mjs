@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+const source=process.argv[2];
+if(!source)throw Error('Pass the events.jsonl from the explicitly completed manual exercise');
+const events=fs.readFileSync(source,'utf8').trim().split(/\r?\n/).map(JSON.parse);
+const trace=events.filter(e=>!['startup','notifications'].includes(e.event));
+const lockEvents=trace.filter(e=>e.event==='wts_detail'&&e.data.change===7);
+const unlockEvents=trace.filter(e=>e.event==='wts_detail'&&e.data.change===8);
+const result={date:'2026-11-01',userConfirmedCompleted:true,scope:'Manual Windows lock/unlock in current console session; no active authorized or queued operation in this trace',counts:{locks:lockEvents.length,unlocks:unlockEvents.length,grants:trace.filter(e=>e.event==='task_granted').length,queuedActions:trace.filter(e=>e.event==='queued_action').length,osSubmissions:trace.filter(e=>e.event==='os_submission').length},afterLastUnlock:unlockEvents.at(-1),trace,verdict:'Real WTS notifications observed; observation remained invalid after unlock; no OS input submitted.',notProven:['Cancellation of an already queued action at real lock boundary','Race between final input gate and OS submission','Successful re-observation and new input after unlock','Capture resource restart at lock/unlock']};
+fs.writeFileSync('.scratch/troop-windows-control/manual-lock-results.json',JSON.stringify(result,null,2)+'\n');
+console.log(JSON.stringify({counts:result.counts,verdict:result.verdict}));

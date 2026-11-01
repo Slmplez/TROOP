@@ -1,0 +1,147 @@
+{
+  "date": "2026-11-01",
+  "userConfirmedCompleted": true,
+  "scope": "Manual Windows lock/unlock in current console session; no active authorized or queued operation in this trace",
+  "counts": {
+    "locks": 2,
+    "unlocks": 2,
+    "grants": 0,
+    "queuedActions": 0,
+    "osSubmissions": 0
+  },
+  "afterLastUnlock": {
+    "data": {
+      "change": 8,
+      "session": 1
+    },
+    "epoch": 6,
+    "event": "wts_detail",
+    "grant": false,
+    "ms": 45039,
+    "observed": false,
+    "queued": 0
+  },
+  "trace": [
+    {
+      "data": {
+        "pending_discarded": true
+      },
+      "epoch": 1,
+      "event": "session_unavailable",
+      "grant": false,
+      "ms": 31443,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "pending_discarded": true
+      },
+      "epoch": 2,
+      "event": "wts_event",
+      "grant": false,
+      "ms": 31466,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "change": 7,
+        "session": 1
+      },
+      "epoch": 2,
+      "event": "wts_detail",
+      "grant": false,
+      "ms": 31467,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "pending_discarded": true
+      },
+      "epoch": 3,
+      "event": "wts_event",
+      "grant": false,
+      "ms": 35027,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "change": 8,
+        "session": 1
+      },
+      "epoch": 3,
+      "event": "wts_detail",
+      "grant": false,
+      "ms": 35027,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "pending_discarded": true
+      },
+      "epoch": 4,
+      "event": "wts_event",
+      "grant": false,
+      "ms": 42358,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "change": 7,
+        "session": 1
+      },
+      "epoch": 4,
+      "event": "wts_detail",
+      "grant": false,
+      "ms": 42358,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "pending_discarded": true
+      },
+      "epoch": 5,
+      "event": "session_unavailable",
+      "grant": false,
+      "ms": 42365,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "pending_discarded": true
+      },
+      "epoch": 6,
+      "event": "wts_event",
+      "grant": false,
+      "ms": 45039,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "change": 8,
+        "session": 1
+      },
+      "epoch": 6,
+      "event": "wts_detail",
+      "grant": false,
+      "ms": 45039,
+      "observed": false,
+      "queued": 0
+    }
+  ],
+  "verdict": "Real WTS notifications observed; observation remained invalid after unlock; no OS input submitted.",
+  "notProven": [
+    "Cancellation of an already queued action at real lock boundary",
+    "Race between final input gate and OS submission",
+    "Successful re-observation and new input after unlock",
+    "Capture resource restart at lock/unlock"
+  ]
+}
