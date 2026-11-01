@@ -1,0 +1,652 @@
+{
+  "scope": "Actual AnysphereAgent and SimplePromptToolExecutor; synthetic provider/tool; memory-only, not production recovery",
+  "node": "v26.5.0",
+  "checksPassed": true,
+  "scenarios": [
+    {
+      "scenario": "text",
+      "outcome": {
+        "returned": true,
+        "keys": [
+          "rootPromptMessagesJson",
+          "turns",
+          "todos",
+          "pendingToolCalls",
+          "previousWorkspaceUris",
+          "fileStates",
+          "fileStatesV2",
+          "summaryArchives",
+          "turnTimings",
+          "subagentStates",
+          "selfSummaryCount",
+          "readPaths",
+          "plans",
+          "trackedGitRepoBranches",
+          "communicateUpdateHistory",
+          "subagentThreads",
+          "communicateUpdateStatesByParentToolCallId",
+          "subagentRunsByParentToolCallId",
+          "subagentStateRefs",
+          "completedAskQuestionToolCallIds",
+          "tokenDetails",
+          "mode",
+          "conversationStartedTimestampMs",
+          "conversationStartedTimeZone"
+        ],
+        "cancelledContext": false
+      },
+      "trace": [
+        {
+          "seq": 1,
+          "event": "append",
+          "roles": []
+        },
+        {
+          "seq": 2,
+          "event": "append",
+          "roles": [
+            "system"
+          ]
+        },
+        {
+          "seq": 3,
+          "event": "append",
+          "roles": []
+        },
+        {
+          "seq": 4,
+          "event": "append",
+          "roles": [
+            "user"
+          ]
+        },
+        {
+          "seq": 5,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 6,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 0
+        },
+        {
+          "seq": 7,
+          "event": "model-request",
+          "step": 1,
+          "call": false
+        },
+        {
+          "seq": 8,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 9,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 10,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 11,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 1
+        },
+        {
+          "seq": 12,
+          "event": "append",
+          "roles": [
+            "assistant"
+          ]
+        },
+        {
+          "seq": 13,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 14,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 0
+        },
+        {
+          "seq": 15,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 16,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 17,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 0
+        },
+        {
+          "seq": 18,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 19,
+          "event": "blob-flush"
+        }
+      ]
+    },
+    {
+      "scenario": "tool-loop",
+      "outcome": {
+        "returned": true,
+        "keys": [
+          "rootPromptMessagesJson",
+          "turns",
+          "todos",
+          "pendingToolCalls",
+          "previousWorkspaceUris",
+          "fileStates",
+          "fileStatesV2",
+          "summaryArchives",
+          "turnTimings",
+          "subagentStates",
+          "selfSummaryCount",
+          "readPaths",
+          "plans",
+          "trackedGitRepoBranches",
+          "communicateUpdateHistory",
+          "subagentThreads",
+          "communicateUpdateStatesByParentToolCallId",
+          "subagentRunsByParentToolCallId",
+          "subagentStateRefs",
+          "completedAskQuestionToolCallIds",
+          "tokenDetails",
+          "mode",
+          "conversationStartedTimestampMs",
+          "conversationStartedTimeZone"
+        ],
+        "cancelledContext": false
+      },
+      "trace": [
+        {
+          "seq": 1,
+          "event": "append",
+          "roles": []
+        },
+        {
+          "seq": 2,
+          "event": "append",
+          "roles": [
+            "system"
+          ]
+        },
+        {
+          "seq": 3,
+          "event": "append",
+          "roles": []
+        },
+        {
+          "seq": 4,
+          "event": "append",
+          "roles": [
+            "user"
+          ]
+        },
+        {
+          "seq": 5,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 6,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 0
+        },
+        {
+          "seq": 7,
+          "event": "model-request",
+          "step": 1,
+          "call": true
+        },
+        {
+          "seq": 8,
+          "event": "tool-start",
+          "id": "synthetic-call-1"
+        },
+        {
+          "seq": 9,
+          "event": "tool-args",
+          "chunk": "{\"value\":\"synthetic\"}"
+        },
+        {
+          "seq": 10,
+          "event": "tool-result"
+        },
+        {
+          "seq": 11,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 12,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 13,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 1
+        },
+        {
+          "seq": 14,
+          "event": "append",
+          "roles": [
+            "assistant",
+            "tool"
+          ]
+        },
+        {
+          "seq": 15,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 16,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 0
+        },
+        {
+          "seq": 17,
+          "event": "model-request",
+          "step": 2,
+          "call": false
+        },
+        {
+          "seq": 18,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 19,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 20,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 21,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 1
+        },
+        {
+          "seq": 22,
+          "event": "append",
+          "roles": [
+            "assistant"
+          ]
+        },
+        {
+          "seq": 23,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 24,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 0
+        },
+        {
+          "seq": 25,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 26,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 27,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 0
+        },
+        {
+          "seq": 28,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 29,
+          "event": "blob-flush"
+        }
+      ]
+    },
+    {
+      "scenario": "tool-wait",
+      "outcome": {
+        "returned": true,
+        "keys": [
+          "rootPromptMessagesJson",
+          "turns",
+          "todos",
+          "pendingToolCalls",
+          "previousWorkspaceUris",
+          "fileStates",
+          "fileStatesV2",
+          "summaryArchives",
+          "turnTimings",
+          "subagentStates",
+          "selfSummaryCount",
+          "readPaths",
+          "plans",
+          "trackedGitRepoBranches",
+          "communicateUpdateHistory",
+          "subagentThreads",
+          "communicateUpdateStatesByParentToolCallId",
+          "subagentRunsByParentToolCallId",
+          "subagentStateRefs",
+          "completedAskQuestionToolCallIds",
+          "tokenDetails",
+          "mode",
+          "conversationStartedTimestampMs",
+          "conversationStartedTimeZone"
+        ],
+        "cancelledContext": false
+      },
+      "trace": [
+        {
+          "seq": 1,
+          "event": "append",
+          "roles": []
+        },
+        {
+          "seq": 2,
+          "event": "append",
+          "roles": [
+            "system"
+          ]
+        },
+        {
+          "seq": 3,
+          "event": "append",
+          "roles": []
+        },
+        {
+          "seq": 4,
+          "event": "append",
+          "roles": [
+            "user"
+          ]
+        },
+        {
+          "seq": 5,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 6,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 0
+        },
+        {
+          "seq": 7,
+          "event": "model-request",
+          "step": 1,
+          "call": true
+        },
+        {
+          "seq": 8,
+          "event": "tool-start",
+          "id": "synthetic-call-1"
+        },
+        {
+          "seq": 9,
+          "event": "tool-args",
+          "chunk": "{\"value\":\"synthetic\"}"
+        },
+        {
+          "seq": 10,
+          "event": "tool-wait"
+        },
+        {
+          "seq": 11,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 12,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 1
+        },
+        {
+          "seq": 13,
+          "event": "tool-release"
+        },
+        {
+          "seq": 14,
+          "event": "tool-result"
+        },
+        {
+          "seq": 15,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 16,
+          "event": "append",
+          "roles": [
+            "assistant",
+            "tool"
+          ]
+        },
+        {
+          "seq": 17,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 18,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 0
+        },
+        {
+          "seq": 19,
+          "event": "model-request",
+          "step": 2,
+          "call": false
+        },
+        {
+          "seq": 20,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 21,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 22,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 23,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 1
+        },
+        {
+          "seq": 24,
+          "event": "append",
+          "roles": [
+            "assistant"
+          ]
+        },
+        {
+          "seq": 25,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 26,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 0
+        },
+        {
+          "seq": 27,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 28,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 29,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 0
+        },
+        {
+          "seq": 30,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 31,
+          "event": "blob-flush"
+        }
+      ]
+    },
+    {
+      "scenario": "tool-cancel",
+      "outcome": {
+        "returned": false,
+        "error": "ConnectError: [canceled] User aborted request",
+        "cancelledContext": true
+      },
+      "trace": [
+        {
+          "seq": 1,
+          "event": "append",
+          "roles": []
+        },
+        {
+          "seq": 2,
+          "event": "append",
+          "roles": [
+            "system"
+          ]
+        },
+        {
+          "seq": 3,
+          "event": "append",
+          "roles": []
+        },
+        {
+          "seq": 4,
+          "event": "append",
+          "roles": [
+            "user"
+          ]
+        },
+        {
+          "seq": 5,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 6,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 0
+        },
+        {
+          "seq": 7,
+          "event": "model-request",
+          "step": 1,
+          "call": true
+        },
+        {
+          "seq": 8,
+          "event": "tool-start",
+          "id": "synthetic-call-1"
+        },
+        {
+          "seq": 9,
+          "event": "tool-args",
+          "chunk": "{\"value\":\"synthetic\"}"
+        },
+        {
+          "seq": 10,
+          "event": "tool-wait"
+        },
+        {
+          "seq": 11,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 12,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 1
+        },
+        {
+          "seq": 13,
+          "event": "cancel-request"
+        },
+        {
+          "seq": 14,
+          "event": "tool-abort-observed"
+        },
+        {
+          "seq": 15,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 16,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 17,
+          "event": "append",
+          "roles": [
+            "assistant",
+            "tool"
+          ]
+        },
+        {
+          "seq": 18,
+          "event": "blob-flush"
+        },
+        {
+          "seq": 19,
+          "event": "checkpoint-callback",
+          "turns": 1,
+          "pending": 0
+        },
+        {
+          "seq": 20,
+          "event": "update",
+          "kind": "unknown"
+        },
+        {
+          "seq": 21,
+          "event": "blob-flush"
+        }
+      ]
+    }
+  ],
+  "checkpointFailure": [
+    "flush-failed",
+    "caller-returned-without-error"
+  ]
+}

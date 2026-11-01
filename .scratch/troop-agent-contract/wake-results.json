@@ -1,0 +1,251 @@
+{
+  "evidence": "Real reconstructed SandPendingWakeStore, PendingWakeRearm, and CompletionRevivals with synthetic host services and real isolated disk marker files.",
+  "fixtureRoot": ".tmp-agent-contract/wake-fixture-RPROkB",
+  "limitations": [
+    "No real model, network, credentials, shell command, or personal profile.",
+    "Completion entries are injected directly into public in-memory queues; background completion discovery and startup event reconstruction are not exercised.",
+    "Disk writes/reloads use the real implementation, but no process crash, fsync, power loss, multiprocess races, or external recovery mechanism is tested.",
+    "Runner and exclusive-run host callbacks are fakes; the result proves this revival path removes its marker/queue before dispatch and does not itself retry these injected failures, not globally permanent information loss."
+  ],
+  "sourceReferences": [
+    "source/host/extensions/transcript/sand-pending-wake-store.ts:111",
+    "source/host/extensions/transcript/pending-wake-rearm.ts:56",
+    "source/host/extensions/transcript/completion-revivals.ts:128",
+    "source/host/extensions/transcript/completion-revivals.ts:240"
+  ],
+  "results": [
+    {
+      "scenario": "shell-success",
+      "remainingMarkerCount": 0,
+      "remainingQueueCount": 0,
+      "runnerAttempts": 1,
+      "attemptsOnSecondDrain": 0,
+      "markerFileExists": false,
+      "trace": [
+        {
+          "seq": 1,
+          "event": "reportPendingWake",
+          "outcome": "persisted"
+        },
+        {
+          "seq": 2,
+          "event": "marker-reloaded-before-dispatch"
+        },
+        {
+          "seq": 3,
+          "event": "reportPendingWake",
+          "outcome": "settled"
+        },
+        {
+          "seq": 4,
+          "event": "emit-async-tasks"
+        },
+        {
+          "seq": 5,
+          "event": "resolve-session",
+          "markerPresent": false
+        },
+        {
+          "seq": 6,
+          "event": "begin-run"
+        },
+        {
+          "seq": 7,
+          "event": "runner-run",
+          "markerPresent": false
+        },
+        {
+          "seq": 8,
+          "event": "reportShellRevival",
+          "outcome": "delivered"
+        },
+        {
+          "seq": 9,
+          "event": "emit-agent-update"
+        },
+        {
+          "seq": 10,
+          "event": "end-run"
+        }
+      ]
+    },
+    {
+      "scenario": "shell-runner-throws",
+      "remainingMarkerCount": 0,
+      "remainingQueueCount": 0,
+      "runnerAttempts": 1,
+      "attemptsOnSecondDrain": 0,
+      "markerFileExists": false,
+      "trace": [
+        {
+          "seq": 1,
+          "event": "reportPendingWake",
+          "outcome": "persisted"
+        },
+        {
+          "seq": 2,
+          "event": "marker-reloaded-before-dispatch"
+        },
+        {
+          "seq": 3,
+          "event": "reportPendingWake",
+          "outcome": "settled"
+        },
+        {
+          "seq": 4,
+          "event": "emit-async-tasks"
+        },
+        {
+          "seq": 5,
+          "event": "resolve-session",
+          "markerPresent": false
+        },
+        {
+          "seq": 6,
+          "event": "begin-run"
+        },
+        {
+          "seq": 7,
+          "event": "runner-run",
+          "markerPresent": false
+        },
+        {
+          "seq": 8,
+          "event": "reportAgentError"
+        },
+        {
+          "seq": 9,
+          "event": "tray-error"
+        },
+        {
+          "seq": 10,
+          "event": "reportShellRevival",
+          "outcome": "dropped",
+          "reason": "error"
+        },
+        {
+          "seq": 11,
+          "event": "end-run"
+        }
+      ]
+    },
+    {
+      "scenario": "shell-session-unavailable",
+      "remainingMarkerCount": 0,
+      "remainingQueueCount": 0,
+      "runnerAttempts": 0,
+      "attemptsOnSecondDrain": 0,
+      "markerFileExists": false,
+      "trace": [
+        {
+          "seq": 1,
+          "event": "reportPendingWake",
+          "outcome": "persisted"
+        },
+        {
+          "seq": 2,
+          "event": "marker-reloaded-before-dispatch"
+        },
+        {
+          "seq": 3,
+          "event": "reportPendingWake",
+          "outcome": "settled"
+        },
+        {
+          "seq": 4,
+          "event": "emit-async-tasks"
+        },
+        {
+          "seq": 5,
+          "event": "resolve-session",
+          "markerPresent": false
+        },
+        {
+          "seq": 6,
+          "event": "reportShellRevival",
+          "outcome": "dropped",
+          "reason": "session_unavailable"
+        }
+      ]
+    },
+    {
+      "scenario": "subagent-runner-throws",
+      "remainingMarkerCount": 0,
+      "remainingQueueCount": 0,
+      "runnerAttempts": 1,
+      "attemptsOnSecondDrain": 0,
+      "markerFileExists": false,
+      "trace": [
+        {
+          "seq": 1,
+          "event": "reportPendingWake",
+          "outcome": "persisted"
+        },
+        {
+          "seq": 2,
+          "event": "marker-reloaded-before-dispatch"
+        },
+        {
+          "seq": 3,
+          "event": "reportPendingWake",
+          "outcome": "settled"
+        },
+        {
+          "seq": 4,
+          "event": "emit-async-tasks"
+        },
+        {
+          "seq": 5,
+          "event": "resolve-session",
+          "markerPresent": false
+        },
+        {
+          "seq": 6,
+          "event": "begin-run"
+        },
+        {
+          "seq": 7,
+          "event": "runner-run",
+          "markerPresent": false
+        },
+        {
+          "seq": 8,
+          "event": "reportAgentError"
+        },
+        {
+          "seq": 9,
+          "event": "tray-error"
+        },
+        {
+          "seq": 10,
+          "event": "end-run"
+        },
+        {
+          "seq": 11,
+          "event": "reportSubagentRevival",
+          "outcome": "dropped",
+          "reason": "error"
+        }
+      ]
+    },
+    {
+      "scenario": "execution-disabled",
+      "remainingMarkerCount": 1,
+      "remainingQueueCount": 1,
+      "runnerAttempts": 0,
+      "attemptsOnSecondDrain": 0,
+      "markerFileExists": true,
+      "trace": [
+        {
+          "seq": 1,
+          "event": "reportPendingWake",
+          "outcome": "persisted"
+        },
+        {
+          "seq": 2,
+          "event": "marker-reloaded-before-dispatch"
+        }
+      ]
+    }
+  ]
+}
