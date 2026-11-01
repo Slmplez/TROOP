@@ -1,0 +1,84 @@
+{
+  "recordedUtc": "2026-11-01T10:04:10.3374037Z",
+  "repositoryHead": "710e2f9ee7a42f139a597ce15fc1edb66b77a350",
+  "method": "Read-only source inventory by two delegated fact investigators; no provider, personal config, Docker, runtime or model calls",
+  "userDirection": "Preserve Grok Bot mechanisms for memory, skills/workflows/hooks, automations and MCP",
+  "decisionStatus": "Magpie research completed; adoption direction and model gateway route pending user answers",
+  "sources": [
+    {
+      "path": "source/host/extensions/memory/memory-service.ts",
+      "sha256": "34dcc72eaca8a4280e6a02cb108564b07fbb05ffa4532551f5c3a672a483c9d2",
+      "lines": 172
+    },
+    {
+      "path": "source/host/extensions/memory/agent-state.ts",
+      "sha256": "376d4a17e566453d7af09d6956945e51251f1c265e00319685a9311e0c3a48af",
+      "lines": 63
+    },
+    {
+      "path": "source/host/runner/turn-memory.ts",
+      "sha256": "f3e287d58648608ba4bf27ceef03bc6bfd7d0cd2191bc6a45849dd64cc0538bd",
+      "lines": 114
+    },
+    {
+      "path": "source/host/host-runner-composition.ts",
+      "sha256": "4eb2149fe93ecf1445a5a58bd0b8d244dab6f6de89d6a4e55ff4f2c564009400",
+      "lines": 3307
+    },
+    {
+      "path": "source/host/workflows/workflow-store.ts",
+      "sha256": "53ec46ce7b04f76278bd7396345159579e759ef24ab0162903b77b93fad95524",
+      "lines": 55
+    },
+    {
+      "path": "source/host/agents/agent-workflow-enablement.ts",
+      "sha256": "1326231c7b58c4b6c37ea918cf840d159d94d4d9f32b1ee6ea326ad8ee8c5b3a",
+      "lines": 2
+    },
+    {
+      "path": "source/packages/agent/tools/core/remote-hooks.ts",
+      "sha256": "dcc41a36ba6212f5deb187e36eb6c157c804d2360ac994684bf17256e274df3b",
+      "lines": 259
+    },
+    {
+      "path": "source/shared/node/cursor-backend/account-mcp.ts",
+      "sha256": "d02e5ee1f56be41b4b60b86792fb4a435deeb6a5417f5d31edd6b534067cb243",
+      "lines": 130
+    },
+    {
+      "path": "source/shared/node/mcp/tools-discovery.ts",
+      "sha256": "50d11b9cc88f065307068706336223225b488f9fa7a87661a280f759169aa349",
+      "lines": 558
+    },
+    {
+      "path": "source/shared/automation-schedule.ts",
+      "sha256": "a0ee582772eddb717c25430f432608cfad1d9ccc2128cd0e07c8bd2ccc963736",
+      "lines": 19
+    },
+    {
+      "path": "source/host/extensions/automations/sand-automation-cloud-sync.ts",
+      "sha256": "26ffe11214c71ad1ba73deda093ebc2093c87f96173daff3fba9840a2cb06afa",
+      "lines": 543
+    },
+    {
+      "path": "source/host/extensions/transcript/automation-run-path.ts",
+      "sha256": "69bc6c124164582952347ccfee5570fa67bc8dc10aea89855f8bebcc24d403d6",
+      "lines": 448
+    },
+    {
+      "path": "source/electron-main/notifications/os-notification-manager.ts",
+      "sha256": "791a168af25481f2b096f013e806a793a4d202ad422ad025aaeb5c70ef0109aa",
+      "lines": 99
+    }
+  ],
+  "additionalReference": {
+    "runtimeExecuted": false,
+    "repository": "yetone/magpie",
+    "scope": [
+      "skills",
+      "mcp",
+      "model gateway"
+    ],
+    "commit": "1fac66c06d11de9e4232270862da0fa0a3ad90f6"
+  }
+}
