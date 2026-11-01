@@ -1,6 +1,6 @@
 #![windows_subsystem = "windows"]
 // THROWAWAY: only controls the test window created by this process.
-// No arbitrary HWND/coordinates/text accepted from outside. Not a production backend.
+// Frame-probe coordinates must resolve to our own synthetic marker; no arbitrary HWND/text.
 use serde_json::{json, Value};
 use std::{
     cell::RefCell,
@@ -15,9 +15,9 @@ use std::{
 use windows_sys::Win32::Storage::Xps::PrintWindow;
 use windows_sys::Win32::{
     Foundation::*,
-    Graphics::Gdi::*,
+    Graphics::{Gdi::*, Dwm::*},
     System::{LibraryLoader::*, RemoteDesktop::*, StationsAndDesktops::*, Threading::*},
-    UI::{HiDpi::*, Input::KeyboardAndMouse::*, WindowsAndMessaging::*},
+    UI::{Controls::DRAWITEMSTRUCT, HiDpi::*, Input::KeyboardAndMouse::*, WindowsAndMessaging::*},
 };
 
 fn wide(s: &str) -> Vec<u16> {
@@ -29,6 +29,7 @@ struct Action {
     rect: [i32; 4],
     due: u128,
     kind: &'static str,
+    point: Option<[i32;2]>,
 }
 struct State {
     hwnd: HWND,
@@ -50,6 +51,12 @@ struct State {
     os_ok: bool,
     sent: u32,
     hotkey: bool,
+    frame_probe: bool,
+    frame_ready: bool,
+    frame_consumed: bool,
+    frame_round: u32,
+    frame_observed_at: u128,
+    mapping_only: bool,
 }
 thread_local! {static STATE:RefCell<Option<State>>=const{RefCell::new(None)};}
 fn event(s: &mut State, name: &str, data: Value) {
@@ -107,13 +114,14 @@ unsafe fn session() -> (bool, Value) {
     )
 }
 fn invalidate(s: &mut State, reason: &str, revoke: bool) {
+    let discarded=s.queue.len();
     s.epoch += 1;
     s.observed = false;
     s.queue.clear();
     if revoke {
         s.grant = false;
     }
-    event(s, reason, json!({"pending_discarded":true}));
+    event(s, reason, json!({"pending_discarded":true,"discarded_count":discarded}));
 }
 unsafe fn render(s: &State) {
     let label=format!("宿主测试窗口 · 授权={} · 新观测={} · epoch={} · 队列={}\r\n命中={} · OS 已插入事件={} · {}\r\n模拟锁定={} · OS 会话可用={} · 仅此窗口；GDI 样本非 WGC",s.grant,s.observed,s.epoch,s.queue.len(),s.clicks,s.sent,if s.hotkey{"Ctrl+Shift+F12 停止"}else{"快捷键不可用，请用立即停止按钮"},s.simulated,s.os_ok);
@@ -144,8 +152,9 @@ unsafe fn enqueue(s: &mut State, kind: &'static str, delay: u128) {
         rect: s.last_rect,
         due: s.start.elapsed().as_millis() + delay,
         kind,
+        point: None,
     });
-    event(s, "queued_action", json!({"kind":kind}));
+    event(s, "queued_action", json!({"kind":kind,"delay_ms":delay}));
 }
 unsafe fn dispatch(s: &mut State, a: Action) {
     let (ok, _) = session();
@@ -171,10 +180,9 @@ unsafe fn dispatch(s: &mut State, a: Action) {
     let mut inputs = Vec::<INPUT>::new();
     if a.kind == "click" {
         let r = rect(s.marker);
-        let point = POINT {
-            x: (r[0] + r[2]) / 2,
-            y: (r[1] + r[3]) / 2,
-        };
+        let [x,y]=a.point.unwrap_or([(r[0]+r[2])/2,(r[1]+r[3])/2]);
+        if x<r[0]||x>=r[2]||y<r[1]||y>=r[3]{invalidate(s,"point_outside_own_marker",false);return;}
+        let point = POINT {x,y};
         if WindowFromPoint(point) != s.marker {
             invalidate(s, "target_occluded", false);
             return;
@@ -252,6 +260,44 @@ unsafe fn dispatch(s: &mut State, a: Action) {
         invalidate(s, "partial_or_failed_input_indeterminate", true);
     }
 }
+unsafe fn extended(h:HWND)->Option<[i32;4]>{
+    let mut r:RECT=zeroed();
+    let hr=DwmGetWindowAttribute(h,DWMWA_EXTENDED_FRAME_BOUNDS as u32,(&mut r as *mut RECT).cast(),size_of::<RECT>() as u32);
+    if hr<0||r.right<=r.left||r.bottom<=r.top{None}else{Some([r.left,r.top,r.right,r.bottom])}
+}
+unsafe fn frame_tick(s:&mut State){
+    if s.frame_round>2{return;}
+    if s.frame_consumed {
+        if s.mapping_only||s.clicks>=s.frame_round {
+            event(s,if s.mapping_only{"frame_mapping_without_input"}else{"frame_click_verified"},json!({"round":s.frame_round,"clicks":s.clicks}));
+            s.frame_round+=1;s.frame_ready=false;s.frame_consumed=false;
+            invalidate(s,"frame_trial_transition",false);
+            if s.frame_round==2{SetWindowPos(s.hwnd,null_mut(),430,230,1100,720,SWP_NOZORDER|SWP_NOACTIVATE);}
+        }
+        return;
+    }
+    if !s.frame_ready {
+        if !s.os_ok{return;}
+        if !s.mapping_only {if GetForegroundWindow()!=s.hwnd{return;}s.grant=true;observe(s);if !s.observed{return;}}
+        let Some(bounds)=extended(s.hwnd) else{return;};
+        let m=rect(s.marker);s.frame_observed_at=s.start.elapsed().as_millis();
+        let data=json!({"round":s.frame_round,"epoch":s.epoch,"window_rect":rect(s.hwnd),"extended_rect":bounds,"marker_rect":m,"patch_rect":[m[0]+10,m[1]+10,m[0]+42,m[1]+42],"dpi":GetDpiForWindow(s.hwnd)});
+        fs::write(s.out.join(format!("geometry-{}.json",s.frame_round)),data.to_string()).unwrap();
+        event(s,"frame_geometry_ready",data);s.frame_ready=true;return;
+    }
+    let file=s.out.join(format!("frame-click-{}.json",s.frame_round));
+    if !file.exists(){return;}
+    s.frame_consumed=true;
+    let packet:Value=match fs::read(&file).ok().and_then(|b|if b.len()<8192{serde_json::from_slice(&b).ok()}else{None}){Some(v)=>v,None=>{event(s,"frame_packet_rejected",json!({"reason":"format"}));return;}};
+    let coords=packet.get("point").and_then(Value::as_array);
+    let point=coords.and_then(|p|if p.len()==2{Some([i32::try_from(p[0].as_i64()?).ok()?,i32::try_from(p[1].as_i64()?).ok()?])}else{None});
+    let current_ext=extended(s.hwnd);
+    if point.is_none()||packet["epoch"].as_u64()!=Some(s.epoch)||packet["extended_rect"]!=json!(current_ext)||s.start.elapsed().as_millis()-s.frame_observed_at>15000{
+        event(s,"frame_packet_rejected",json!({"reason":"stale_or_invalid","packet":packet}));return;
+    }
+    event(s,"frame_point_received",packet);
+    if !s.mapping_only{dispatch(s,Action{epoch:s.epoch,rect:s.last_rect,due:0,kind:"click",point});}
+}
 unsafe fn capture(s: &mut State) {
     // Render ONLY our synthetic client using WM_PRINT/PrintWindow, not a desktop screenshot.
     let mut r: RECT = zeroed();
@@ -305,6 +351,17 @@ unsafe fn capture(s: &mut State) {
     );
 }
 unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
+    if msg==WM_DRAWITEM {
+        let item=&*(lp as *const DRAWITEMSTRUCT);
+        if item.CtlID==201 {
+            FillRect(item.hDC,&item.rcItem,GetSysColorBrush(COLOR_BTNFACE));
+            let patch=RECT{left:10,top:10,right:42,bottom:42};
+            let brush=CreateSolidBrush(0x00ff00ff);FillRect(item.hDC,&patch,brush);DeleteObject(brush);
+            let mut label=RECT{left:52,top:10,right:item.rcItem.right-8,bottom:52};
+            DrawTextW(item.hDC,wide("图像定位色块 / 命中计数").as_ptr(),-1,&mut label,DT_LEFT|DT_VCENTER|DT_SINGLELINE);
+            return 1;
+        }
+    }
     if msg == WM_DESTROY {
         PostQuitMessage(0);
         return 0;
@@ -330,6 +387,7 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
  105=>{s.simulated=true;invalidate(s,"simulated_lock",false);},106=>{s.simulated=false;invalidate(s,"simulated_unlock_requires_observation",false);},
  107=>{invalidate(s,"simulated_stale_frame",false);},108=>observe(s),109=>capture(s),
  110=>{invalidate(s,"probe_reset",true);s.simulated=false;s.clicks=0;s.sent=0;s.step=0;s.start=Instant::now();s.probe=true;SetWindowTextW(s.edit,wide("").as_ptr());},
+ 111=>{invalidate(s,"lock_trial_reset",true);s.grant=true;observe(s);event(s,"task_granted",json!({"scope":"own-test-window","exercise":"real-lock-with-queued-action"}));enqueue(s,"click",60000);},
  201=>{s.clicks+=1;event(s,"target_click_received",json!({"clicks":s.clicks}));},_=>{}
  }},
  WM_HOTKEY=>invalidate(s,"emergency_hotkey",true),
@@ -339,6 +397,7 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
   let (ok,_)=session();if !ok&&s.os_ok{invalidate(s,"session_unavailable",false);}s.os_ok=ok;
   if s.observed&&(GetForegroundWindow()!=s.hwnd||rect(s.hwnd)!=s.last_rect){invalidate(s,"focus_or_geometry_changed",false);}
   let now=s.start.elapsed().as_millis();
+  if s.frame_probe {frame_tick(s);}
   if s.probe {let threshold=[300,600,1000,1500,2000,2500,3000,3500,4100,4700,5300,5900,6500];
    if (s.step as usize)<threshold.len()&&now>=threshold[s.step as usize]{match s.step{
     0=>enqueue(s,"click",0),
@@ -389,6 +448,7 @@ unsafe fn child(
 fn main() {
     unsafe {
         let args: Vec<_> = std::env::args().collect();
+        let lock_only=args.iter().any(|a|a=="--lock-probe");
         let out = PathBuf::from(args.get(1).expect("output directory required"));
         fs::create_dir_all(&out).unwrap();
         let dpi_ok = SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
@@ -417,7 +477,7 @@ fn main() {
         );
         assert!(!hwnd.is_null());
         let status = child(hwnd, "STATIC", "尚未授权", 1, 20, 15, 860, 85, 0);
-        for (i, (label, id)) in [
+        if !lock_only { for (i, (label, id)) in [
             ("授权并观察", 101),
             ("延迟点击标记", 102),
             ("延迟输入中文", 103),
@@ -443,6 +503,7 @@ fn main() {
                 BS_PUSHBUTTON as u32,
             );
         }
+        }
         let marker = child(
             hwnd,
             "BUTTON",
@@ -452,9 +513,9 @@ fn main() {
             280,
             360,
             65,
-            BS_PUSHBUTTON as u32,
+            BS_OWNERDRAW as u32,
         );
-        child(
+        if !lock_only { child(
             hwnd,
             "BUTTON",
             "运行 7 秒受控演练",
@@ -464,7 +525,7 @@ fn main() {
             360,
             65,
             BS_PUSHBUTTON as u32,
-        );
+        ); }
         let edit = child(
             hwnd,
             "EDIT",
@@ -476,7 +537,9 @@ fn main() {
             44,
             WS_BORDER | ES_AUTOHSCROLL as u32,
         );
-        child(hwnd,"STATIC","试用：授权 → 延迟动作 → 立即停止；或模拟锁定后解锁，旧动作不会重放。\r\n切换到其他窗口会暂停；回来后需重新观察。按钮“模拟”不改变 Windows 锁屏。\r\n此原型不测试 UAC，不操作其他软件；短动作已进入 OS 后无法撤回。",203,20,430,850,100,0);
+        child(hwnd,"STATIC",if lock_only {"1. 点击上方开始按钮，确认授权=true、队列=1。\r\n2. 在 60 秒内手动锁屏，然后解锁。\r\n3. 解锁后不要点任何按钮，回聊天回复“已完成”。\r\n若没有锁屏且目标一直在前台，60 秒后最多点击自身标记一次。"}else{"试用：授权 → 延迟动作 → 立即停止；或模拟锁定后解锁，旧动作不会重放。\r\n切换到其他窗口会暂停；回来后需重新观察。按钮“模拟”不改变 Windows 锁屏。\r\n此原型不测试 UAC，不操作其他软件；短动作已进入 OS 后无法撤回。"},203,20,430,850,100,0);
+        child(hwnd,"BUTTON",if lock_only{"开始锁屏演练：授权并排队 60 秒"}else{"锁屏演练：授权并排队 60 秒"},111,20,if lock_only{115}else{540},830,if lock_only{60}else{36},BS_PUSHBUTTON as u32);
+        if lock_only {child(hwnd,"BUTTON","停止 / 取消这次演练",104,20,195,830,48,BS_PUSHBUTTON as u32);}
         let (ok, detail) = session();
         let log = File::create(out.join("events.jsonl")).unwrap();
         let mut s = State {
@@ -499,6 +562,12 @@ fn main() {
             os_ok: ok,
             sent: 0,
             hotkey: false,
+            frame_probe: args.iter().any(|a|a=="--frame-probe"),
+            frame_ready:false,
+            frame_consumed:false,
+            frame_round:1,
+            frame_observed_at:0,
+            mapping_only:args.iter().any(|a|a=="--mapping-only"),
         };
         event(
             &mut s,
@@ -520,8 +589,10 @@ fn main() {
         );
         STATE.with(|c| *c.borrow_mut() = Some(s));
         ShowWindow(hwnd, SW_SHOW);
+        ShowWindow(hwnd, SW_RESTORE);
         UpdateWindow(hwnd);
         SetForegroundWindow(hwnd);
+        STATE.with(|c|{let mut v=c.borrow_mut();let s=v.as_mut().unwrap();event(s,"window_visibility",json!({"visible":IsWindowVisible(hwnd),"iconic":IsIconic(hwnd),"foreground_owned":GetForegroundWindow()==hwnd}));});
         SetTimer(hwnd, 1, 40, None);
         let mut msg: MSG = zeroed();
         while GetMessageW(&mut msg, null_mut(), 0, 0) > 0 {

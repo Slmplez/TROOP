@@ -1,0 +1,690 @@
+{
+  "date": "2026-11-01",
+  "userConfirmedCompleted": true,
+  "scope": "User-triggered authorized 60-second queued action followed by manual Windows lock/unlock",
+  "counts": {
+    "locks": 1,
+    "unlocks": 1,
+    "grants": 8,
+    "queuedActions": 8,
+    "osSubmissions": 0
+  },
+  "afterLastUnlock": {
+    "data": {
+      "change": 8,
+      "session": 1
+    },
+    "epoch": 12,
+    "event": "wts_detail",
+    "grant": true,
+    "ms": 144069,
+    "observed": false,
+    "queued": 0
+  },
+  "trace": [
+    {
+      "data": {
+        "foreground_owned": false,
+        "iconic": 0,
+        "visible": 1
+      },
+      "epoch": 0,
+      "event": "window_visibility",
+      "grant": false,
+      "ms": 39,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "clicks": 1
+      },
+      "epoch": 0,
+      "event": "target_click_received",
+      "grant": false,
+      "ms": 34023,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "discarded_count": 0,
+        "pending_discarded": true
+      },
+      "epoch": 1,
+      "event": "lock_trial_reset",
+      "grant": false,
+      "ms": 35978,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "dpi": 96,
+        "rect": [
+          878,
+          263,
+          1798,
+          913
+        ],
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        }
+      },
+      "epoch": 1,
+      "event": "observed",
+      "grant": true,
+      "ms": 35978,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "exercise": "real-lock-with-queued-action",
+        "scope": "own-test-window"
+      },
+      "epoch": 1,
+      "event": "task_granted",
+      "grant": true,
+      "ms": 35978,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "delay_ms": 60000,
+        "kind": "click"
+      },
+      "epoch": 1,
+      "event": "queued_action",
+      "grant": true,
+      "ms": 35978,
+      "observed": true,
+      "queued": 1
+    },
+    {
+      "data": {
+        "discarded_count": 1,
+        "pending_discarded": true
+      },
+      "epoch": 2,
+      "event": "focus_or_geometry_changed",
+      "grant": true,
+      "ms": 43916,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "discarded_count": 0,
+        "pending_discarded": true
+      },
+      "epoch": 3,
+      "event": "lock_trial_reset",
+      "grant": false,
+      "ms": 125032,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "dpi": 96,
+        "rect": [
+          878,
+          263,
+          1798,
+          913
+        ],
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        }
+      },
+      "epoch": 3,
+      "event": "observed",
+      "grant": true,
+      "ms": 125032,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "exercise": "real-lock-with-queued-action",
+        "scope": "own-test-window"
+      },
+      "epoch": 3,
+      "event": "task_granted",
+      "grant": true,
+      "ms": 125032,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "delay_ms": 60000,
+        "kind": "click"
+      },
+      "epoch": 3,
+      "event": "queued_action",
+      "grant": true,
+      "ms": 125032,
+      "observed": true,
+      "queued": 1
+    },
+    {
+      "data": {
+        "discarded_count": 1,
+        "pending_discarded": true
+      },
+      "epoch": 4,
+      "event": "lock_trial_reset",
+      "grant": false,
+      "ms": 125561,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "dpi": 96,
+        "rect": [
+          878,
+          263,
+          1798,
+          913
+        ],
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        }
+      },
+      "epoch": 4,
+      "event": "observed",
+      "grant": true,
+      "ms": 125561,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "exercise": "real-lock-with-queued-action",
+        "scope": "own-test-window"
+      },
+      "epoch": 4,
+      "event": "task_granted",
+      "grant": true,
+      "ms": 125561,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "delay_ms": 60000,
+        "kind": "click"
+      },
+      "epoch": 4,
+      "event": "queued_action",
+      "grant": true,
+      "ms": 125561,
+      "observed": true,
+      "queued": 1
+    },
+    {
+      "data": {
+        "discarded_count": 1,
+        "pending_discarded": true
+      },
+      "epoch": 5,
+      "event": "lock_trial_reset",
+      "grant": false,
+      "ms": 125754,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "dpi": 96,
+        "rect": [
+          878,
+          263,
+          1798,
+          913
+        ],
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        }
+      },
+      "epoch": 5,
+      "event": "observed",
+      "grant": true,
+      "ms": 125754,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "exercise": "real-lock-with-queued-action",
+        "scope": "own-test-window"
+      },
+      "epoch": 5,
+      "event": "task_granted",
+      "grant": true,
+      "ms": 125754,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "delay_ms": 60000,
+        "kind": "click"
+      },
+      "epoch": 5,
+      "event": "queued_action",
+      "grant": true,
+      "ms": 125754,
+      "observed": true,
+      "queued": 1
+    },
+    {
+      "data": {
+        "discarded_count": 1,
+        "pending_discarded": true
+      },
+      "epoch": 6,
+      "event": "lock_trial_reset",
+      "grant": false,
+      "ms": 125897,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "dpi": 96,
+        "rect": [
+          878,
+          263,
+          1798,
+          913
+        ],
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        }
+      },
+      "epoch": 6,
+      "event": "observed",
+      "grant": true,
+      "ms": 125897,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "exercise": "real-lock-with-queued-action",
+        "scope": "own-test-window"
+      },
+      "epoch": 6,
+      "event": "task_granted",
+      "grant": true,
+      "ms": 125897,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "delay_ms": 60000,
+        "kind": "click"
+      },
+      "epoch": 6,
+      "event": "queued_action",
+      "grant": true,
+      "ms": 125897,
+      "observed": true,
+      "queued": 1
+    },
+    {
+      "data": {
+        "discarded_count": 1,
+        "pending_discarded": true
+      },
+      "epoch": 7,
+      "event": "lock_trial_reset",
+      "grant": false,
+      "ms": 126057,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "dpi": 96,
+        "rect": [
+          878,
+          263,
+          1798,
+          913
+        ],
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        }
+      },
+      "epoch": 7,
+      "event": "observed",
+      "grant": true,
+      "ms": 126057,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "exercise": "real-lock-with-queued-action",
+        "scope": "own-test-window"
+      },
+      "epoch": 7,
+      "event": "task_granted",
+      "grant": true,
+      "ms": 126057,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "delay_ms": 60000,
+        "kind": "click"
+      },
+      "epoch": 7,
+      "event": "queued_action",
+      "grant": true,
+      "ms": 126057,
+      "observed": true,
+      "queued": 1
+    },
+    {
+      "data": {
+        "discarded_count": 1,
+        "pending_discarded": true
+      },
+      "epoch": 8,
+      "event": "lock_trial_reset",
+      "grant": false,
+      "ms": 126242,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "dpi": 96,
+        "rect": [
+          878,
+          263,
+          1798,
+          913
+        ],
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        }
+      },
+      "epoch": 8,
+      "event": "observed",
+      "grant": true,
+      "ms": 126242,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "exercise": "real-lock-with-queued-action",
+        "scope": "own-test-window"
+      },
+      "epoch": 8,
+      "event": "task_granted",
+      "grant": true,
+      "ms": 126242,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "delay_ms": 60000,
+        "kind": "click"
+      },
+      "epoch": 8,
+      "event": "queued_action",
+      "grant": true,
+      "ms": 126242,
+      "observed": true,
+      "queued": 1
+    },
+    {
+      "data": {
+        "discarded_count": 1,
+        "pending_discarded": true
+      },
+      "epoch": 9,
+      "event": "lock_trial_reset",
+      "grant": false,
+      "ms": 138910,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "dpi": 96,
+        "rect": [
+          878,
+          263,
+          1798,
+          913
+        ],
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        }
+      },
+      "epoch": 9,
+      "event": "observed",
+      "grant": true,
+      "ms": 138910,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "exercise": "real-lock-with-queued-action",
+        "scope": "own-test-window"
+      },
+      "epoch": 9,
+      "event": "task_granted",
+      "grant": true,
+      "ms": 138910,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "delay_ms": 60000,
+        "kind": "click"
+      },
+      "epoch": 9,
+      "event": "queued_action",
+      "grant": true,
+      "ms": 138911,
+      "observed": true,
+      "queued": 1
+    },
+    {
+      "data": {
+        "discarded_count": 1,
+        "pending_discarded": true
+      },
+      "epoch": 10,
+      "event": "wts_event",
+      "grant": true,
+      "ms": 140618,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "change": 7,
+        "session": 1
+      },
+      "epoch": 10,
+      "event": "wts_detail",
+      "grant": true,
+      "ms": 140619,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "discarded_count": 0,
+        "pending_discarded": true
+      },
+      "epoch": 11,
+      "event": "session_unavailable",
+      "grant": true,
+      "ms": 140622,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "discarded_count": 0,
+        "pending_discarded": true
+      },
+      "epoch": 12,
+      "event": "wts_event",
+      "grant": true,
+      "ms": 144069,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "change": 8,
+        "session": 1
+      },
+      "epoch": 12,
+      "event": "wts_detail",
+      "grant": true,
+      "ms": 144069,
+      "observed": false,
+      "queued": 0
+    }
+  ],
+  "verdict": "Observed: authorized queued action invalidated, real lock/unlock received, no submission after invalidation. See exact discard event for which gate fired. Process was still alive more than 60 seconds after the initial post-unlock log read; no old action replay was observed.",
+  "notProven": [
+    "Every possible interleaving between final gate and OS submission",
+    "Successful re-observation and new input after unlock",
+    "Capture resource restart at lock/unlock"
+  ],
+  "queueEvidence": {
+    "selectedAttempt": "last qualifying queue before last real lock",
+    "firstQueue": {
+      "data": {
+        "delay_ms": 60000,
+        "kind": "click"
+      },
+      "epoch": 9,
+      "event": "queued_action",
+      "grant": true,
+      "ms": 138911,
+      "observed": true,
+      "queued": 1
+    },
+    "discarded": {
+      "data": {
+        "discarded_count": 1,
+        "pending_discarded": true
+      },
+      "epoch": 10,
+      "event": "wts_event",
+      "grant": true,
+      "ms": 140618,
+      "observed": false,
+      "queued": 0
+    },
+    "subsequentLock": {
+      "data": {
+        "change": 7,
+        "session": 1
+      },
+      "epoch": 10,
+      "event": "wts_detail",
+      "grant": true,
+      "ms": 140619,
+      "observed": false,
+      "queued": 0
+    },
+    "osSubmissionsAfterDiscard": 0
+  },
+  "postDeadlineObservation": {
+    "initialPostUnlockReadUtc": "2026-11-01T06:59:15.6400000+00:00",
+    "checkedAtUtc": "2026-11-01T07:03:24.3985165+00:00",
+    "elapsedAfterInitialLogReadMs": 248759,
+    "processId": 5380,
+    "processAlive": true,
+    "processExecutable": "troop-host-control-prototype.exe",
+    "traceSha256": "C0098F8B9E75B6998A6D2A51A0ACB1ABFF825DB82E0C274E59D5219A893E4ECC",
+    "interpretation": "Initial read already contained lock/unlock; the original 60000 ms deadline necessarily elapsed before this later live-process check."
+  }
+}
