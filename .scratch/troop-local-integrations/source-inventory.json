@@ -3,7 +3,7 @@
   "repositoryHead": "710e2f9ee7a42f139a597ce15fc1edb66b77a350",
   "method": "Read-only source inventory by two delegated fact investigators; no provider, personal config, Docker, runtime or model calls",
   "userDirection": "Preserve Grok Bot mechanisms for memory, skills/workflows/hooks, automations and MCP",
-  "decisionStatus": "Magpie research completed; adoption direction and model gateway route pending user answers",
+  "decisionStatus": "User confirmed legacy-compatible behavior, three local replacements, unified Skills/MCP registry and Rust-internal gateway with optional external Magpie",
   "sources": [
     {
       "path": "source/host/extensions/memory/memory-service.ts",
@@ -80,5 +80,6 @@
       "model gateway"
     ],
     "commit": "1fac66c06d11de9e4232270862da0fa0a3ad90f6"
-  }
+  },
+  "confirmedDate": "2026-11-01"
 }

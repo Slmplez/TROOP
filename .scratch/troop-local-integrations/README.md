@@ -2,10 +2,10 @@
 
 任务：[确定本地集成、记忆与自动化替代边界](https://github.com/Slmplez/TROOP/issues/8)。本目录是决策附件，任务状态只在 GitHub 维护。
 
-**尚未定稿。** 用户要求记忆、Skills/Workflows/Hooks、MCP 与自动化保持 Grok Bot 机制，并追加 Magpie 的 Skills、MCP 和网关作为参考。已完成旧版源码盘点及三份固定版本 Magpie 研究，当前等待对借鉴方式和网关路线的回答。
+**设计取舍已获用户确认。** 保持 Grok Bot 的记忆与调用机制，使用统一 Skills/MCP 资料库和按 Agent 分配；模型网关内置 Rust，外部 Magpie 可选。已完成旧版源码盘点、三份固定版本研究、必要本地替代及开发验收矩阵。正式业务模块尚未实现。
 
-- [契约草案](CONTRACT.draft.md)：兼容矩阵、用户已回答的三项本地替代、错误恢复与验收边界。
-- [Magpie 借鉴方案](MAGPIE-ADOPTION.draft.md)：推荐的 Rust 方案、借鉴/改造边界及增量验收。
+- [集成契约](CONTRACT.md)：兼容矩阵、三项本地替代、错误恢复与验收边界。
+- [Magpie 采用方案](MAGPIE-ADOPTION.md)：Rust 模块设计、借鉴/改造边界及增量验收。
 - [旧源码盘点记录](source-inventory.json)：本地基线源码哈希及研究状态，不代表运行验证。
 - [Skills 研究](../../docs/research/troop-magpie-skills-2026-11-01.md)。
 - [MCP 研究](../../docs/research/troop-magpie-mcp-2026-11-01.md)。
