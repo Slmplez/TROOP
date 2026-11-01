@@ -1,0 +1,9 @@
+[package]
+name = "troop-host-control-prototype"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+serde_json = "=1.0.154"
+windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Storage_Xps", "Win32_UI_WindowsAndMessaging", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_HiDpi", "Win32_System_LibraryLoader", "Win32_System_RemoteDesktop", "Win32_System_StationsAndDesktops", "Win32_System_Threading", "Win32_Security"] }

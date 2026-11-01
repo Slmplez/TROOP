@@ -1,0 +1,1235 @@
+{
+  "date": "2026-11-01",
+  "sourceBase": "710e2f9ee7a42f139a597ce15fc1edb66b77a350",
+  "os": "Windows 10.0.26200.0",
+  "rust": "1.92.0 x86_64-pc-windows-msvc",
+  "environment": {
+    "dpi": 96,
+    "dpi_context_set": 1,
+    "monitor_count": 1,
+    "session": {
+      "bytes": 232,
+      "default_desktop": true,
+      "expected_bytes": 232,
+      "flags": 1,
+      "query_error": 0,
+      "query_ok": 1,
+      "remote": false,
+      "session_id": 1,
+      "state": 0
+    },
+    "virtual_rect": [
+      0,
+      0,
+      2560,
+      1440
+    ]
+  },
+  "nativeTrace": [
+    {
+      "data": {
+        "kind": "click"
+      },
+      "epoch": 6,
+      "event": "rejected_before_queue",
+      "grant": false,
+      "ms": 300,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "dpi": 96,
+        "rect": [
+          80,
+          80,
+          1000,
+          730
+        ],
+        "session": {
+          "bytes": 232,
+          "default_desktop": true,
+          "expected_bytes": 232,
+          "flags": 1,
+          "query_error": 0,
+          "query_ok": 1,
+          "remote": false,
+          "session_id": 1,
+          "state": 0
+        }
+      },
+      "epoch": 7,
+      "event": "observed",
+      "grant": true,
+      "ms": 628,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {},
+      "epoch": 7,
+      "event": "probe_grant",
+      "grant": true,
+      "ms": 628,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "kind": "click"
+      },
+      "epoch": 7,
+      "event": "queued_action",
+      "grant": true,
+      "ms": 1003,
+      "observed": true,
+      "queued": 1
+    },
+    {
+      "data": {
+        "normalized": [
+          7375,
+          19264
+        ],
+        "point": [
+          288,
+          423
+        ],
+        "virtual_rect": [
+          0,
+          0,
+          2560,
+          1440
+        ]
+      },
+      "epoch": 7,
+      "event": "coordinate_mapping",
+      "grant": true,
+      "ms": 1005,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "inserted": 3,
+        "kind": "click",
+        "last_error": 0,
+        "requested": 3
+      },
+      "epoch": 7,
+      "event": "os_submission",
+      "grant": true,
+      "ms": 1012,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "clicks": 1
+      },
+      "epoch": 7,
+      "event": "target_click_received",
+      "grant": true,
+      "ms": 1016,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "kind": "unicode"
+      },
+      "epoch": 7,
+      "event": "queued_action",
+      "grant": true,
+      "ms": 1522,
+      "observed": true,
+      "queued": 1
+    },
+    {
+      "data": {
+        "inserted": 20,
+        "kind": "unicode",
+        "last_error": 0,
+        "requested": 20
+      },
+      "epoch": 7,
+      "event": "os_submission",
+      "grant": true,
+      "ms": 1532,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "text": "TROOP 中文 ✓"
+      },
+      "epoch": 7,
+      "event": "target_text_observed",
+      "grant": true,
+      "ms": 2034,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "backend": "PrintWindow-GDI-client-only",
+        "height": 611,
+        "not_wgc": true,
+        "print_return": 1,
+        "rows": 611,
+        "width": 904
+      },
+      "epoch": 7,
+      "event": "synthetic_capture",
+      "grant": true,
+      "ms": 2043,
+      "observed": true,
+      "queued": 0
+    },
+    {
+      "data": {
+        "kind": "click"
+      },
+      "epoch": 7,
+      "event": "queued_action",
+      "grant": true,
+      "ms": 2502,
+      "observed": true,
+      "queued": 1
+    },
+    {
+      "data": {
+        "pending_discarded": true
+      },
+      "epoch": 8,
+      "event": "probe_stop",
+      "grant": false,
+      "ms": 2502,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "kind": "click"
+      },
+      "epoch": 8,
+      "event": "rejected_before_queue",
+      "grant": false,
+      "ms": 3022,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "pending_discarded": true
+      },
+      "epoch": 9,
+      "event": "observation_blocked",
+      "grant": true,
+      "ms": 3540,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "kind": "click"
+      },
+      "epoch": 9,
+      "event": "rejected_before_queue",
+      "grant": true,
+      "ms": 3541,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "pending_discarded": true
+      },
+      "epoch": 10,
+      "event": "simulated_lock",
+      "grant": true,
+      "ms": 3541,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "pending_discarded": true
+      },
+      "epoch": 11,
+      "event": "simulated_unlock_requires_observation",
+      "grant": true,
+      "ms": 4147,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "kind": "click"
+      },
+      "epoch": 11,
+      "event": "rejected_before_queue",
+      "grant": true,
+      "ms": 4148,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "pending_discarded": true
+      },
+      "epoch": 12,
+      "event": "observation_blocked",
+      "grant": true,
+      "ms": 4710,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "kind": "click"
+      },
+      "epoch": 12,
+      "event": "rejected_before_queue",
+      "grant": true,
+      "ms": 4710,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "pending_discarded": true
+      },
+      "epoch": 13,
+      "event": "simulated_stale_frame",
+      "grant": true,
+      "ms": 4710,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "pending_discarded": true
+      },
+      "epoch": 14,
+      "event": "observation_blocked",
+      "grant": true,
+      "ms": 5317,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "kind": "click"
+      },
+      "epoch": 14,
+      "event": "rejected_before_queue",
+      "grant": true,
+      "ms": 5317,
+      "observed": false,
+      "queued": 0
+    },
+    {
+      "data": {
+        "clicks": 1,
+        "inserted_events": 23,
+        "multi_monitor_tested": false,
+        "real_lock_tested": false,
+        "text": "TROOP 中文 ✓",
+        "uipi_tested": false
+      },
+      "epoch": 14,
+      "event": "probe_summary",
+      "grant": true,
+      "ms": 5925,
+      "observed": false,
+      "queued": 0
+    }
+  ],
+  "summary": {
+    "clicks": 1,
+    "inserted_events": 23,
+    "multi_monitor_tested": false,
+    "real_lock_tested": false,
+    "text": "TROOP 中文 ✓",
+    "uipi_tested": false
+  },
+  "capture": {
+    "electron": "42.1.0",
+    "chrome": "148.0.7778.97",
+    "scope": "desktopCapturer window thumbnail of own synthetic native test window only",
+    "hardwareAcceleration": true,
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2560,
+          "height": 1440
+        },
+        "scaleFactor": 1,
+        "rotation": 0
+      }
+    ],
+    "captures": [],
+    "stage": "enumerating-native-window",
+    "processExit": {
+      "finishedWithin15Seconds": true,
+      "exitCode": -1073741819,
+      "hex": "0xc0000005"
+    },
+    "nativeDiagnostic": "wgc_capturer_win.cc:401] Failed to start capture: -2147024809",
+    "verdict": "Failed: process exited during capture; inspect stage and frames. Root cause not isolated."
+  },
+  "targetedCapture": {
+    "electron": "42.1.0",
+    "chrome": "148.0.7778.97",
+    "scope": "Zero-thumbnail enumeration followed by media capture of exact own synthetic HWND",
+    "hardwareAcceleration": true,
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2560,
+          "height": 1440
+        },
+        "scaleFactor": 1,
+        "rotation": 0
+      }
+    ],
+    "captures": [
+      {
+        "label": "native-window",
+        "targetFound": true,
+        "sourceId": "window:123473218:0",
+        "size": {
+          "width": 906,
+          "height": 642
+        },
+        "nonempty": true
+      },
+      {
+        "label": "after-target-close",
+        "targetFound": false,
+        "ownTitleCandidates": []
+      }
+    ],
+    "stage": "enumerating-after-target-close",
+    "childExit": {
+      "code": null,
+      "signal": "SIGTERM"
+    },
+    "childStderr": "",
+    "visualReview": "Saved PNG was opened and confirmed to depict only our synthetic native target window, 906x642."
+  },
+  "walkthroughs": [
+    {
+      "name": "正常操作",
+      "steps": [
+        {
+          "action": "queue",
+          "state": {
+            "granted": false,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 0,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "拒绝排队：授权、焦点或观测条件不足"
+          }
+        },
+        {
+          "action": "grant",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "授权仅覆盖当前任务；需要新观测"
+          }
+        },
+        {
+          "action": "observe",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "已重新观察当前目标"
+          }
+        },
+        {
+          "action": "queue",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [
+              {
+                "epoch": 1,
+                "rev": 0
+              }
+            ],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "排入一个短动作，尚未提交 OS"
+          }
+        },
+        {
+          "action": "send",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 1,
+            "unknown": 0,
+            "last": "短动作已提交 OS，效果需另行核对"
+          }
+        }
+      ]
+    },
+    {
+      "name": "停止与旧队列",
+      "steps": [
+        {
+          "action": "grant",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "授权仅覆盖当前任务；需要新观测"
+          }
+        },
+        {
+          "action": "observe",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "已重新观察当前目标"
+          }
+        },
+        {
+          "action": "queue",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [
+              {
+                "epoch": 1,
+                "rev": 0
+              }
+            ],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "排入一个短动作，尚未提交 OS"
+          }
+        },
+        {
+          "action": "send",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 1,
+            "unknown": 0,
+            "last": "短动作已提交 OS，效果需另行核对"
+          }
+        },
+        {
+          "action": "queue",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [
+              {
+                "epoch": 1,
+                "rev": 0
+              }
+            ],
+            "submitted": 1,
+            "unknown": 0,
+            "last": "排入一个短动作，尚未提交 OS"
+          }
+        },
+        {
+          "action": "stop",
+          "state": {
+            "granted": false,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 1,
+            "unknown": 0,
+            "last": "已撤销授权并清空队列；既有副作用保留"
+          }
+        },
+        {
+          "action": "send",
+          "state": {
+            "granted": false,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 1,
+            "unknown": 0,
+            "last": "无待执行动作"
+          }
+        }
+      ]
+    },
+    {
+      "name": "用户接管",
+      "steps": [
+        {
+          "action": "grant",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "授权仅覆盖当前任务；需要新观测"
+          }
+        },
+        {
+          "action": "observe",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "已重新观察当前目标"
+          }
+        },
+        {
+          "action": "queue",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [
+              {
+                "epoch": 1,
+                "rev": 0
+              }
+            ],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "排入一个短动作，尚未提交 OS"
+          }
+        },
+        {
+          "action": "blur",
+          "state": {
+            "granted": true,
+            "focus": false,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "失去目标焦点，暂停并清空队列"
+          }
+        },
+        {
+          "action": "send",
+          "state": {
+            "granted": true,
+            "focus": false,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "无待执行动作"
+          }
+        },
+        {
+          "action": "focus",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "已回到目标；请重新观察，不重放旧动作"
+          }
+        },
+        {
+          "action": "queue",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "拒绝排队：授权、焦点或观测条件不足"
+          }
+        },
+        {
+          "action": "observe",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "已重新观察当前目标"
+          }
+        },
+        {
+          "action": "queue",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 2,
+            "queue": [
+              {
+                "epoch": 2,
+                "rev": 0
+              }
+            ],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "排入一个短动作，尚未提交 OS"
+          }
+        },
+        {
+          "action": "send",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 1,
+            "unknown": 0,
+            "last": "短动作已提交 OS，效果需另行核对"
+          }
+        }
+      ]
+    },
+    {
+      "name": "锁屏与恢复",
+      "steps": [
+        {
+          "action": "grant",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "授权仅覆盖当前任务；需要新观测"
+          }
+        },
+        {
+          "action": "observe",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "已重新观察当前目标"
+          }
+        },
+        {
+          "action": "queue",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [
+              {
+                "epoch": 1,
+                "rev": 0
+              }
+            ],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "排入一个短动作，尚未提交 OS"
+          }
+        },
+        {
+          "action": "lock",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": true,
+            "rev": 0,
+            "observed": null,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "模拟锁屏：暂停、丢弃旧动作"
+          }
+        },
+        {
+          "action": "unlock",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 1,
+            "observed": null,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "模拟解锁：必须重新观察"
+          }
+        },
+        {
+          "action": "send",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 1,
+            "observed": null,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "无待执行动作"
+          }
+        },
+        {
+          "action": "queue",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 1,
+            "observed": null,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "拒绝排队：授权、焦点或观测条件不足"
+          }
+        },
+        {
+          "action": "observe",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 1,
+            "observed": 1,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "已重新观察当前目标"
+          }
+        },
+        {
+          "action": "queue",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 1,
+            "observed": 1,
+            "epoch": 2,
+            "queue": [
+              {
+                "epoch": 2,
+                "rev": 1
+              }
+            ],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "排入一个短动作，尚未提交 OS"
+          }
+        },
+        {
+          "action": "send",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 1,
+            "observed": 1,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 1,
+            "unknown": 0,
+            "last": "短动作已提交 OS，效果需另行核对"
+          }
+        }
+      ]
+    },
+    {
+      "name": "过期画面与权限",
+      "steps": [
+        {
+          "action": "grant",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "授权仅覆盖当前任务；需要新观测"
+          }
+        },
+        {
+          "action": "observe",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "已重新观察当前目标"
+          }
+        },
+        {
+          "action": "queue",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [
+              {
+                "epoch": 1,
+                "rev": 0
+              }
+            ],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "排入一个短动作，尚未提交 OS"
+          }
+        },
+        {
+          "action": "layout",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 1,
+            "observed": null,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "布局变化：旧坐标与观测失效"
+          }
+        },
+        {
+          "action": "send",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 1,
+            "observed": null,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "无待执行动作"
+          }
+        },
+        {
+          "action": "observe",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 1,
+            "observed": 1,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "已重新观察当前目标"
+          }
+        },
+        {
+          "action": "queue",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 1,
+            "observed": 1,
+            "epoch": 2,
+            "queue": [
+              {
+                "epoch": 2,
+                "rev": 1
+              }
+            ],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "排入一个短动作，尚未提交 OS"
+          }
+        },
+        {
+          "action": "permission",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 1,
+            "observed": null,
+            "epoch": 3,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "模拟权限失败：交还用户，不自动提权"
+          }
+        },
+        {
+          "action": "send",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 1,
+            "observed": null,
+            "epoch": 3,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "无待执行动作"
+          }
+        }
+      ]
+    },
+    {
+      "name": "结果不明与断开",
+      "steps": [
+        {
+          "action": "grant",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "授权仅覆盖当前任务；需要新观测"
+          }
+        },
+        {
+          "action": "observe",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "已重新观察当前目标"
+          }
+        },
+        {
+          "action": "queue",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [
+              {
+                "epoch": 1,
+                "rev": 0
+              }
+            ],
+            "submitted": 0,
+            "unknown": 0,
+            "last": "排入一个短动作，尚未提交 OS"
+          }
+        },
+        {
+          "action": "send",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": 0,
+            "epoch": 1,
+            "queue": [],
+            "submitted": 1,
+            "unknown": 0,
+            "last": "短动作已提交 OS，效果需另行核对"
+          }
+        },
+        {
+          "action": "uncertain",
+          "state": {
+            "granted": true,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 2,
+            "queue": [],
+            "submitted": 1,
+            "unknown": 1,
+            "last": "模拟效果不明：不自动重试"
+          }
+        },
+        {
+          "action": "disconnect",
+          "state": {
+            "granted": false,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 3,
+            "queue": [],
+            "submitted": 1,
+            "unknown": 1,
+            "last": "控制进程断开：撤销旧授权，禁止继续"
+          }
+        },
+        {
+          "action": "queue",
+          "state": {
+            "granted": false,
+            "focus": true,
+            "locked": false,
+            "rev": 0,
+            "observed": null,
+            "epoch": 3,
+            "queue": [],
+            "submitted": 1,
+            "unknown": 1,
+            "last": "拒绝排队：授权、焦点或观测条件不足"
+          }
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Only our synthetic native test window was an input target.",
+    "Native input positions derive from owned control geometry, not vision inference or a WGC frame.",
+    "GDI PrintWindow snapshot is not WGC or Desktop Duplication validation; Electron target-only media capture is a separate experiment.",
+    "Real lock/unlock, UAC/UIPI rejection, multi-monitor mixed DPI, RDP, continuous video, UIA backend, helper crash fencing and Electron/Rust control IPC are not validated by the automatic probes.",
+    "Focus was lost after the successful input/stop portion; later native re-observation attempts were rejected. HTML walkthroughs are simulations only."
+  ]
+}

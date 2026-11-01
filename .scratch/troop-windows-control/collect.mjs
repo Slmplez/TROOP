@@ -1,0 +1,26 @@
+// Capture observations, not a production regression suite.
+import fs from 'node:fs';
+import vm from 'node:vm';
+import path from 'node:path';
+const dir='.scratch/troop-windows-control';
+const readLines=p=>fs.readFileSync(p,'utf8').trim().split(/\r?\n/).map(JSON.parse);
+const native=readLines('.tmp-host-control/interactive-probe/events.jsonl');
+const start=native.find(e=>e.event==='startup');
+const reset=native.findLastIndex(e=>e.event==='probe_reset');
+const nativeTrace=native.slice(reset+1);
+const html=fs.readFileSync(path.join(dir,'control.prototype.html'),'utf8');
+const code=html.match(/<script id="control-model">([\s\S]*?)<\/script>/)[1];
+const model=vm.runInNewContext(code+';({initial,reduce,scenarios})');
+const walkthroughs=model.scenarios.map(scene=>{let s=model.initial();const steps=scene.steps.map(a=>{s=model.reduce(s,a);return {action:a,state:{...s,history:undefined}}});return {name:scene.name,steps};});
+const capturePath='.tmp-host-control/electron-capture/capture-results.json';
+const capture=fs.existsSync(capturePath)?JSON.parse(fs.readFileSync(capturePath,'utf8')):{status:'no-final-result'};
+const processResult=JSON.parse(fs.readFileSync('.tmp-host-control/capture-thumbnail-process.json','utf8').replace(/^\uFEFF/,''));
+capture.processExit={finishedWithin15Seconds:processResult.finishedWithin15Seconds,exitCode:processResult.exitCode,hex:processResult.exitCode===null?null:'0x'+(processResult.exitCode>>>0).toString(16)};
+const diagnostic=fs.readFileSync('.tmp-host-control/capture-exit-stderr.log','utf8');
+capture.nativeDiagnostic=diagnostic.match(/wgc_capturer_win\.cc[^\r\n]*/)?.[0]??null;
+capture.verdict=processResult.exitCode!==null&&processResult.exitCode!==0?'Failed: process exited during capture; inspect stage and frames. Root cause not isolated.':capture.captures.some(x=>x.nonempty)?'Nonempty image observed; review image and limitations.':'No validated frame; inspect stage and process state.';
+const targetedCapture=JSON.parse(fs.readFileSync('.tmp-host-control/electron-target-capture/capture-results.json','utf8'));
+targetedCapture.visualReview='Saved PNG was opened and confirmed to depict only our synthetic native target window, 906x642.';
+const evidence={date:'2026-11-01',sourceBase:'710e2f9ee7a42f139a597ce15fc1edb66b77a350',os:'Windows 10.0.26200.0',rust:'1.92.0 x86_64-pc-windows-msvc',environment:{...start.data,pid:undefined,hwnd:undefined},nativeTrace,summary:nativeTrace.find(e=>e.event==='probe_summary')?.data,capture,targetedCapture,walkthroughs,limitations:['Only our synthetic native test window was an input target.','Native input positions derive from owned control geometry, not vision inference or a WGC frame.','GDI PrintWindow snapshot is not WGC or Desktop Duplication validation; Electron target-only media capture is a separate experiment.','Real lock/unlock, UAC/UIPI rejection, multi-monitor mixed DPI, RDP, continuous video, UIA backend, helper crash fencing and Electron/Rust control IPC are not validated by the automatic probes.','Focus was lost after the successful input/stop portion; later native re-observation attempts were rejected. HTML walkthroughs are simulations only.']};
+fs.writeFileSync(path.join(dir,'observations.json'),JSON.stringify(evidence,null,2)+'\n');
+console.log(JSON.stringify({native:evidence.summary,capture,walkthroughs:walkthroughs.length},null,2));

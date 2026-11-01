@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TROOP 宿主控制交互原型</title>
+<style>
+:root{font:16px/1.65 system-ui,"Microsoft YaHei",sans-serif;color:#25312f;background:#f5f6f3}body{max-width:1000px;margin:36px auto;padding:0 24px}h1{font-size:28px;margin-bottom:8px}h2{font-size:18px}p{color:#54615c}section{background:white;border:1px solid #dce3dc;border-radius:12px;padding:22px;margin:18px 0}button{font:inherit;border:1px solid #bacac1;border-radius:7px;background:#f7faf7;color:#243d31;padding:8px 14px;margin:4px;cursor:pointer}button:hover{background:#e8f2eb}button:focus-visible{outline:3px solid #277451;outline-offset:2px}button[aria-selected=true]{background:#27644a;color:white}button:disabled{opacity:.45;cursor:default}.danger{color:#8b3333;border-color:#c89e9e}dl{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:0}dt{font-size:13px;color:#68746d}dd{margin:3px 0;font-weight:600}.note{border-left:4px solid #56836b;padding-left:16px}#log{white-space:pre-wrap;font-size:14px;max-height:210px;overflow:auto}#steps{display:flex;flex-wrap:wrap}.pill{font-size:13px;color:#35674c}footer{font-size:13px;color:#68746d}@media(max-width:650px){dl{grid-template-columns:repeat(2,1fr)}}
+</style>
+<h1>Windows 宿主控制：暂停与接管</h1>
+<p>这份一次性原型验证：按任务授权后，失焦、停止、锁屏或画面变化时，怎样阻止旧动作继续执行？</p>
+<p class="note"><b>本页仅模拟，不会操作 Windows。</b>真实 Rust 输入原型通过同目录 <code>run.ps1</code> 启动。这里的“锁屏”“权限失败”都是模拟事件，不是系统实测。</p>
+<section><h2>当前状态</h2><dl id="state"></dl><p id="notice" role="status" aria-live="polite"></p></section>
+<section><h2>自由试用</h2><div id="actions"></div></section>
+<section><h2>引导场景</h2><div id="tabs" role="tablist" aria-label="演练场景"></div><p id="description"></p><div id="steps"></div></section>
+<section><h2>变化记录</h2><div id="log"></div></section>
+<footer>已确认基线：失焦暂停；回来后重新观察；停止撤销任务授权；解锁不重放旧输入。已提交给操作系统的输入无法撤回。页面不保存状态。</footer>
+<script id="control-model">
+// Pure state model, independent of DOM and native APIs.
+const initial=()=>({granted:false,focus:true,locked:false,rev:0,observed:null,epoch:0,queue:[],submitted:0,unknown:0,last:'尚未授权',history:[]});
+function reduce(previous,action){
+ const s={...previous,queue:[...previous.queue],history:[...previous.history]};
+ const invalidate=(reason,revoke=false)=>{s.epoch++;s.observed=null;s.queue=[];if(revoke)s.granted=false;s.last=reason;};
+ const ready=()=>s.granted&&s.focus&&!s.locked&&s.observed===s.rev;
+ switch(action){
+ case 'grant':s.granted=true;s.epoch++;s.last='授权仅覆盖当前任务；需要新观测';break;
+ case 'observe':if(s.focus&&!s.locked){s.observed=s.rev;s.last='已重新观察当前目标'}else{s.last='无法观察：请先回到未锁定的目标'}break;
+ case 'queue':if(ready()){s.queue.push({epoch:s.epoch,rev:s.rev});s.last='排入一个短动作，尚未提交 OS'}else s.last='拒绝排队：授权、焦点或观测条件不足';break;
+ case 'send':{const a=s.queue.shift();if(!a)s.last='无待执行动作';else if(ready()&&a.epoch===s.epoch&&a.rev===s.rev){s.submitted++;s.last='短动作已提交 OS，效果需另行核对'}else invalidate('旧动作失效，未提交 OS');break;}
+ case 'stop':invalidate('已撤销授权并清空队列；既有副作用保留',true);break;
+ case 'blur':s.focus=false;invalidate('失去目标焦点，暂停并清空队列');break;
+ case 'focus':s.focus=true;s.last='已回到目标；请重新观察，不重放旧动作';break;
+ case 'lock':s.locked=true;invalidate('模拟锁屏：暂停、丢弃旧动作');break;
+ case 'unlock':s.locked=false;s.rev++;s.last='模拟解锁：必须重新观察';break;
+ case 'layout':s.rev++;invalidate('布局变化：旧坐标与观测失效');break;
+ case 'permission':invalidate('模拟权限失败：交还用户，不自动提权');break;
+ case 'uncertain':if(s.submitted){s.unknown++;invalidate('模拟效果不明：不自动重试')}else s.last='尚无已提交动作，不能制造未知结果';break;
+ case 'disconnect':invalidate('控制进程断开：撤销旧授权，禁止继续',true);break;
+ case 'reset':return initial();
+ }
+ s.history.push(s.last);return s;
+}
+const labels={grant:'授权当前任务',observe:'重新观察',queue:'排入短动作',send:'提交一个动作',stop:'立即停止',blur:'切到其他窗口',focus:'回到目标',lock:'模拟锁屏',unlock:'模拟解锁',layout:'模拟布局变化',permission:'模拟权限失败',uncertain:'模拟结果不明',disconnect:'模拟控制进程断开',reset:'重置演示'};
+const scenarios=[
+ {name:'正常操作',desc:'授权与观测缺一不可；提交 OS 与证明任务成功不是同一件事。',steps:['queue','grant','observe','queue','send']},
+ {name:'停止与旧队列',desc:'停止后即使再次点击提交，也不会重放旧动作；已发生效果保留。',steps:['grant','observe','queue','send','queue','stop','send']},
+ {name:'用户接管',desc:'用户切换窗口后暂停，回来后需要新观测；不抢回焦点。',steps:['grant','observe','queue','blur','send','focus','queue','observe','queue','send']},
+ {name:'锁屏与恢复',desc:'解锁保留未撤销的任务授权，但不恢复旧队列。',steps:['grant','observe','queue','lock','unlock','send','queue','observe','queue','send']},
+ {name:'过期画面与权限',desc:'显示布局变化使旧坐标失效；权限失败交还用户。',steps:['grant','observe','queue','layout','send','observe','queue','permission','send']},
+ {name:'结果不明与断开',desc:'提交后的效果不明不能自动重试；控制进程断开撤销旧授权。',steps:['grant','observe','queue','send','uncertain','disconnect','queue']}
+];
+</script>
+<script>
+let state=initial(),selected=0,step=0;
+const fields=()=>[['任务授权',state.granted?'有效':'未授权/已撤销'],['目标焦点',state.focus?'在目标上':'已失焦'],['模拟会话',state.locked?'锁定':'可用'],['观测',state.observed===state.rev?'当前':'需要重新观察'],['授权版本',state.epoch],['布局版本',state.rev],['排队动作',state.queue.length],['已提交 / 结果不明',`${state.submitted} / ${state.unknown}`]];
+function render(){document.getElementById('state').innerHTML=fields().map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');document.getElementById('notice').textContent=state.last;document.getElementById('log').textContent=state.history.map((x,i)=>`${i+1}. ${x}`).join('\n')||'尚无操作';document.querySelectorAll('[role=tab]').forEach((b,i)=>b.setAttribute('aria-selected',String(i===selected)));document.getElementById('description').textContent=scenarios[selected].desc;const el=document.getElementById('steps');el.replaceChildren();scenarios[selected].steps.forEach((a,i)=>{const b=document.createElement('button');b.textContent=`${i+1}. ${labels[a]}`;b.disabled=i!==step;b.onclick=()=>{state=reduce(state,a);step++;render()};el.appendChild(b)});}
+for(const [a,label]of Object.entries(labels)){const b=document.createElement('button');b.textContent=label;if(a==='stop')b.className='danger';b.onclick=()=>{state=reduce(state,a);if(a==='reset')step=0;render()};document.getElementById('actions').appendChild(b)}
+scenarios.forEach((scene,i)=>{const b=document.createElement('button');b.textContent=scene.name;b.setAttribute('role','tab');b.onclick=()=>{selected=i;step=0;state=initial();render()};document.getElementById('tabs').appendChild(b)});render();
+</script></html>
