@@ -1174,3 +1174,98 @@ select:focus-visible {
 .memory-settings input:not([type="checkbox"]) {
   width: 100%;
 }
+.skills-page form,
+.skill-scope,
+.skill-run-options,
+.skill-editor {
+  display: grid;
+  gap: 12px;
+}
+.skills-page label:not(.check-row) {
+  display: grid;
+  gap: 6px;
+}
+.skills-page input:not([type="checkbox"]),
+.skills-page select,
+.skills-page textarea {
+  width: 100%;
+}
+.skill-import,
+.skill-run-options {
+  margin: 20px 0;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+.skill-import summary,
+.skill-run-options summary {
+  cursor: pointer;
+  font-weight: 500;
+}
+.skill-import form {
+  margin: 16px 0;
+}
+.skill-preview,
+.skill-editor {
+  margin: 20px 0;
+}
+.skill-list-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.skill-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.skill-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #e5e7e7;
+}
+.skill-list li > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.skills-page p,
+.skill-preview li,
+.skill-versions li {
+  overflow-wrap: anywhere;
+}
+.skill-list p {
+  margin: 5px 0;
+}
+.skill-name {
+  padding-left: 0;
+  font-weight: 500;
+  text-align: left;
+}
+.skill-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: 12px;
+}
+.skill-editor textarea {
+  font-family: monospace;
+  min-height: 240px;
+}
+.skills-page button:disabled {
+  opacity: 1;
+  color: #606866;
+  background: #f4f5f5;
+  cursor: not-allowed;
+}
+.skill-delete-confirm {
+  border-top: 1px solid #e5e7e7;
+  padding: 16px 0;
+}
+@media (max-width: 900px) {
+  .skill-list li {
+    flex-direction: column;
+  }
+}

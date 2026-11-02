@@ -30,6 +30,7 @@ pub fn definitions() -> Vec<Value> {
     ];
     let mut result:Vec<Value>=specs.into_iter().map(|(name,description,properties,required)|json!({"name":name,"description":description,"parameters":{"type":"object","properties":properties,"required":required,"additionalProperties":false}})).collect();
     result.extend(crate::agent::memory::definitions());
+    result.extend(crate::agent::skills::definitions());
     result
 }
 pub fn needs_approval(name: &str) -> bool {
@@ -39,7 +40,7 @@ pub fn needs_approval(name: &str) -> bool {
     )
 }
 pub fn read_only(name: &str) -> bool {
-    if name == "recall_memory" {
+    if matches!(name, "recall_memory" | "read_skill" | "read_skill_file") {
         return true;
     }
     matches!(
@@ -69,6 +70,9 @@ pub fn git_preview() -> Value {
     json!({"program":"Git（工作区外的 PATH 程序）","arguments":GIT_STATUS_ARGS})
 }
 pub fn validate(name: &str, args: &Value) -> Result<(), String> {
+    if matches!(name, "read_skill" | "read_skill_file") {
+        return crate::agent::skills::validate(name, args);
+    }
     if matches!(name, "update_state" | "recall_memory") {
         return crate::agent::memory::validate(name, args);
     }

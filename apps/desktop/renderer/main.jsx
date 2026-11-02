@@ -6,6 +6,7 @@ import ChatPanel from "./ChatPanel";
 import ModelSettings from "./ModelSettings";
 import AgentPanel from "./AgentPanel";
 import MemoryPanel from "./MemoryPanel";
+import SkillsPanel from "./SkillsPanel";
 
 const labels = {
   starting: "正在连接",
@@ -16,6 +17,7 @@ const labels = {
 };
 function App() {
   const [page, setPage] = useState("chat");
+  const [openRun, setOpenRun] = useState(null);
   const [providers, setProviders] = useState([]);
   const [status, setStatus] = useState({ state: "starting" });
   const [rows, setRows] = useState([]);
@@ -112,6 +114,13 @@ function App() {
         <div className="scope">本机工作空间</div>
         <nav aria-label="主导航">
           <button
+            className={page === "skills" ? "selected" : ""}
+            onClick={() => setPage("skills")}
+            aria-current={page === "skills" ? "page" : undefined}
+          >
+            技能
+          </button>
+          <button
             className={page === "memory" ? "selected" : ""}
             onClick={() => setPage("memory")}
             aria-current={page === "memory" ? "page" : undefined}
@@ -173,7 +182,7 @@ function App() {
       </aside>
       <div className="topbar">
         <span>
-          TROOP <span className="version">0.5</span>
+          TROOP <span className="version">0.6</span>
         </span>
         <span>Windows · 本机</span>
       </div>
@@ -227,6 +236,7 @@ function App() {
         </div>
         <div hidden={page !== "agent"}>
           <AgentPanel
+            openRun={openRun}
             ready={ready}
             generation={status.generation}
             providers={providers}
@@ -243,6 +253,18 @@ function App() {
         )}
         {page === "memory" && (
           <MemoryPanel ready={ready} generation={status.generation} />
+        )}
+        {page === "skills" && (
+          <SkillsPanel
+            ready={ready}
+            generation={status.generation}
+            providers={providers}
+            workspaces={rows}
+            onRun={(id) => {
+              setOpenRun(id);
+              setPage("agent");
+            }}
+          />
         )}
         {page === "workspaces" ? (
           <>

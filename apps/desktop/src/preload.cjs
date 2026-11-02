@@ -50,6 +50,16 @@ contextBridge.exposeInMainWorld(
     retryMemoryJob: (id) => call("troop:memory-job.retry", { id }),
     compactRun: (id) => call("troop:agent-compact", { id }),
     listContextCheckpoints: (id) => call("troop:agent-checkpoints", { id }),
+    chooseSkill: () => call("troop:skills-choose"),
+    skillList: (input = {}) => call("troop:skills-list", input),
+    skillPreview: (input = {}) => call("troop:skills-preview", input),
+    skillImport: (input = {}) => call("troop:skills-import", input),
+    skillGet: (input = {}) => call("troop:skills-get", input),
+    skillVersions: (input = {}) => call("troop:skills-versions", input),
+    skillEnable: (input = {}) => call("troop:skills-enable", input),
+    skillRemove: (input = {}) => call("troop:skills-remove", input),
+    skillEdit: (input = {}) => call("troop:skills-edit", input),
+    skillRefresh: (input = {}) => call("troop:skills-refresh", input),
     quit: () => call("troop:quit"),
     onStatus: (callback) => {
       if (typeof callback !== "function") throw Error("Callback required");

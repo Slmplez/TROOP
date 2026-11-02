@@ -8,6 +8,7 @@ use std::{
 mod agent;
 mod chat;
 pub mod memory;
+mod skills;
 mod tasks;
 pub use agent::public_run;
 pub use chat::*;
@@ -52,7 +53,7 @@ impl Store {
         let version: i64 = db
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .map_err(|e| e.to_string())?;
-        if version > 5 {
+        if version > 6 {
             return Err("Database was created by a newer TROOP version".into());
         }
         db.execute_batch(
@@ -75,6 +76,9 @@ impl Store {
         }
         if version < 5 {
             memory::migrate(&mut db)?;
+        }
+        if version < 6 {
+            skills::migrate(&mut db)?;
         }
         db.execute("UPDATE turns SET status='interrupted',error_kind='core_interrupted',error_message='应用或 Core 上次中断；已保留收到的文本，请手动发送新消息。',finished_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE status='streaming'", []).map_err(|e|e.to_string())?;
         let mut store = Self { db, _lock: lock };
@@ -192,7 +196,7 @@ mod tests {
         fs::create_dir_all(&directory).unwrap();
         let database = directory.join("troop.sqlite3");
         let connection = Connection::open(&database).unwrap();
-        connection.execute_batch("PRAGMA user_version=6;").unwrap();
+        connection.execute_batch("PRAGMA user_version=7;").unwrap();
         drop(connection);
         assert!(matches!(Store::open(&directory), Err(message) if message.contains("newer")));
         let connection = Connection::open(database).unwrap();
@@ -203,7 +207,7 @@ mod tests {
         let version: i64 = connection
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .unwrap();
-        assert_eq!(version, 6);
+        assert_eq!(version, 7);
     }
 
     #[test]

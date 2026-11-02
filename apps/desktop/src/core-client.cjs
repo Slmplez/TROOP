@@ -1,8 +1,17 @@
 const { spawn } = require("node:child_process");
 const { EventEmitter } = require("node:events");
 const crypto = require("node:crypto");
-const PROTOCOL = 5;
+const PROTOCOL = 6;
 const ALLOWED = new Set([
+  "skills.list",
+  "skills.preview",
+  "skills.import",
+  "skills.get",
+  "skills.versions",
+  "skills.enable",
+  "skills.remove",
+  "skills.edit",
+  "skills.refresh",
   "system.ping",
   "workspace.list",
   "workspace.add",

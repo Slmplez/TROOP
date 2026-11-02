@@ -33,6 +33,9 @@ pub fn public_run(doc: &Value, brief: bool) -> Value {
         "compaction_epoch",
         "compaction_count",
         "maintenance_job_id",
+        "skill_versions",
+        "skill_unavailable",
+        "workflow_expansions",
     ] {
         result[key] = doc[key].clone();
     }
@@ -55,7 +58,7 @@ pub fn public_run(doc: &Value, brief: bool) -> Value {
             .as_array()
             .into_iter()
             .flatten()
-            .map(|i| json!({"id":i["id"],"applied":i["applied"]}))
+            .map(|i| json!({"id":i["id"],"applied":i["applied"],"workflow_error":i["workflow_error"]}))
             .collect::<Vec<_>>());
     }
     result

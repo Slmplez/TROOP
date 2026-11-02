@@ -20,6 +20,7 @@ use uuid::Uuid;
 mod tasks;
 use tasks::TaskLive;
 pub(crate) mod memory;
+pub(crate) mod skills;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -30,6 +31,7 @@ struct Start {
     goal: String,
     #[serde(default = "default_agent")]
     agent_id: i64,
+    workflow_id: Option<String>,
 }
 fn default_agent() -> i64 {
     1
@@ -282,6 +284,9 @@ impl Manager {
         method: &str,
         p: Value,
     ) -> Result<Value, String> {
+        if method.starts_with("skills.") {
+            return self.skills_rpc(store, method, p);
+        }
         if method.starts_with("memory.") || matches!(method, "agent.compact" | "agent.checkpoints")
         {
             return self.memory_rpc(store, method, p);
@@ -338,6 +343,10 @@ impl Manager {
                 config.endpoint()?;
                 let mut doc = json!({"state":"queued","epoch":1,"revision":0,"step":0,"intent":null,"workspace_id":a.workspace_id,"workspace":workspace,"provider_id":a.provider_id,"config":provider.config,"secret_ref":provider.secret_ref,"goal":a.goal,"history":[{"role":"user","content":a.goal}],"pending":[],"output":"","model_text":"","supplements":[],"waiting":[],"error":null});
                 doc["agent_id"] = json!(a.agent_id);
+                self.prepare_skills(store, &mut doc)?;
+                let expanded =
+                    Self::expand_workflows(store, &mut doc, &a.goal, a.workflow_id.as_deref())?;
+                doc["history"] = json!([{"role":"user","content":expanded}]);
                 store.agent_create(&a.client_run_id, &p, &mut doc)?;
                 let id = doc["id"].as_i64().unwrap();
                 self.live.insert(id, Live::default());
@@ -388,6 +397,7 @@ impl Manager {
                 if inputs.len() >= 8 {
                     return Err("本次任务补充指令已达到 8 条上限。".into());
                 }
+                Self::expand_workflows(store, &mut doc.clone(), &a.text, None)?;
                 inputs.push(json!({"id":a.client_input_id,"text":a.text,"applied":false}));
                 doc["supplements"] = json!(inputs);
                 Self::save(store, &mut doc, "input_received")?;
@@ -503,7 +513,23 @@ impl Manager {
         let mut h = history(doc);
         for input in &mut inputs {
             if input["applied"] != true {
-                h.push(json!({"role":"user","content":input["text"]}));
+                let expanded = match Self::expand_workflows(
+                    store,
+                    doc,
+                    input["text"].as_str().unwrap_or(""),
+                    None,
+                ) {
+                    Ok(text) => text,
+                    Err(error) => {
+                        input["workflow_error"] = json!(error);
+                        format!(
+                            "{}\n\n[Local workflow expansion failed; no recipe was applied: {}]",
+                            input["text"].as_str().unwrap_or(""),
+                            error
+                        )
+                    }
+                };
+                h.push(json!({"role":"user","content":expanded}));
                 input["applied"] = json!(true);
             }
         }
@@ -580,6 +606,9 @@ impl Manager {
                     continue;
                 }
                 if self.memory_tool(store, &mut doc, &mut inv)? {
+                    continue;
+                }
+                if self.skill_tool(store, &mut doc, &mut inv)? {
                     continue;
                 }
                 if self.live.values().any(|l| l.tool.is_some())
@@ -681,6 +710,10 @@ impl Manager {
                 }
                 let memory = Self::memory_snapshot(store, &mut doc)?;
                 let mut context = Self::context_view(&doc);
+                let skills = Self::skill_catalog(store, &doc)?;
+                if !skills.is_empty() {
+                    context.insert(0, json!({"role":"system","content":skills}));
+                }
                 if !memory.is_empty() {
                     context.insert(0, json!({"role":"system","content":memory}));
                 }

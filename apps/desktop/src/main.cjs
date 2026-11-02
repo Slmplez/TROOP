@@ -271,6 +271,27 @@ async function bootstrap({ userData, show = true } = {}) {
       core.request("memory." + action, payload(input)),
     );
   }
+  for (const action of [
+    "list",
+    "preview",
+    "import",
+    "get",
+    "versions",
+    "enable",
+    "remove",
+    "edit",
+    "refresh",
+  ]) {
+    handle("skills-" + action, (input = {}) =>
+      core.request("skills." + action, payload(input)),
+    );
+  }
+  handle("skills-choose", async () => {
+    const result = await dialog.showOpenDialog(win, {
+      properties: ["openDirectory"],
+    });
+    return result.canceled ? null : result.filePaths[0];
+  });
   handle("cancel-turn", (id) => {
     if (!validId(id)) throw Error("生成标识无效。");
     return core.request("chat.cancel", { turn_id: id });

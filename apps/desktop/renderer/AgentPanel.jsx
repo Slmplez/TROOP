@@ -32,6 +32,7 @@ export default function AgentPanel({
   providers,
   workspaces,
   visible,
+  openRun,
 }) {
   const [runs, setRuns] = useState([]),
     [selected, setSelected] = useState(null),
@@ -57,6 +58,9 @@ export default function AgentPanel({
     };
   }, [ready, generation, visible]);
   const [creating, setCreating] = useState(true);
+  useEffect(() => {
+    if (openRun != null) choose(openRun);
+  }, [openRun]);
   const [events, setEvents] = useState([]),
     [eventCursor, setEventCursor] = useState(null),
     [eventDetail, setEventDetail] = useState(null);

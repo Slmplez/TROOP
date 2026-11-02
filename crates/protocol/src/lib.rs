@@ -1,10 +1,19 @@
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-pub const VERSION: u32 = 5;
+pub const VERSION: u32 = 6;
 pub const MAX_FRAME: usize = 65_536;
 pub const METHODS: &[&str] = &[
     "system.hello",
+    "skills.list",
+    "skills.preview",
+    "skills.import",
+    "skills.get",
+    "skills.versions",
+    "skills.enable",
+    "skills.remove",
+    "skills.edit",
+    "skills.refresh",
     "system.ping",
     "system.shutdown",
     "workspace.list",
