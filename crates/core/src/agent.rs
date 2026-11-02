@@ -19,6 +19,7 @@ use troop_storage::{public_run, Store};
 use uuid::Uuid;
 mod tasks;
 use tasks::TaskLive;
+pub(crate) mod memory;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -27,6 +28,11 @@ struct Start {
     workspace_id: i64,
     provider_id: String,
     goal: String,
+    #[serde(default = "default_agent")]
+    agent_id: i64,
+}
+fn default_agent() -> i64 {
+    1
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -81,6 +87,8 @@ pub enum Update {
     TaskReady(i64, i64, blocking::Sender<bool>),
     TaskOutput(i64, i64, Value),
     TaskDone(i64, i64, Value),
+    Compacted(i64, i64, usize, String, Result<String, String>),
+    MemoryFinished(i64, u64, bool, Result<(String, Value), String>),
 }
 #[derive(Default)]
 struct Live {
@@ -96,6 +104,8 @@ pub struct Manager {
     pub receiver: mpsc::Receiver<Update>,
     receipts: PathBuf,
     jobs: HashMap<i64, TaskLive>,
+    maintenance: HashMap<i64, JoinHandle<()>>,
+    memory_queue: std::collections::BTreeSet<i64>,
 }
 fn terminal(doc: &Value) -> bool {
     matches!(
@@ -140,7 +150,7 @@ fn remove_pending(doc: &mut Value, id: i64) {
 }
 impl Manager {
     pub fn model_count(&self) -> usize {
-        self.live.values().filter(|l| l.model.is_some()).count()
+        self.live.values().filter(|l| l.model.is_some()).count() + self.maintenance.len()
     }
     pub fn new(directory: PathBuf) -> Result<Self, String> {
         let receipts = directory.join("worker-receipts");
@@ -152,10 +162,16 @@ impl Manager {
             receiver,
             receipts,
             jobs: HashMap::new(),
+            maintenance: HashMap::new(),
+            memory_queue: std::collections::BTreeSet::new(),
         })
     }
     pub fn owns_provider(&self, store: &Store, provider: &str) -> bool {
-        self.live.keys().any(|id| {
+        self.memory_queue.iter().any(|id| {
+            store
+                .memory_job(*id)
+                .is_ok_and(|j| j["provider_id"] == provider)
+        }) || self.live.keys().any(|id| {
             store
                 .agent_run(*id)
                 .is_ok_and(|r| r["provider_id"] == provider)
@@ -266,6 +282,10 @@ impl Manager {
         method: &str,
         p: Value,
     ) -> Result<Value, String> {
+        if method.starts_with("memory.") || matches!(method, "agent.compact" | "agent.checkpoints")
+        {
+            return self.memory_rpc(store, method, p);
+        }
         match method {
             "agent.tasks" | "agent.task" | "agent.stop-task" | "agent.reconcile-task" => {
                 self.task_rpc(store, method, p)
@@ -311,11 +331,13 @@ impl Manager {
                     return Err("最多保留 16 个活动任务，请先停止或完成已有任务。".into());
                 }
                 let workspace = store.workspace_path(a.workspace_id)?;
+                store.memory_agent(a.agent_id)?;
                 let provider = store.provider(&a.provider_id)?;
                 let config: Config = serde_json::from_value(provider.config.clone())
                     .map_err(|_| "模型配置损坏。")?;
                 config.endpoint()?;
                 let mut doc = json!({"state":"queued","epoch":1,"revision":0,"step":0,"intent":null,"workspace_id":a.workspace_id,"workspace":workspace,"provider_id":a.provider_id,"config":provider.config,"secret_ref":provider.secret_ref,"goal":a.goal,"history":[{"role":"user","content":a.goal}],"pending":[],"output":"","model_text":"","supplements":[],"waiting":[],"error":null});
+                doc["agent_id"] = json!(a.agent_id);
                 store.agent_create(&a.client_run_id, &p, &mut doc)?;
                 let id = doc["id"].as_i64().unwrap();
                 self.live.insert(id, Live::default());
@@ -494,8 +516,7 @@ impl Manager {
     }
     pub fn pump(&mut self, store: &mut Store, model_capacity: usize) -> Result<(), String> {
         self.pump_tasks(store)?;
-        let mut available =
-            model_capacity.saturating_sub(self.live.values().filter(|l| l.model.is_some()).count());
+        let mut available = model_capacity.saturating_sub(self.model_count());
         let mut ids = self.live.keys().copied().collect::<Vec<_>>();
         ids.sort_unstable();
         for id in ids {
@@ -556,6 +577,9 @@ impl Manager {
                     continue;
                 }
                 if self.owned_tool(store, &mut doc, &mut inv)? {
+                    continue;
+                }
+                if self.memory_tool(store, &mut doc, &mut inv)? {
                     continue;
                 }
                 if self.live.values().any(|l| l.tool.is_some())
@@ -642,7 +666,6 @@ impl Manager {
                     || store.agent_invocations(id)?.len() >= 32
                     || tree_steps >= 64
                     || tree_tools >= 128
-                    || doc["history"].to_string().len() > 192_000
                 {
                     doc["state"] = json!("failed");
                     doc["intent"] = json!("failure");
@@ -651,6 +674,20 @@ impl Manager {
                     Self::save(store, &mut doc, "budget_exhausted")?;
                     self.retire(store, id)?;
                     continue;
+                }
+                if self.maybe_compact(store, &mut doc)? {
+                    available -= 1;
+                    continue;
+                }
+                let memory = Self::memory_snapshot(store, &mut doc)?;
+                let mut context = Self::context_view(&doc);
+                if !memory.is_empty() {
+                    context.insert(0, json!({"role":"system","content":memory}));
+                }
+                if serde_json::to_string(&context).unwrap().len() > 192_000 {
+                    return Err(
+                        "Model context exceeds the bounded memory and history budget".into(),
+                    );
                 }
                 let config: Config =
                     serde_json::from_value(doc["config"].clone()).map_err(|_| "模型配置损坏。")?;
@@ -683,7 +720,7 @@ impl Manager {
                     secret,
                     messages: vec![],
                     tools: Some(ToolWire {
-                        history: history(&doc),
+                        history: context,
                         definitions: tools::definitions()
                             .into_iter()
                             .filter(|d| {
@@ -709,9 +746,16 @@ impl Manager {
                 available -= 1;
             }
         }
+        self.pump_memory(store, model_capacity)?;
         Ok(())
     }
     pub fn accept(&mut self, store: &mut Store, update: Update) -> Result<(), String> {
+        if let Update::MemoryFinished(id, attempt, validating, result) = update {
+            return self.accept_memory(store, id, attempt, validating, result);
+        }
+        if let Update::Compacted(id, epoch, count, fingerprint, result) = update {
+            return self.accept_compaction(store, id, epoch, count, fingerprint, result);
+        }
         if matches!(
             &update,
             Update::TaskReady(..) | Update::TaskOutput(..) | Update::TaskDone(..)
@@ -773,7 +817,11 @@ impl Manager {
                             &summary.output_items,
                         );
                         doc["history"] = json!(h);
-                        if doc["history"].to_string().len() > 192_000 {
+                        if serde_json::to_string(&Self::context_view(&doc))
+                            .unwrap()
+                            .len()
+                            > 192_000
+                        {
                             doc["state"] = json!("failed");
                             doc["intent"] = json!("failure");
                             doc["error"] = json!("模型输出使任务上下文超过 192KB；未派发工具。");
@@ -916,6 +964,16 @@ impl Manager {
         Ok(())
     }
     pub async fn shutdown(&mut self, store: &mut Store) -> Result<(), String> {
+        for id in self.memory_queue.iter().copied().collect::<Vec<_>>() {
+            let mut job = store.memory_job(id)?;
+            job["state"] = json!("interrupted");
+            job["error"] = json!("Application exited; manual maintenance retry required");
+            store.memory_job_save(&job)?;
+        }
+        self.memory_queue.clear();
+        for (_, handle) in self.maintenance.drain() {
+            handle.abort();
+        }
         let ids = self.live.keys().copied().collect::<Vec<_>>();
         for id in ids {
             self.stop(store, id, false).await?;
@@ -941,6 +999,9 @@ impl Manager {
 }
 impl Drop for Manager {
     fn drop(&mut self) {
+        for (_, handle) in self.maintenance.drain() {
+            handle.abort();
+        }
         for job in self.jobs.values() {
             job.cancel.store(true, Ordering::SeqCst);
         }

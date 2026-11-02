@@ -34,6 +34,13 @@ async function setup(t, plan, protocol = "anthropic", options = {}) {
     args: ["--data-dir", path.join(directory, "data")],
   });
   await core.start();
+  await core.request("memory.agent.save", {
+    id: 1,
+    name: "Fixture Agent",
+    automatic: false,
+    dreaming: false,
+    expected_revision: 1,
+  });
   t.after(async () => {
     await core.stop();
     await upstream.close();
@@ -141,7 +148,7 @@ for (const protocol of ["chat_completions", "responses", "anthropic"])
     assert.ok(result.invocations.every((i) => i.state === "succeeded"));
     assert.equal(h.upstream.requests.length, 2);
     const first = h.upstream.requests[0].body;
-    assert.equal(first.tools.length, 11);
+    assert.equal(first.tools.length, 13);
     const second = JSON.stringify(h.upstream.requests[1].body);
     assert.ok(
       second.includes("owned-call-0") &&

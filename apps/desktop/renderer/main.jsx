@@ -5,6 +5,7 @@ import { call } from "./api";
 import ChatPanel from "./ChatPanel";
 import ModelSettings from "./ModelSettings";
 import AgentPanel from "./AgentPanel";
+import MemoryPanel from "./MemoryPanel";
 
 const labels = {
   starting: "正在连接",
@@ -111,6 +112,13 @@ function App() {
         <div className="scope">本机工作空间</div>
         <nav aria-label="主导航">
           <button
+            className={page === "memory" ? "selected" : ""}
+            onClick={() => setPage("memory")}
+            aria-current={page === "memory" ? "page" : undefined}
+          >
+            记忆
+          </button>
+          <button
             className={page === "agent" ? "selected" : ""}
             onClick={() => setPage("agent")}
             aria-current={page === "agent" ? "page" : undefined}
@@ -165,7 +173,7 @@ function App() {
       </aside>
       <div className="topbar">
         <span>
-          TROOP <span className="version">0.4</span>
+          TROOP <span className="version">0.5</span>
         </span>
         <span>Windows · 本机</span>
       </div>
@@ -232,6 +240,9 @@ function App() {
             providers={providers}
             onSaved={refreshProviders}
           />
+        )}
+        {page === "memory" && (
+          <MemoryPanel ready={ready} generation={status.generation} />
         )}
         {page === "workspaces" ? (
           <>

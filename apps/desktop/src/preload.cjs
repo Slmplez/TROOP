@@ -35,6 +35,21 @@ contextBridge.exposeInMainWorld(
     getOwnedTask: (id) => call("troop:agent-task", { id }),
     stopOwnedTask: (id) => call("troop:agent-stop-task", { id }),
     reconcileOwnedTask: (input) => call("troop:agent-reconcile-task", input),
+    listMemoryAgents: () => call("troop:memory-agents", {}),
+    saveMemoryAgent: (input) => call("troop:memory-agent.save", input),
+    listMemoryProjects: (agent_id) =>
+      call("troop:memory-projects", { agent_id }),
+    changeMemoryMembership: (input) => call("troop:memory-membership", input),
+    listMemories: (agent_id, offset = 0) =>
+      call("troop:memory-list", { agent_id, offset }),
+    writeMemory: (input) => call("troop:memory-write", input),
+    editMemory: (input) => call("troop:memory-edit", input),
+    listMemoryJobs: (agent_id) => call("troop:memory-jobs", { agent_id }),
+    getMemoryJob: (id) => call("troop:memory-job", { id }),
+    cancelMemoryJob: (id) => call("troop:memory-job.cancel", { id }),
+    retryMemoryJob: (id) => call("troop:memory-job.retry", { id }),
+    compactRun: (id) => call("troop:agent-compact", { id }),
+    listContextCheckpoints: (id) => call("troop:agent-checkpoints", { id }),
     quit: () => call("troop:quit"),
     onStatus: (callback) => {
       if (typeof callback !== "function") throw Error("Callback required");

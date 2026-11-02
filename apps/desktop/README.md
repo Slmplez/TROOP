@@ -1,8 +1,8 @@
 # TROOP
 
-TROOP 0.4.0：Rust Core + Electron 桌面应用。提供模型服务配置、流式对话，以及 Windows 本机 Agent 任务、工具审批、执行账本、停止与核对恢复；保留工作区管理、托盘和单实例。
+TROOP 0.5.0：Rust Core + Electron 桌面应用。提供模型服务配置、流式对话，以及 Windows 本机 Agent 任务、工具审批、执行账本、停止与核对恢复；保留工作区管理、托盘和单实例。
 
-开发任务：[本机 Agent 规格 #18](https://github.com/Slmplez/TROOP/issues/18)、[实现 #19](https://github.com/Slmplez/TROOP/issues/19)。网关与真实对话验收见 #13–#15，基础版本见 #11/#12。子代理与所属后台作业见[规格 #20](https://github.com/Slmplez/TROOP/issues/20)、[实现 #21](https://github.com/Slmplez/TROOP/issues/21)。记忆、Skills、Hooks、MCP 与自动化留待后续开发。启动不需要 Docker 或产品账号；发送模型请求需要配置你使用的服务。
+开发任务：[本机 Agent 规格 #18](https://github.com/Slmplez/TROOP/issues/18)、[实现 #19](https://github.com/Slmplez/TROOP/issues/19)。网关与真实对话验收见 #13–#15，基础版本见 #11/#12。子代理与所属后台作业见[规格 #20](https://github.com/Slmplez/TROOP/issues/20)、[实现 #21](https://github.com/Slmplez/TROOP/issues/21)。记忆与上下文压缩见[规格 #22](https://github.com/Slmplez/TROOP/issues/22)、[实现 #23](https://github.com/Slmplez/TROOP/issues/23)。Skills、Hooks、MCP 与自动化留待后续开发。启动不需要 Docker 或产品账号；发送模型请求需要配置你使用的服务。
 
 ## 本机启动
 
@@ -45,6 +45,16 @@ npm --prefix apps/desktop start
 
 每次任务最多 16 个模型步骤、32 次工具调用，每次响应最多 8 个工具；最多 16 个活动任务，与普通对话合计最多 4 个模型流。没有自动重试或提供方切换。具体接口与恢复规则见[本机 Agent 规格](../../docs/implementation/TROOP_AGENT_SPEC.md)。
 
+### Agent 记忆与上下文压缩
+
+在“记忆”管理 Agent、项目成员、私有/用户共享/项目共享事实。新 Agent 默认自动提取，合适的根任务完成后会向其所选模型发起额外维护请求，无需逐条确认；每六个合适任务生成阶段记录。高级合成默认关闭，开启后按证据提出变更，再发起独立验证请求；维护记录展示提案、请求次数、状态和手动重试入口。显式事实和遗忘保护不被自动维护覆盖。
+
+任务启动时选择 Agent，同一配置的私有记忆跨任务复用；子代理继承配置和可见范围，但只读子代理不能写记忆。update_state 保存/遗忘，recall_memory 检索。资料只作为上下文，不扩大工具授权。显式编辑和成员撤销会刷新后续模型请求；原历史、摘要与备份中的已知内容不能撤回。
+
+工作上下文约到 96KB 自动压缩，也可点击“在安全边界压缩上下文”。摘要检查点保留覆盖游标和指纹，原始工具/审批账本不删除；每条历史采用有界摘录，摘要不保证无损。输入和子任务完成在安全边界追加，停止或重启不自动接纳旧摘要、请求模型或重放工具。每 Run 最多四次压缩，原模型/工具预算仍累计。普通“对话”是直接模型入口，不使用 Agent 长期记忆。
+
+详见[完整规格](../../docs/implementation/TROOP_MEMORY_CONTEXT_SPEC.md)与[验收和限制](../../docs/implementation/TROOP_MEMORY_CONTEXT_VALIDATION.md)。
+
 ### 普通对话
 
 1. 在“模型”页填写服务名称、协议、基础地址、模型 ID 和可选 API 密钥。基础地址例如 `https://api.openai.com/v1`，不包含 `/responses` 等最终接口后缀；实际请求地址会显示在输入框下方。
@@ -69,7 +79,7 @@ Chat Completions 默认使用 `max_completion_tokens`；服务需要旧版参数
 npm --prefix apps/desktop start -- --user-data-dir=E:\TroopData\Development
 ```
 
-同一数据目录只允许一个 Core 写入。本版本按版本事务迁移 SQLite schema 1/2/3→4，保留已有工作区、模型服务与会话。旧 Core 会拒绝新版数据库，请使用匹配的桌面/Core，不做降级打开。
+同一数据目录只允许一个 Core 写入。本版本按版本事务迁移 SQLite schema 1/2/3/4→5，保留已有工作区、模型服务与会话。旧 Core 会拒绝新版数据库，请使用匹配的桌面/Core，不做降级打开。
 
 ## 开发结构
 
@@ -86,9 +96,9 @@ npm --prefix apps/desktop start -- --user-data-dir=E:\TroopData\Development
 | `apps/desktop/renderer`            | React 对话、模型、工作区和连接界面                      |
 | `docs/implementation`              | 本次范围、验收与来源记录                                |
 
-内部协议为逐行 JSON-RPC，每帧最多 64 KiB，握手版本为 4。非握手调用必须匹配 Core generation，流通知带代际和递增序号；界面读取 Core 持久化快照。最多 64 个未决控制请求。Core 不开放网络监听；Agent 工具只能经固定任务接口派发，Renderer 没有通用 Shell、文件或 invoke 入口。
+内部协议为逐行 JSON-RPC，每帧最多 64 KiB，握手版本为 5。非握手调用必须匹配 Core generation，流通知带代际和递增序号；界面读取 Core 持久化快照。最多 64 个未决控制请求。Core 不开放网络监听；Agent 工具只能经固定任务接口派发，Renderer 没有通用 Shell、文件或 invoke 入口。
 
-SQLite schema 为 4，自动迁移 v1/v2/v3 并保留工作区、服务配置和会话；更高版本数据库拒绝打开。升级前备份应用数据，升级后不要用旧 Core 写入同一数据目录。开发构建使用带版本号的 Core 文件；运行中的旧窗口保持旧版本，需从托盘明确退出后再启动新版。
+SQLite schema 为 5，自动迁移 v1/v2/v3/v4 并保留工作区、服务配置和会话；更高版本数据库拒绝打开。升级前备份应用数据，升级后不要用旧 Core 写入同一数据目录。开发构建使用带版本号的 Core 文件；运行中的旧窗口保持旧版本，需从托盘明确退出后再启动新版。
 
 ## 检查
 
@@ -103,8 +113,9 @@ npm --prefix apps/desktop run format:check
 npm --prefix apps/desktop run smoke
 npm --prefix apps/desktop run smoke:agent
 npm --prefix apps/desktop run smoke:tasks
+npm --prefix apps/desktop run smoke:memory
 ```
 
 冒烟报告和截图保存在被忽略的 `.tmp-troop-bootstrap/`，`latest-smoke.json` 指向最近一次完整成功结果；HTTP 测试配置在 `.tmp-troop-chat/`。测试使用自有 loopback HTTP/SSE 服务和随机假密钥，不调用商业模型；固定 IPC、Rust、SQLite、Windows 凭据、Renderer、托盘和正式入口使用真实实现。原生目录选择器仍由自有夹具替换。
 
-2026-11-01 已使用用户在应用内保存的 Anthropic Messages 服务，通过真实对话及 Agent 写入→读取→结果总结验收；工具回合保留并回传签名思考块。详见[Agent 验收](../../docs/implementation/TROOP_AGENT_VALIDATION.md)与[对话验收](../../docs/implementation/TROOP_MODEL_GATEWAY_VALIDATION.md)。结论限于此次服务配置，其他真实提供方尚未实测。密钥只在应用内输入，不需要发送到开发聊天。没有签名安装包或干净机器验收。0.4.0 子代理与后台作业新增验收见[所属作业验收](../../docs/implementation/TROOP_OWNED_TASKS_VALIDATION.md)，使用自有服务夹具；下一功能包是记忆与上下文压缩，再按契约接入 Skills、MCP。Windows 保持单屏基线，Docker 与 UI 优化继续暂停。
+2026-11-01 已使用用户在应用内保存的 Anthropic Messages 服务，通过真实对话及 Agent 写入→读取→结果总结验收；工具回合保留并回传签名思考块。详见[Agent 验收](../../docs/implementation/TROOP_AGENT_VALIDATION.md)与[对话验收](../../docs/implementation/TROOP_MODEL_GATEWAY_VALIDATION.md)。结论限于此次服务配置，其他真实提供方尚未实测。密钥只在应用内输入，不需要发送到开发聊天。没有签名安装包或干净机器验收。0.4.0 子代理与后台作业新增验收见[所属作业验收](../../docs/implementation/TROOP_OWNED_TASKS_VALIDATION.md)，使用自有服务夹具；0.5.0 已接入 Agent 记忆和压缩；新增场景使用确定性服务夹具，尚未新增真实远程服务验收。下一功能包是 Skills/Workflows/Hooks，再接入 MCP。Windows 保持单屏基线，Docker 与 UI 优化继续暂停。

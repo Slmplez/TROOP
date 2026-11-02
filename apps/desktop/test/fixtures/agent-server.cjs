@@ -5,6 +5,8 @@ async function agentServer({
   malformed = false,
   delay = 2,
   thinking = false,
+  reply,
+  beforeResponse,
 } = {}) {
   const requests = [],
     responses = new Set();
@@ -14,6 +16,7 @@ async function agentServer({
     const body = JSON.parse(raw);
     const request = { body, url: req.url };
     requests.push(request);
+    if (beforeResponse) await beforeResponse(request, requests);
     const messages = body.messages ?? body.input;
     const hasResults = messages.some(
       (m) =>
@@ -150,7 +153,9 @@ async function agentServer({
           index: offset,
           content_block: { type: "text", text: "" },
         });
-      for (const text of ["工具结果", "已核对。"])
+      for (const text of reply === undefined
+        ? ["工具结果", "已核对。"]
+        : [typeof reply === "function" ? reply(request, requests) : reply])
         await emit(
           protocol === "anthropic"
             ? {

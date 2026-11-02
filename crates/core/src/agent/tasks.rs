@@ -33,6 +33,7 @@ impl Manager {
     }
     pub(super) fn retire(&mut self, store: &mut Store, id: i64) -> Result<(), String> {
         let doc = store.agent_run(id)?;
+        self.queue_memory(store, &doc)?;
         if owned(store, &doc)?.iter().any(active) {
             self.stop_subtree(
                 store,
@@ -270,6 +271,7 @@ impl Manager {
             if name == "spawn_agent" {
                 let goal = inv["arguments"]["goal"].as_str().unwrap();
                 let mut child = json!({"state":"queued","epoch":1,"revision":0,"step":0,"intent":null,"workspace_id":doc["workspace_id"],"workspace":doc["workspace"],"provider_id":doc["provider_id"],"config":doc["config"],"secret_ref":doc["secret_ref"],"goal":goal,"history":[{"role":"user","content":goal}],"pending":[],"output":"","model_text":"","supplements":[],"waiting":[],"error":null,"owner_task_id":task_id,"root_run_id":root,"depth":depth+1,"read_only":doc["read_only"]==true||inv["arguments"]["access"]=="read_only"});
+                child["agent_id"] = doc["agent_id"].as_i64().map_or(json!(1), |id| json!(id));
                 Self::finish_virtual(
                     store,
                     doc,

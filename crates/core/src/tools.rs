@@ -28,7 +28,9 @@ pub fn definitions() -> Vec<Value> {
         ("wait_task", "Wait for a directly owned task to finish without polling model calls. An interrupted or indeterminate task requires user reconciliation. task_id is a decimal string.", json!({"task_id":{"type":"string"}}), vec!["task_id"]),
         ("stop_task", "Stop a directly owned task and all of its descendants, retaining results. Does not undo effects. task_id is a decimal string.", json!({"task_id":{"type":"string"}}), vec!["task_id"]),
     ];
-    specs.into_iter().map(|(name,description,properties,required)|json!({"name":name,"description":description,"parameters":{"type":"object","properties":properties,"required":required,"additionalProperties":false}})).collect()
+    let mut result:Vec<Value>=specs.into_iter().map(|(name,description,properties,required)|json!({"name":name,"description":description,"parameters":{"type":"object","properties":properties,"required":required,"additionalProperties":false}})).collect();
+    result.extend(crate::agent::memory::definitions());
+    result
 }
 pub fn needs_approval(name: &str) -> bool {
     matches!(
@@ -37,6 +39,9 @@ pub fn needs_approval(name: &str) -> bool {
     )
 }
 pub fn read_only(name: &str) -> bool {
+    if name == "recall_memory" {
+        return true;
+    }
     matches!(
         name,
         "list_directory"
@@ -64,6 +69,9 @@ pub fn git_preview() -> Value {
     json!({"program":"Git（工作区外的 PATH 程序）","arguments":GIT_STATUS_ARGS})
 }
 pub fn validate(name: &str, args: &Value) -> Result<(), String> {
+    if matches!(name, "update_state" | "recall_memory") {
+        return crate::agent::memory::validate(name, args);
+    }
     let spec = definitions()
         .into_iter()
         .find(|v| v["name"] == name)

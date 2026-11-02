@@ -247,9 +247,28 @@ async function bootstrap({ userData, show = true } = {}) {
     "task",
     "stop-task",
     "reconcile-task",
+    "compact",
+    "checkpoints",
   ]) {
     handle("agent-" + action, (input = {}) =>
       core.request("agent." + action, payload(input)),
+    );
+  }
+  for (const action of [
+    "agents",
+    "agent.save",
+    "projects",
+    "membership",
+    "list",
+    "write",
+    "edit",
+    "jobs",
+    "job",
+    "job.cancel",
+    "job.retry",
+  ]) {
+    handle("memory-" + action, (input = {}) =>
+      core.request("memory." + action, payload(input)),
     );
   }
   handle("cancel-turn", (id) => {

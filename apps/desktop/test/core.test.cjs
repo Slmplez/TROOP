@@ -108,7 +108,7 @@ test("protocol rejects bad handshakes, stale generations, unknown fields and dup
   });
   assert.equal(v.error.data.kind, "protocol_mismatch");
   v = await send("hello", "system.hello", {
-    protocol: 4,
+    protocol: 5,
     client: "troop-desktop",
   });
   const generation = v.result.generation;

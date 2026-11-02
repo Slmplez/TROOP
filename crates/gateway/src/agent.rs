@@ -211,11 +211,24 @@ impl Collector {
     }
 }
 pub(super) fn configure(body: &mut Value, protocol: Protocol, wire: ToolWire) {
+    let mut history = wire.history;
+    if protocol == Protocol::Anthropic {
+        let system = history
+            .iter()
+            .filter(|m| m["role"] == "system")
+            .filter_map(|m| m["content"].as_str())
+            .collect::<Vec<_>>()
+            .join("\n\n");
+        history.retain(|m| m["role"] != "system");
+        if !system.is_empty() {
+            body["system"] = json!(system);
+        }
+    }
     body[if protocol == Protocol::Responses {
         "input"
     } else {
         "messages"
-    }] = json!(wire.history);
+    }] = json!(history);
     body["tools"] = Value::Array(wire.definitions.into_iter().map(|tool| match protocol {
         Protocol::ChatCompletions => json!({"type":"function","function":tool}),
         Protocol::Responses => { let mut tool = tool; tool["type"] = json!("function"); tool },

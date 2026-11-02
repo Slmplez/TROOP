@@ -66,6 +66,13 @@ async function run() {
   win.webContents.setBackgroundThrottling(false);
   await until(() => core.state === "ready");
   report.corePid = core.snapshot().pid;
+  await core.request("memory.agent.save", {
+    id: 1,
+    name: "Fixture Agent",
+    automatic: false,
+    dreaming: false,
+    expected_revision: 1,
+  });
   const wid = (await core.request("workspace.add", { path: workspace }))
     .items[0].id;
   const p = await core.request("provider.save", {

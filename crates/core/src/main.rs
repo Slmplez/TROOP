@@ -198,7 +198,7 @@ impl Core {
         Ok(())
     }
     async fn dispatch(&mut self, method: &str, p: Value) -> Result<(Value, bool), String> {
-        if method.starts_with("agent.") {
+        if method.starts_with("agent.") || method.starts_with("memory.") {
             return Ok((
                 self.agents.dispatch(&mut self.store, method, p).await?,
                 false,

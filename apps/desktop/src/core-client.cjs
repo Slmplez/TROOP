@@ -1,7 +1,7 @@
 const { spawn } = require("node:child_process");
 const { EventEmitter } = require("node:events");
 const crypto = require("node:crypto");
-const PROTOCOL = 4;
+const PROTOCOL = 5;
 const ALLOWED = new Set([
   "system.ping",
   "workspace.list",
@@ -29,6 +29,19 @@ const ALLOWED = new Set([
   "agent.steer",
   "agent.reconcile",
   "agent.resume",
+  "memory.agents",
+  "memory.agent.save",
+  "memory.projects",
+  "memory.membership",
+  "memory.list",
+  "memory.write",
+  "memory.edit",
+  "memory.jobs",
+  "memory.job",
+  "memory.job.cancel",
+  "memory.job.retry",
+  "agent.compact",
+  "agent.checkpoints",
   "agent.tasks",
   "agent.task",
   "agent.stop-task",

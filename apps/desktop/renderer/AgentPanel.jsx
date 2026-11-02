@@ -20,6 +20,7 @@ const waits = {
   resource: "等待本机执行资源",
   tool: "工具正在执行",
   background: "等待所属子代理或后台作业",
+  context: "正在压缩已提交的上下文",
 };
 const stopped = (state) =>
   ["completed", "failed", "cancelled", "interrupted"].includes(state);
@@ -38,6 +39,23 @@ export default function AgentPanel({
     [invId, setInvId] = useState(null),
     [invocation, setInvocation] = useState(null);
   const [nextOffset, setNextOffset] = useState(null);
+  const [agents, setAgents] = useState([]),
+    [agentProfile, setAgentProfile] = useState(1),
+    [checkpoints, setCheckpoints] = useState(null);
+  useEffect(() => {
+    if (!ready || !visible) return;
+    let ended = false;
+    call(window.troop.listMemoryAgents())
+      .then((rows) => {
+        if (!ended) setAgents(rows);
+      })
+      .catch((e) => {
+        if (!ended) setError(e.message);
+      });
+    return () => {
+      ended = true;
+    };
+  }, [ready, generation, visible]);
   const [creating, setCreating] = useState(true);
   const [events, setEvents] = useState([]),
     [eventCursor, setEventCursor] = useState(null),
@@ -175,11 +193,13 @@ export default function AgentPanel({
     setError("");
     setNote("");
     setReviewed(false);
+    setCheckpoints(null);
   }
   function start(event) {
     event.preventDefault();
     act(async () => {
       const input = {
+        agent_id: agentProfile,
         workspace_id: Number(workspace),
         provider_id: provider,
         goal,
@@ -228,6 +248,22 @@ export default function AgentPanel({
         </p>
       )}
       <form className="agent-start" onSubmit={start} hidden={!creating}>
+        <label>
+          Agent
+          <select
+            id="agent-profile"
+            value={agentProfile}
+            disabled={!ready || busy}
+            onChange={(e) => setAgentProfile(Number(e.target.value))}
+          >
+            {agents.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.name}
+                {a.automatic ? " · 自动记忆" : ""}
+              </option>
+            ))}
+          </select>
+        </label>
         <label>
           模型服务
           <select
@@ -352,6 +388,39 @@ export default function AgentPanel({
               )}
               {run.error && (
                 <p className="message-problem">{pretty(run.error)}</p>
+              )}
+              <div className="memory-actions">
+                {active && (
+                  <button
+                    id="agent-compact"
+                    disabled={
+                      !ready || busy || run.waiting?.includes("context")
+                    }
+                    onClick={() =>
+                      act(() => call(window.troop.compactRun(run.id)))
+                    }
+                  >
+                    在安全边界压缩上下文
+                  </button>
+                )}
+                <button
+                  disabled={!ready || busy}
+                  onClick={() =>
+                    act(async () =>
+                      setCheckpoints(
+                        await call(window.troop.listContextCheckpoints(run.id)),
+                      ),
+                    )
+                  }
+                >
+                  查看摘要检查点 · {run.compaction_epoch ?? 0}
+                </button>
+              </div>
+              {checkpoints && (
+                <details open className="memory-job-detail">
+                  <summary>摘要覆盖已提交历史；完整工具账本保留</summary>
+                  <pre>{JSON.stringify(checkpoints, null, 2)}</pre>
+                </details>
               )}
               <h2>任务目标</h2>
               <p className="muted agent-text">

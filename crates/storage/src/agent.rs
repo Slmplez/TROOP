@@ -29,6 +29,10 @@ pub fn public_run(doc: &Value, brief: bool) -> Value {
         "root_run_id",
         "depth",
         "read_only",
+        "agent_id",
+        "compaction_epoch",
+        "compaction_count",
+        "maintenance_job_id",
     ] {
         result[key] = doc[key].clone();
     }
@@ -260,6 +264,20 @@ impl Store {
         kind: &str,
     ) -> Result<(), String> {
         let tx = self.db.transaction().map_err(|e| e.to_string())?;
+        if let Some(action) = doc.as_object_mut().unwrap().remove("_memory_action") {
+            super::memory::apply_action(&tx, &action, false)?;
+        }
+        if let Some(checkpoint) = doc.as_object_mut().unwrap().remove("_context_checkpoint") {
+            tx.execute(
+                "INSERT INTO context_checkpoints(run_id,epoch,document) VALUES(?1,?2,?3)",
+                params![
+                    doc["id"].as_i64(),
+                    doc["epoch"].as_i64(),
+                    checkpoint.to_string()
+                ],
+            )
+            .map_err(|e| e.to_string())?;
+        }
         if let Some(child) = child {
             let client = format!("owned-task-{}", child["owner_task_id"]);
             child["created_at"] = doc["updated_at"].clone();

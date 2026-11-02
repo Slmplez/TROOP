@@ -359,6 +359,13 @@ async function setup(t, plan, protocol = "anthropic") {
     args: ["--data-dir", data],
   });
   await core.start();
+  await core.request("memory.agent.save", {
+    id: 1,
+    name: "Fixture Agent",
+    automatic: false,
+    dreaming: false,
+    expected_revision: 1,
+  });
   t.after(async () => {
     await core.stop();
     await server.close();
