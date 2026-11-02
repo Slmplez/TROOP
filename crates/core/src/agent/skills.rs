@@ -485,6 +485,141 @@ fn brief(doc: &Value) -> Value {
     result
 }
 impl Manager {
+    pub(super) fn workflow_revisions(store: &Store, doc: &Value) -> Result<Value, String> {
+        let mut revisions = json!({});
+        for id in store.skill_ids()? {
+            if store.skill_allowed(doc["agent_id"].as_i64().unwrap_or(1), &id)? {
+                let d = store.skill_current(&id)?.unwrap();
+                revisions[&id] = d["revision"].clone();
+            }
+        }
+        Ok(revisions)
+    }
+    pub(super) fn workflow_tool(
+        &mut self,
+        store: &mut Store,
+        doc: &mut Value,
+        inv: &mut Value,
+    ) -> Result<bool, String> {
+        let prepared = (|| -> Result<(Value, Value), String> {
+            let a = &inv["arguments"];
+            let action = a["action"].as_str().ok_or("Workflow action missing")?;
+            if !matches!(action, "write" | "delete") {
+                return Err("Workflow takes write or delete".into());
+            }
+            if a.as_object().unwrap().keys().any(|k| {
+                !matches!(
+                    k.as_str(),
+                    "target"
+                        | "action"
+                        | "id"
+                        | "name"
+                        | "description"
+                        | "body"
+                        | "expected_revision"
+                )
+            }) {
+                return Err(
+                    "Workflow parameters do not include memory scope or automation fields".into(),
+                );
+            }
+            let id = a["id"]
+                .as_str()
+                .map(str::to_owned)
+                .unwrap_or_else(|| slug(a["name"].as_str().unwrap_or("")));
+            if !troop_storage::memory::slug(&id) {
+                return Err("Invalid workflow ID".into());
+            }
+            if action == "delete" && !a["id"].is_string() {
+                return Err("Workflow delete requires id".into());
+            }
+            let current = store.skill_current(&id)?;
+            let expected = if a["id"].is_string() {
+                doc["workflow_write_revisions"][&id].as_i64().unwrap_or(0)
+            } else {
+                0
+            };
+            if let Some(value) = a["expected_revision"].as_str() {
+                if value.parse::<i64>().ok() != Some(expected) {
+                    return Err("Workflow revision differs from this request's snapshot".into());
+                }
+            }
+            if current
+                .as_ref()
+                .is_some_and(|d| d["deleted"] == true || d["automation"] == true)
+                || current.is_some()
+                    && !store.skill_allowed(doc["agent_id"].as_i64().unwrap_or(1), &id)?
+            {
+                return Err("Workflow is disabled, deleted, or an automation".into());
+            }
+            let mut operation = json!({"id":id,"action":action,"expected_revision":expected});
+            if action == "write" {
+                let name = a["name"]
+                    .as_str()
+                    .filter(|s| !s.trim().is_empty() && s.chars().count() <= 80)
+                    .ok_or("Workflow write needs name (1–80 characters)")?;
+                let description = a["description"]
+                    .as_str()
+                    .filter(|s| s.chars().count() <= 1536)
+                    .ok_or("Workflow write needs description (up to 1536 characters)")?;
+                let body = a["body"]
+                    .as_str()
+                    .filter(|s| !s.trim().is_empty() && s.len() <= 8000)
+                    .ok_or("Workflow write needs body (1–8000 UTF-8 bytes)")?;
+                let old=current.unwrap_or(json!({"source_kind":"local","source_path":"","entry":"SKILL.md","frontmatter":{},"version_id":null}));
+                let mut data = old["frontmatter"].clone();
+                data["name"] = json!(name);
+                data["description"] = json!(description);
+                data.as_object_mut()
+                    .ok_or("Invalid workflow metadata")?
+                    .remove("trigger");
+                fn yaml(v: &Value, indent: usize) -> String {
+                    v.as_object()
+                        .unwrap()
+                        .iter()
+                        .map(|(k, v)| {
+                            if v.is_object() {
+                                format!("{}{k}:\n{}", " ".repeat(indent), yaml(v, indent + 2))
+                            } else {
+                                format!("{}{k}: {}\n", " ".repeat(indent), v)
+                            }
+                        })
+                        .collect()
+                }
+                let raw = format!("---\n{}---\n{}\n", yaml(&data, 0), body.trim());
+                let mut d = parse(&raw, name)?;
+                for k in ["source_kind", "source_path", "entry"] {
+                    d[k] = old[k].clone();
+                }
+                d["mode"] = json!("copy");
+                d["locally_modified"] = json!(true);
+                let mut files = if let Some(v) = old["version_id"].as_i64() {
+                    store.skill_files(v)?
+                } else {
+                    vec![("SKILL.md".into(), vec![])]
+                };
+                for (p, b) in &mut files {
+                    if p == d["entry"].as_str().unwrap() {
+                        *b = raw.as_bytes().to_vec();
+                    }
+                }
+                operation["document"] = finish_bundle(id.clone(), d, files)?.doc;
+            }
+            store.workflow_validate(&operation)?;
+            Ok((
+                operation,
+                json!({"ok":true,"id":id,"revision":expected+1,"action":action,"message":"Workflow library committed with the tool ledger. Existing Run recipe snapshots are unchanged; new tasks use the saved version. No scripts were executed."}),
+            ))
+        })();
+        let result = match prepared {
+            Ok((action, result)) => {
+                doc["_workflow_action"] = action;
+                result
+            }
+            Err(error) => json!({"ok":false,"error":error}),
+        };
+        Self::finish_memory_tool(store, doc, inv, result)
+    }
     pub(super) fn skills_rpc(
         &mut self,
         store: &mut Store,
@@ -852,8 +987,7 @@ impl Manager {
             "failed"
         });
         inv["result"] = result;
-        append_result(doc, inv)?;
-        remove_pending(doc, inv["id"].as_i64().unwrap());
+        Self::settle_tool(doc, inv)?;
         doc["state"] = json!("queued");
         doc["waiting"] = json!([]);
         store.agent_save(doc, std::slice::from_mut(inv), "skill_tool_result")?;

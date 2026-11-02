@@ -1254,6 +1254,96 @@ select:focus-visible {
   font-family: monospace;
   min-height: 240px;
 }
+.hook-columns {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(340px, 1.5fr);
+  gap: 24px;
+  align-items: start;
+}
+.hook-rules,
+.hook-records {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.hook-rules li,
+.hook-records li {
+  padding: 16px 0;
+  border-bottom: 1px solid #e5e7e7;
+}
+.hook-records li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hook-rules p,
+.hook-records p {
+  margin: 5px 0;
+  overflow-wrap: anywhere;
+}
+.hook-name {
+  font-weight: 500;
+  text-align: left;
+  padding-left: 0;
+}
+.hook-editor,
+.hook-detail form {
+  display: grid;
+  gap: 12px;
+}
+.hook-editor label:not(.check-row),
+.hook-detail label:not(.check-row) {
+  display: grid;
+  gap: 6px;
+}
+.hook-editor input:not([type="checkbox"]),
+.hook-editor select,
+.hook-editor textarea,
+.hook-detail textarea {
+  width: 100%;
+}
+.hook-editor textarea {
+  font-family: monospace;
+}
+.hook-detail pre {
+  max-height: 360px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.hook-history {
+  margin: 24px 0;
+}
+.hook-editor input:not([type="checkbox"]),
+.hook-editor textarea {
+  border: 1px solid #ccd3d1;
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: #fff;
+  color: #1b2421;
+  font-size: 14px;
+  line-height: 20px;
+}
+.hook-editor input:not([type="checkbox"]) {
+  min-height: 38px;
+  font-family: inherit;
+}
+.hook-editor .check-row {
+  display: flex;
+  gap: 8px;
+  align-items: start;
+}
+.hooks-page button:disabled {
+  opacity: 1;
+  color: #606866;
+  background: #f4f5f5;
+  cursor: not-allowed;
+}
+@media (max-width: 1100px) {
+  .hook-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 .skills-page button:disabled {
   opacity: 1;
   color: #606866;

@@ -292,6 +292,19 @@ async function bootstrap({ userData, show = true } = {}) {
     });
     return result.canceled ? null : result.filePaths[0];
   });
+  for (const action of [
+    "list",
+    "definition",
+    "save",
+    "remove",
+    "calls",
+    "call",
+    "reconcile",
+  ]) {
+    handle("hooks-" + action, (input = {}) =>
+      core.request("hooks." + action, payload(input)),
+    );
+  }
   handle("cancel-turn", (id) => {
     if (!validId(id)) throw Error("生成标识无效。");
     return core.request("chat.cancel", { turn_id: id });

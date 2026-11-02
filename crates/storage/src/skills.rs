@@ -1,5 +1,5 @@
 use super::Store;
-use rusqlite::{params, Connection, OptionalExtension};
+use rusqlite::{params, Connection, OptionalExtension, Transaction};
 use serde_json::{json, Value};
 
 pub(super) fn migrate(db: &mut Connection) -> Result<(), String> {
@@ -11,6 +11,11 @@ pub(super) fn migrate(db: &mut Connection) -> Result<(), String> {
       PRAGMA user_version=6; COMMIT;").map_err(|e| e.to_string())
 }
 impl Store {
+    pub fn workflow_validate(&mut self, action: &Value) -> Result<(), String> {
+        let tx = self.db.transaction().map_err(|e| e.to_string())?;
+        apply_workflow_action(&tx, action)?;
+        tx.rollback().map_err(|e| e.to_string())
+    }
     pub fn skill_current(&self, id: &str) -> Result<Option<Value>, String> {
         let row: Option<(i64, i64, bool)> = self
             .db
@@ -163,4 +168,78 @@ impl Store {
             .map_err(|e| e.to_string());
         rows
     }
+}
+
+pub(crate) fn apply_workflow_action(tx: &Transaction<'_>, a: &Value) -> Result<(), String> {
+    let id = a["id"].as_str().ok_or("Invalid workflow identity")?;
+    let expected = a["expected_revision"]
+        .as_i64()
+        .ok_or("Missing workflow revision")?;
+    let current: Option<(i64, i64, bool)> = tx
+        .query_row(
+            "SELECT revision,version_id,deleted FROM skills WHERE id=?1",
+            [id],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+        )
+        .optional()
+        .map_err(|e| e.to_string())?;
+    if current.as_ref().map(|c| c.0).unwrap_or(0) != expected
+        || current.as_ref().is_some_and(|c| c.2)
+    {
+        return Err(
+            "Workflow changed or was deleted; read the current library before editing".into(),
+        );
+    }
+    if a["action"] == "delete" {
+        if current.is_none() {
+            return Err("Workflow does not exist".into());
+        }
+        tx.execute(
+            "UPDATE skills SET deleted=1,revision=revision+1 WHERE id=?1",
+            [id],
+        )
+        .map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+    if a["action"] != "write" {
+        return Err("Unknown workflow mutation".into());
+    }
+    let count: i64 = tx
+        .query_row(
+            "SELECT count(*) FROM skills WHERE deleted=0 AND id<>?1",
+            [id],
+            |r| r.get(0),
+        )
+        .map_err(|e| e.to_string())?;
+    let total: i64 = tx
+        .query_row("SELECT count(*) FROM skill_versions", [], |r| r.get(0))
+        .map_err(|e| e.to_string())?;
+    if count >= 100 || total >= 1000 {
+        return Err("Skill library capacity reached".into());
+    }
+    let doc = &a["document"];
+    let entry = doc["entry"].as_str().ok_or("Invalid workflow entry")?;
+    tx.execute(
+        "INSERT INTO skill_versions(skill_id,document) VALUES(?1,?2)",
+        params![id, doc.to_string()],
+    )
+    .map_err(|e| e.to_string())?;
+    let version = tx.last_insert_rowid();
+    if let Some((_, old, _)) = current {
+        tx.execute("INSERT INTO skill_files(version_id,path,content) SELECT ?1,path,content FROM skill_files WHERE version_id=?2 AND path<>?3",params![version,old,entry]).map_err(|e|e.to_string())?;
+    }
+    tx.execute(
+        "INSERT INTO skill_files(version_id,path,content) VALUES(?1,?2,?3)",
+        params![
+            version,
+            entry,
+            doc["raw"]
+                .as_str()
+                .ok_or("Invalid workflow source")?
+                .as_bytes()
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+    tx.execute("INSERT INTO skills(id,version_id,revision) VALUES(?1,?2,1) ON CONFLICT(id) DO UPDATE SET version_id=excluded.version_id,revision=skills.revision+1",params![id,version]).map_err(|e|e.to_string())?;
+    Ok(())
 }

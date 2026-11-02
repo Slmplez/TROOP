@@ -217,7 +217,7 @@ struct Capture {
     data: Arc<Mutex<(Vec<u8>, bool)>>,
     done: Arc<AtomicBool>,
 }
-fn collect(reader: impl Read + Send + 'static) -> Capture {
+fn collect(reader: impl Read + Send + 'static, limit: usize) -> Capture {
     let state = Arc::new(Mutex::new((Vec::new(), false)));
     let copy = state.clone();
     let done = Arc::new(AtomicBool::new(false));
@@ -230,7 +230,7 @@ fn collect(reader: impl Read + Send + 'static) -> Capture {
                 break;
             }
             let mut data = copy.lock().unwrap();
-            let keep = (3000 - data.0.len()).min(n);
+            let keep = (limit - data.0.len()).min(n);
             data.0.extend_from_slice(&b[..keep]);
             data.1 |= keep < n;
         }
@@ -238,20 +238,38 @@ fn collect(reader: impl Read + Send + 'static) -> Capture {
     });
     Capture { data: state, done }
 }
-fn command(mut command: Command, timeout: u64, progress: bool) -> Result<Value, String> {
+fn command(
+    mut command: Command,
+    timeout: u64,
+    progress: bool,
+    input: Option<String>,
+) -> Result<Value, String> {
     #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;
         command.creation_flags(0x08000000);
     }
     let mut child = command
-        .stdin(Stdio::null())
+        .stdin(if input.is_some() {
+            Stdio::piped()
+        } else {
+            Stdio::null()
+        })
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
         .map_err(|_| "无法启动命令，请检查程序是否已安装。")?;
-    let stdout = collect(child.stdout.take().unwrap());
-    let stderr = collect(child.stderr.take().unwrap());
+    let stdout = collect(
+        child.stdout.take().unwrap(),
+        if input.is_some() { 4000 } else { 3000 },
+    );
+    let stderr = collect(child.stderr.take().unwrap(), 3000);
+    if let Some(payload) = input {
+        let mut pipe = child.stdin.take().unwrap();
+        std::thread::spawn(move || {
+            let _ = pipe.write_all(payload.as_bytes());
+        });
+    }
     let start = Instant::now();
     let mut notified = Instant::now();
     let status = loop {
@@ -315,6 +333,28 @@ fn trusted_git(root: &Path) -> Result<PathBuf, String> {
     Err("没有工作区外的可信 PATH Git 程序，请安装 Git 或使用经批准的命令。".into())
 }
 fn perform(workspace: &str, name: &str, args: &Value) -> Result<Value, String> {
+    if name == "__hook_command" {
+        let root = fs::canonicalize(workspace).map_err(|_| "Hook workspace unavailable")?;
+        let script = args["command"]
+            .as_str()
+            .filter(|s| !s.trim().is_empty() && s.len() <= 4000)
+            .ok_or("Invalid Hook command")?;
+        let input = args["input"]
+            .as_str()
+            .filter(|s| s.len() <= 12000)
+            .ok_or("Hook input exceeds limit")?;
+        let timeout = args["timeout_seconds"]
+            .as_str()
+            .and_then(|s| s.parse::<u64>().ok())
+            .filter(|n| *n > 0 && *n <= 3600)
+            .ok_or("Invalid Hook timeout")?;
+        let system =
+            std::env::var_os("SystemRoot").ok_or("Windows system directory unavailable")?;
+        let mut c =
+            Command::new(Path::new(&system).join("System32/WindowsPowerShell/v1.0/powershell.exe"));
+        c.current_dir(root).args(["-NoLogo","-NoProfile","-NonInteractive","-Command",&format!("[Console]::InputEncoding = New-Object System.Text.UTF8Encoding($false); [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false); {script}")]);
+        return command(c, timeout, false, Some(format!("{input}\n")));
+    }
     validate(name, args)?;
     let root = fs::canonicalize(workspace).map_err(|_| "工作区不再可用。")?;
     if !root.is_dir() {
@@ -465,6 +505,7 @@ fn perform(workspace: &str, name: &str, args: &Value) -> Result<Value, String> {
                     .and_then(|s| s.parse().ok())
                     .unwrap_or(60),
                 name == "start_background",
+                None,
             )
         }
         "git_status" => {
@@ -473,7 +514,7 @@ fn perform(workspace: &str, name: &str, args: &Value) -> Result<Value, String> {
             c.current_dir(root)
                 .env("GIT_OPTIONAL_LOCKS", "0")
                 .args(GIT_STATUS_ARGS);
-            command(c, 60, false)
+            command(c, 60, false, None)
         }
         _ => Err("未知工具。".into()),
     }

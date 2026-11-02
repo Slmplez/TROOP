@@ -95,6 +95,7 @@ impl Manager {
         store.fence_runs(&ids, intent)?;
         for run_id in &ids {
             let doc = store.agent_run(*run_id)?;
+            self.cancel_run_hooks(store, *run_id)?;
             if doc["state"] == "cancelling" {
                 let live = self.live.entry(*run_id).or_default();
                 if let Some(model) = live.model.take() {
@@ -155,20 +156,24 @@ impl Manager {
         &mut self,
         store: &mut Store,
         doc: &mut Value,
-    ) -> Result<(), String> {
+        capacity: usize,
+    ) -> Result<bool, String> {
         if terminal(doc) || !doc["intent"].is_null() {
-            return Ok(());
+            return Ok(true);
         }
         let mut tasks = owned(store, doc)?
             .into_iter()
             .filter(|t| !active(t) && !unresolved(t) && t["consumed"] != true)
             .collect::<Vec<_>>();
         if tasks.is_empty() {
-            return Ok(());
+            return Ok(true);
         }
         // Do not inject a user message between assistant tool_use and its required tool results.
         if doc["pending"].as_array().is_some_and(|p| !p.is_empty()) {
-            return Ok(());
+            return Ok(true);
+        }
+        for task in &tasks {
+            if task["kind"]=="background" && !self.run_hook_gate(store,doc,"afterShellExecution",&format!("task-{}",task["id"]),json!({"tool_name":"start_background","tool_input":task["arguments"],"tool_output":task["result"],"task_id":task["id"]}),capacity)? {return Ok(false);}
         }
         let mut h = history(doc);
         for task in &mut tasks {
@@ -179,7 +184,9 @@ impl Manager {
         doc["state"] = json!("queued");
         doc["waiting"] = json!([]);
         doc["awaiting_owned"] = json!(false);
-        store.agent_commit(doc, &mut [], &mut tasks, None, "owned_completions_consumed")
+        store
+            .agent_commit(doc, &mut [], &mut tasks, None, "owned_completions_consumed")
+            .map(|_| true)
     }
     fn finish_virtual(
         store: &mut Store,
@@ -195,8 +202,7 @@ impl Manager {
             "succeeded"
         });
         inv["result"] = result;
-        append_result(doc, inv)?;
-        remove_pending(doc, inv["id"].as_i64().unwrap());
+        Self::settle_tool(doc, inv)?;
         doc["state"] = json!("queued");
         doc["waiting"] = json!([]);
         store.agent_commit(
@@ -273,6 +279,7 @@ impl Manager {
                 let mut child = json!({"state":"queued","epoch":1,"revision":0,"step":0,"intent":null,"workspace_id":doc["workspace_id"],"workspace":doc["workspace"],"provider_id":doc["provider_id"],"config":doc["config"],"secret_ref":doc["secret_ref"],"goal":goal,"history":[{"role":"user","content":goal}],"pending":[],"output":"","model_text":"","supplements":[],"waiting":[],"error":null,"owner_task_id":task_id,"root_run_id":root,"depth":depth+1,"read_only":doc["read_only"]==true||inv["arguments"]["access"]=="read_only"});
                 child["agent_id"] = doc["agent_id"].as_i64().map_or(json!(1), |id| json!(id));
                 child["skill_versions"] = doc["skill_versions"].clone();
+                child["hook_snapshot"] = doc["hook_snapshot"].clone();
                 let expanded = Self::expand_workflows(store, &mut child, goal, None)?;
                 child["history"] = json!([{"role":"user","content":expanded}]);
                 Self::finish_virtual(
@@ -506,6 +513,8 @@ impl Manager {
                     continue;
                 }
                 if !self.jobs.is_empty()
+                    || self.hook_commands_busy()
+                    || store.hooks_quarantined()?
                     || self.live.values().any(|l| l.tool.is_some())
                     || store.agent_quarantined()?
                     || store.tasks_quarantined()?

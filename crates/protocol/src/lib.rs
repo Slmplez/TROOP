@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-pub const VERSION: u32 = 6;
+pub const VERSION: u32 = 7;
 pub const MAX_FRAME: usize = 65_536;
 pub const METHODS: &[&str] = &[
     "system.hello",
@@ -14,6 +14,13 @@ pub const METHODS: &[&str] = &[
     "skills.remove",
     "skills.edit",
     "skills.refresh",
+    "hooks.list",
+    "hooks.definition",
+    "hooks.save",
+    "hooks.remove",
+    "hooks.calls",
+    "hooks.call",
+    "hooks.reconcile",
     "system.ping",
     "system.shutdown",
     "workspace.list",

@@ -19,6 +19,7 @@ use troop_storage::{public_run, Store};
 use uuid::Uuid;
 mod tasks;
 use tasks::TaskLive;
+pub(crate) mod hooks;
 pub(crate) mod memory;
 pub(crate) mod skills;
 
@@ -82,6 +83,8 @@ struct Reconcile {
     note: String,
 }
 pub enum Update {
+    HookReady(i64, i64, blocking::Sender<bool>),
+    HookDone(i64, i64, Value),
     Text(i64, i64, String),
     Model(i64, i64, Result<gateway::Summary, gateway::Failure>),
     Ready(i64, i64, i64, blocking::Sender<bool>),
@@ -108,6 +111,7 @@ pub struct Manager {
     jobs: HashMap<i64, TaskLive>,
     maintenance: HashMap<i64, JoinHandle<()>>,
     memory_queue: std::collections::BTreeSet<i64>,
+    hook_live: HashMap<i64, hooks::HookLive>,
 }
 fn terminal(doc: &Value) -> bool {
     matches!(
@@ -152,7 +156,9 @@ fn remove_pending(doc: &mut Value, id: i64) {
 }
 impl Manager {
     pub fn model_count(&self) -> usize {
-        self.live.values().filter(|l| l.model.is_some()).count() + self.maintenance.len()
+        self.live.values().filter(|l| l.model.is_some()).count()
+            + self.maintenance.len()
+            + self.hook_models()
     }
     pub fn new(directory: PathBuf) -> Result<Self, String> {
         let receipts = directory.join("worker-receipts");
@@ -166,6 +172,7 @@ impl Manager {
             jobs: HashMap::new(),
             maintenance: HashMap::new(),
             memory_queue: std::collections::BTreeSet::new(),
+            hook_live: HashMap::new(),
         })
     }
     pub fn owns_provider(&self, store: &Store, provider: &str) -> bool {
@@ -234,6 +241,9 @@ impl Manager {
     }
     fn finish_stop(&mut self, store: &mut Store, doc: &mut Value) -> Result<(), String> {
         let id = doc["id"].as_i64().unwrap();
+        if self.hook_live.values().any(|h| h.run == id) {
+            return Ok(());
+        }
         let tasks = store.owned_tasks(Store::task_root(doc))?;
         let owned = tasks
             .iter()
@@ -242,12 +252,17 @@ impl Manager {
         if owned.iter().any(|t| tasks::active(t)) {
             return Ok(());
         }
-        let unresolved = owned.iter().any(|t| {
-            matches!(t["state"].as_str(), Some("indeterminate" | "interrupted"))
-                && t["reviewed"] != true
-        }) || store.agent_invocations(id)?.iter().any(|i| {
-            i["state"] == "indeterminate" && i["stopped"] != true && i["reviewed"] != true
-        });
+        let unresolved = store
+            .hook_calls(id)?
+            .iter()
+            .any(|h| h["state"] == "indeterminate" && h["reviewed"] != true)
+            || owned.iter().any(|t| {
+                matches!(t["state"].as_str(), Some("indeterminate" | "interrupted"))
+                    && t["reviewed"] != true
+            })
+            || store.agent_invocations(id)?.iter().any(|i| {
+                i["state"] == "indeterminate" && i["stopped"] != true && i["reviewed"] != true
+            });
         let mut invocations = store.agent_invocations(id)?;
         for inv in &mut invocations {
             if inv["state"] == "prepared" {
@@ -284,6 +299,9 @@ impl Manager {
         method: &str,
         p: Value,
     ) -> Result<Value, String> {
+        if method.starts_with("hooks.") {
+            return self.hooks_rpc(store, method, p);
+        }
         if method.starts_with("skills.") {
             return self.skills_rpc(store, method, p);
         }
@@ -314,13 +332,15 @@ impl Manager {
             "agent.get" => {
                 let id = params::<Id>(p)?.id;
                 let run = store.agent_run(id)?;
-                let invocations=store.agent_invocations(id)?.iter().map(|i|json!({"id":i["id"],"name":i["name"],"state":i["state"],"epoch":i["epoch"],"approval":i["approval"],"reviewed":i["reviewed"],"stopped":i["stopped"]})).collect::<Vec<_>>();
+                let invocations=store.agent_invocations(id)?.iter().map(|i|json!({"id":i["id"],"name":i["name"],"state":i["state"],"epoch":i["epoch"],"approval":i["approval"],"reviewed":i["reviewed"],"stopped":i["stopped"],"hook_ask":i["hook_ask"]})).collect::<Vec<_>>();
                 let tasks = store
                     .owned_tasks(Store::task_root(&run))?
                     .iter()
                     .map(troop_storage::public_task)
                     .collect::<Vec<_>>();
-                Ok(json!({"run":public_run(&run,false),"invocations":invocations,"tasks":tasks}))
+                Ok(
+                    json!({"run":public_run(&run,false),"invocations":invocations,"tasks":tasks,"hooks_unresolved":store.hook_calls(id)?.iter().any(|h|h["state"]=="indeterminate"&&h["reviewed"]!=true)}),
+                )
             }
             "agent.invocation" => store.agent_invocation(params::<Id>(p)?.id),
             "agent.start" => {
@@ -343,6 +363,7 @@ impl Manager {
                 config.endpoint()?;
                 let mut doc = json!({"state":"queued","epoch":1,"revision":0,"step":0,"intent":null,"workspace_id":a.workspace_id,"workspace":workspace,"provider_id":a.provider_id,"config":provider.config,"secret_ref":provider.secret_ref,"goal":a.goal,"history":[{"role":"user","content":a.goal}],"pending":[],"output":"","model_text":"","supplements":[],"waiting":[],"error":null});
                 doc["agent_id"] = json!(a.agent_id);
+                Self::freeze_hooks(store, &mut doc)?;
                 self.prepare_skills(store, &mut doc)?;
                 let expanded =
                     Self::expand_workflows(store, &mut doc, &a.goal, a.workflow_id.as_deref())?;
@@ -370,7 +391,8 @@ impl Manager {
                     || !doc["intent"].is_null()
                     || doc["epoch"] != a.epoch
                     || inv["state"] != "prepared"
-                    || !tools::needs_approval(inv["name"].as_str().unwrap_or(""))
+                    || !(tools::needs_approval(inv["name"].as_str().unwrap_or(""))
+                        || inv["hook_ask"] == true)
                 {
                     return Err("此审批已失效。".into());
                 }
@@ -463,6 +485,16 @@ impl Manager {
                 let id = params::<Id>(p)?.id;
                 let mut doc = store.agent_run(id)?;
                 self.check_resume_tasks(store, &doc)?;
+                if store
+                    .hook_calls(id)?
+                    .iter()
+                    .any(|h| h["state"] == "indeterminate" && h["reviewed"] != true)
+                {
+                    return Err(
+                        "Reconcile interrupted Hooks before continuing; no old Hook will replay"
+                            .into(),
+                    );
+                }
                 if doc["state"] != "interrupted" || !doc["intent"].is_null() {
                     return Err("只有没有终止意图的中断任务可以手动继续。".into());
                 }
@@ -535,17 +567,25 @@ impl Manager {
         }
         doc["history"] = json!(h);
         doc["supplements"] = json!(inputs);
+        if let Some(contexts) = doc.as_object_mut().unwrap().remove("queued_hook_contexts") {
+            let mut h = history(doc);
+            for context in contexts.as_array().into_iter().flatten() {
+                h.push(json!({"role":"user","content":context}));
+            }
+            doc["history"] = json!(h);
+        }
         doc["pending"] = json!([]);
         doc["state"] = json!("queued");
         doc["awaiting_owned"] = json!(false);
         store.agent_save(doc, &mut invocations, "input_applied")
     }
     pub fn pump(&mut self, store: &mut Store, model_capacity: usize) -> Result<(), String> {
+        self.poll_hook_deadlines();
         self.pump_tasks(store)?;
-        let mut available = model_capacity.saturating_sub(self.model_count());
         let mut ids = self.live.keys().copied().collect::<Vec<_>>();
         ids.sort_unstable();
         for id in ids {
+            let available = model_capacity.saturating_sub(self.model_count());
             if self
                 .live
                 .get(&id)
@@ -566,16 +606,52 @@ impl Manager {
                 self.finish_stop(store, &mut doc)?;
                 continue;
             }
+            if let Some(id) = doc["pending"]
+                .as_array()
+                .and_then(|v| v.first())
+                .and_then(Value::as_i64)
+            {
+                let mut inv = store.agent_invocation(id)?;
+                if inv["post_pending"] == true {
+                    self.post_hooks(store, &mut doc, &mut inv, model_capacity)?;
+                    continue;
+                }
+            }
+            if !self.initial_hooks(store, &mut doc, model_capacity)? {
+                continue;
+            }
             Self::apply_inputs(store, &mut doc)?;
-            self.consume_completions(store, &mut doc)?;
+            if !self.consume_completions(store, &mut doc, model_capacity)? {
+                continue;
+            }
+            if !self.model_response_hooks(store, &mut doc, model_capacity)? {
+                continue;
+            }
+            if !doc["finishing_step"].is_null()
+                && !self.has_owned_work(store, &doc)?
+                && !self.has_unconsumed(store, &doc)?
+            {
+                self.finishing_hooks(store, &mut doc, model_capacity)?;
+                continue;
+            }
             if let Some(inv_id) = doc["pending"]
                 .as_array()
                 .and_then(|p| p.first())
                 .and_then(Value::as_i64)
             {
                 let mut inv = store.agent_invocation(inv_id)?;
+                if inv["post_pending"] == true {
+                    self.post_hooks(store, &mut doc, &mut inv, model_capacity)?;
+                    continue;
+                }
                 let name = inv["name"].as_str().unwrap_or("").to_owned();
-                if tools::needs_approval(&name)
+                if tools::validate(&name, &inv["arguments"]).is_ok()
+                    && (doc["read_only"] != true || tools::read_only(&name))
+                    && !self.pre_hooks(store, &mut doc, &mut inv, model_capacity)?
+                {
+                    continue;
+                }
+                if (tools::needs_approval(&name) || inv["hook_ask"] == true)
                     && inv["approval"].is_null()
                     && (doc["read_only"] != true || tools::read_only(&name))
                 {
@@ -612,6 +688,8 @@ impl Manager {
                     continue;
                 }
                 if self.live.values().any(|l| l.tool.is_some())
+                    || self.hook_commands_busy()
+                    || store.hooks_quarantined()?
                     || !self.jobs.is_empty()
                     || store.agent_quarantined()?
                     || store.tasks_quarantined()?
@@ -705,7 +783,6 @@ impl Manager {
                     continue;
                 }
                 if self.maybe_compact(store, &mut doc)? {
-                    available -= 1;
                     continue;
                 }
                 let memory = Self::memory_snapshot(store, &mut doc)?;
@@ -746,6 +823,7 @@ impl Manager {
                 doc["waiting"] = json!([]);
                 doc["output"] = json!("");
                 doc["model_text"] = json!("");
+                doc["workflow_write_revisions"] = Self::workflow_revisions(store, &doc)?;
                 Self::save(store, &mut doc, "model_started")?;
                 let epoch = doc["epoch"].as_i64().unwrap();
                 let request = gateway::Request {
@@ -776,13 +854,15 @@ impl Manager {
                 live.model = Some(handle);
                 live.text.clear();
                 live.flushed = None;
-                available -= 1;
             }
         }
         self.pump_memory(store, model_capacity)?;
         Ok(())
     }
     pub fn accept(&mut self, store: &mut Store, update: Update) -> Result<(), String> {
+        if matches!(&update, Update::HookReady(..) | Update::HookDone(..)) {
+            return self.accept_hook(store, update);
+        }
         if let Update::MemoryFinished(id, attempt, validating, result) = update {
             return self.accept_memory(store, id, attempt, validating, result);
         }
@@ -850,6 +930,17 @@ impl Manager {
                             &summary.output_items,
                         );
                         doc["history"] = json!(h);
+                        if doc["hook_snapshot"]
+                            .as_array()
+                            .is_some_and(|v| !v.is_empty())
+                        {
+                            doc["model_hook_step"] = doc["step"].clone();
+                            doc["hook_thought_present"] =
+                                json!(summary.output_items.iter().any(|v| matches!(
+                                    v["type"].as_str(),
+                                    Some("thinking" | "redacted_thinking" | "reasoning")
+                                )));
+                        }
                         if serde_json::to_string(&Self::context_view(&doc))
                             .unwrap()
                             .len()
@@ -888,6 +979,19 @@ impl Manager {
                             if doc["state"] == "failed" {
                                 doc["intent"] = json!("failure");
                                 doc["error"] = json!("模型输出未完整结束，未执行后续操作。");
+                            }
+                            if doc["state"] == "completed"
+                                && doc["hook_snapshot"]
+                                    .as_array()
+                                    .is_some_and(|v| !v.is_empty())
+                            {
+                                doc["finishing_step"] = doc["step"].clone();
+                                doc["state"] = json!("queued");
+                                doc["hook_thought_present"] =
+                                    json!(summary.output_items.iter().any(|v| matches!(
+                                        v["type"].as_str(),
+                                        Some("thinking" | "redacted_thinking" | "reasoning")
+                                    )));
                             }
                             Self::save(store, &mut doc, "model_finished")?;
                             if terminal(&doc) {
@@ -985,8 +1089,7 @@ impl Manager {
                     )?;
                     self.retire(store, id)?;
                 } else {
-                    append_result(&mut doc, &inv)?;
-                    remove_pending(&mut doc, inv_id);
+                    Self::settle_tool(&mut doc, &mut inv)?;
                     doc["state"] = json!("queued");
                     doc["waiting"] = json!([]);
                     store.agent_save(&mut doc, std::slice::from_mut(&mut inv), "tool_result")?;
@@ -1012,7 +1115,10 @@ impl Manager {
             self.stop(store, id, false).await?;
         }
         let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(3);
-        while self.live.values().any(|l| l.tool.is_some()) || !self.jobs.is_empty() {
+        while self.live.values().any(|l| l.tool.is_some())
+            || !self.jobs.is_empty()
+            || !self.hook_live.is_empty()
+        {
             match tokio::time::timeout_at(deadline, self.receiver.recv()).await {
                 Ok(Some(update)) => self.accept(store, update)?,
                 _ => return Err("无法确认工具停止；记录将保留以供重启核对。".into()),
@@ -1032,6 +1138,14 @@ impl Manager {
 }
 impl Drop for Manager {
     fn drop(&mut self) {
+        for h in self.hook_live.values_mut() {
+            if let Some(model) = h.model.take() {
+                model.abort();
+            }
+            if let Some(flag) = &h.cancel {
+                flag.store(true, Ordering::SeqCst);
+            }
+        }
         for (_, handle) in self.maintenance.drain() {
             handle.abort();
         }

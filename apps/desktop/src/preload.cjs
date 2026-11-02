@@ -60,6 +60,13 @@ contextBridge.exposeInMainWorld(
     skillRemove: (input = {}) => call("troop:skills-remove", input),
     skillEdit: (input = {}) => call("troop:skills-edit", input),
     skillRefresh: (input = {}) => call("troop:skills-refresh", input),
+    hookList: (input = {}) => call("troop:hooks-list", input),
+    hookDefinition: (input = {}) => call("troop:hooks-definition", input),
+    hookSave: (input = {}) => call("troop:hooks-save", input),
+    hookCalls: (input = {}) => call("troop:hooks-calls", input),
+    hookCall: (input = {}) => call("troop:hooks-call", input),
+    hookReconcile: (input = {}) => call("troop:hooks-reconcile", input),
+    hookRemove: (input = {}) => call("troop:hooks-remove", input),
     quit: () => call("troop:quit"),
     onStatus: (callback) => {
       if (typeof callback !== "function") throw Error("Callback required");

@@ -201,6 +201,7 @@ impl Core {
         if method.starts_with("agent.")
             || method.starts_with("memory.")
             || method.starts_with("skills.")
+            || method.starts_with("hooks.")
         {
             return Ok((
                 self.agents.dispatch(&mut self.store, method, p).await?,

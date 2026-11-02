@@ -270,6 +270,9 @@ impl Store {
         if let Some(action) = doc.as_object_mut().unwrap().remove("_memory_action") {
             super::memory::apply_action(&tx, &action, false)?;
         }
+        if let Some(action) = doc.as_object_mut().unwrap().remove("_workflow_action") {
+            super::skills::apply_workflow_action(&tx, &action)?;
+        }
         if let Some(checkpoint) = doc.as_object_mut().unwrap().remove("_context_checkpoint") {
             tx.execute(
                 "INSERT INTO context_checkpoints(run_id,epoch,document) VALUES(?1,?2,?3)",

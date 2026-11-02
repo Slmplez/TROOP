@@ -7,6 +7,7 @@ import ModelSettings from "./ModelSettings";
 import AgentPanel from "./AgentPanel";
 import MemoryPanel from "./MemoryPanel";
 import SkillsPanel from "./SkillsPanel";
+import HooksPanel from "./HooksPanel";
 
 const labels = {
   starting: "正在连接",
@@ -114,6 +115,13 @@ function App() {
         <div className="scope">本机工作空间</div>
         <nav aria-label="主导航">
           <button
+            className={page === "hooks" ? "selected" : ""}
+            onClick={() => setPage("hooks")}
+            aria-current={page === "hooks" ? "page" : undefined}
+          >
+            Hooks
+          </button>
+          <button
             className={page === "skills" ? "selected" : ""}
             onClick={() => setPage("skills")}
             aria-current={page === "skills" ? "page" : undefined}
@@ -182,7 +190,7 @@ function App() {
       </aside>
       <div className="topbar">
         <span>
-          TROOP <span className="version">0.6</span>
+          TROOP <span className="version">0.7</span>
         </span>
         <span>Windows · 本机</span>
       </div>
@@ -244,6 +252,13 @@ function App() {
             visible={page === "agent"}
           />
         </div>
+        {page === "hooks" && (
+          <HooksPanel
+            ready={ready}
+            generation={status.generation}
+            workspaces={rows}
+          />
+        )}
         {page === "models" && (
           <ModelSettings
             ready={ready}

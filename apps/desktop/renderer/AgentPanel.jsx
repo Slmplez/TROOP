@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { call } from "./api";
 import OwnedTasks from "./OwnedTasks";
+import { HookHistory } from "./HooksPanel";
 const states = {
   queued: "排队中",
   running: "正在执行",
@@ -21,6 +22,7 @@ const waits = {
   tool: "工具正在执行",
   background: "等待所属子代理或后台作业",
   context: "正在压缩已提交的上下文",
+  hook: "正在执行 Hook 规则",
 };
 const stopped = (state) =>
   ["completed", "failed", "cancelled", "interrupted"].includes(state);
@@ -125,12 +127,13 @@ export default function AgentPanel({
             (i.state === "indeterminate" && !i.reviewed) ||
             (i.state === "prepared" &&
               i.approval === null &&
-              [
-                "write_file",
-                "run_command",
-                "git_status",
-                "start_background",
-              ].includes(i.name)),
+              (i.hook_ask ||
+                [
+                  "write_file",
+                  "run_command",
+                  "git_status",
+                  "start_background",
+                ].includes(i.name))),
         );
         const id =
           !manualInvocation.current && actionable
@@ -224,11 +227,13 @@ export default function AgentPanel({
   const approval =
     invocation?.state === "prepared" &&
     invocation.approval === null &&
-    ["write_file", "run_command", "git_status", "start_background"].includes(
-      invocation.name,
-    ) &&
+    (invocation.hook_ask ||
+      ["write_file", "run_command", "git_status", "start_background"].includes(
+        invocation.name,
+      )) &&
     active;
   const unresolved =
+    snapshot?.hooks_unresolved ||
     snapshot?.tasks?.some(
       (t) => ["interrupted", "indeterminate"].includes(t.state) && !t.reviewed,
     ) ||
@@ -704,6 +709,13 @@ export default function AgentPanel({
                   </button>
                 </div>
               )}
+              <HookHistory
+                run={run}
+                ready={ready}
+                generation={generation}
+                visible={visible}
+                onChange={() => refreshRef.current()}
+              />
               {active && (
                 <form
                   className="agent-steer"

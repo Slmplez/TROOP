@@ -4,7 +4,7 @@ use troop_storage::memory::normalize_fact;
 
 pub(crate) fn definitions() -> Vec<Value> {
     vec![
-        json!({"name":"update_state","description":"Write or forget durable memory immediately. Default scope agent; user/project are shared Agent shards. Project memory requires membership. target project supports create/join/leave with project slug. Memory tier profile/log/note; forgetting requires exact fact text. Does not grant file or command authority.","parameters":{"type":"object","properties":{"target":{"type":"string","enum":["memory","project"]},"action":{"type":"string"},"content":{"type":"string"},"scope":{"type":"string","enum":["agent","user","project"]},"project":{"type":"string"},"tier":{"type":"string","enum":["profile","log","note"]}},"required":["target","action","content"],"additionalProperties":false}}),
+        json!({"name":"update_state","description":"Maintain internal state; grants no execution authority. memory write/forget requires content (default scope agent; tier profile/log/note); project create/join/leave requires content. workflow write requires name, description and body; optional id rewrites an enabled local skill. workflow delete requires id. Existing workflows use the library revision frozen when this model request began; concurrent edits are rejected. Optional expected_revision is a decimal string. Workflows cannot contain schedule/trigger or execute scripts.","parameters":{"type":"object","properties":{"target":{"type":"string","enum":["memory","project","workflow"]},"action":{"type":"string"},"content":{"type":"string"},"scope":{"type":"string","enum":["agent","user","project"]},"project":{"type":"string"},"tier":{"type":"string","enum":["profile","log","note"]},"id":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"body":{"type":"string"},"expected_revision":{"type":"string"}},"required":["target","action"],"additionalProperties":false}}),
         json!({"name":"recall_memory","description":"Search visible Agent, user and joined-project memories with provenance. Does not expose other Agents' private memories. Optional scope agent/user/project, project slug and literal text.","parameters":{"type":"object","properties":{"scope":{"type":"string"},"project":{"type":"string"},"text":{"type":"string"}},"required":[],"additionalProperties":false}}),
     ]
 }
@@ -16,7 +16,12 @@ pub(crate) fn validate(name: &str, args: &Value) -> Result<(), String> {
     let map = args
         .as_object()
         .ok_or("Memory arguments must be an object")?;
-    if args.to_string().len() > 5000
+    if args.to_string().len()
+        > if args["target"] == "workflow" {
+            12_000
+        } else {
+            5000
+        }
         || map
             .iter()
             .any(|(k, v)| spec["parameters"]["properties"].get(k).is_none() || !v.is_string())
@@ -27,6 +32,9 @@ pub(crate) fn validate(name: &str, args: &Value) -> Result<(), String> {
             .any(|k| !map.contains_key(k.as_str().unwrap()))
     {
         return Err("Invalid memory arguments".into());
+    }
+    if args["target"] != "workflow" && name == "update_state" && !args["content"].is_string() {
+        return Err("State operation requires content".into());
     }
     Ok(())
 }
@@ -338,6 +346,9 @@ impl Manager {
         }
         let args = &inv["arguments"];
         let aid = agent_id(doc);
+        if name == "update_state" && args["target"] == "workflow" {
+            return self.workflow_tool(store, doc, inv);
+        }
         if name == "recall_memory" {
             let text = args["text"].as_str().unwrap_or("").to_lowercase();
             let scope = args["scope"].as_str().unwrap_or("");
@@ -375,7 +386,7 @@ impl Manager {
             json!({"ok":true,"message":"Memory state committed; this grants no additional execution authority."}),
         )
     }
-    fn finish_memory_tool(
+    pub(super) fn finish_memory_tool(
         store: &mut Store,
         doc: &mut Value,
         inv: &mut Value,
@@ -387,8 +398,7 @@ impl Manager {
             "failed"
         });
         inv["result"] = result;
-        append_result(doc, inv)?;
-        remove_pending(doc, inv["id"].as_i64().unwrap());
+        Self::settle_tool(doc, inv)?;
         doc["state"] = json!("queued");
         doc["waiting"] = json!([]);
         store.agent_save(doc, std::slice::from_mut(inv), "memory_tool_result")?;
@@ -480,6 +490,16 @@ impl Manager {
         if !requested && view.iter().map(|v| v.to_string().len()).sum::<usize>() < 96_000 {
             return Ok(false);
         }
+        if !self.run_hook_gate(
+            store,
+            doc,
+            "preCompact",
+            &doc["compaction_count"].as_u64().unwrap_or(0).to_string(),
+            json!({"history_count":history(doc).len(),"requested":requested}),
+            4,
+        )? {
+            return Ok(true);
+        }
         if doc["compaction_count"].as_u64().unwrap_or(0) >= 4 {
             doc["state"] = json!("interrupted");
             doc["error"] =
@@ -515,7 +535,11 @@ impl Manager {
         self.live.get_mut(&id).unwrap().model = Some(handle);
         Ok(true)
     }
-    fn maintenance_request(&self, doc: &Value, body: String) -> Result<gateway::Request, String> {
+    pub(super) fn maintenance_request(
+        &self,
+        doc: &Value,
+        body: String,
+    ) -> Result<gateway::Request, String> {
         let config: Config = serde_json::from_value(doc["config"].clone())
             .map_err(|_| "Invalid maintenance provider configuration")?;
         let secret = doc["secret_ref"]
@@ -658,9 +682,7 @@ impl Manager {
         Ok(())
     }
     pub(super) fn pump_memory(&mut self, store: &mut Store, capacity: usize) -> Result<(), String> {
-        let available = capacity.saturating_sub(
-            self.live.values().filter(|l| l.model.is_some()).count() + self.maintenance.len(),
-        );
+        let available = capacity.saturating_sub(self.model_count());
         if available == 0 {
             return Ok(());
         }
