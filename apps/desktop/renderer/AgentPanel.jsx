@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { call } from "./api";
+import OwnedTasks from "./OwnedTasks";
 const states = {
   queued: "排队中",
   running: "正在执行",
@@ -18,6 +19,7 @@ const waits = {
   approval: "等待批准具体操作",
   resource: "等待本机执行资源",
   tool: "工具正在执行",
+  background: "等待所属子代理或后台作业",
 };
 const stopped = (state) =>
   ["completed", "failed", "cancelled", "interrupted"].includes(state);
@@ -101,7 +103,12 @@ export default function AgentPanel({
             (i.state === "indeterminate" && !i.reviewed) ||
             (i.state === "prepared" &&
               i.approval === null &&
-              ["write_file", "run_command", "git_status"].includes(i.name)),
+              [
+                "write_file",
+                "run_command",
+                "git_status",
+                "start_background",
+              ].includes(i.name)),
         );
         const id =
           !manualInvocation.current && actionable
@@ -193,11 +200,17 @@ export default function AgentPanel({
   const approval =
     invocation?.state === "prepared" &&
     invocation.approval === null &&
-    ["write_file", "run_command", "git_status"].includes(invocation.name) &&
+    ["write_file", "run_command", "git_status", "start_background"].includes(
+      invocation.name,
+    ) &&
     active;
-  const unresolved = snapshot?.invocations.some(
-    (i) => i.state === "indeterminate" && !i.reviewed,
-  );
+  const unresolved =
+    snapshot?.tasks?.some(
+      (t) => ["interrupted", "indeterminate"].includes(t.state) && !t.reviewed,
+    ) ||
+    snapshot?.invocations.some(
+      (i) => i.state === "indeterminate" && !i.reviewed,
+    );
   return (
     <section className="agent-page" data-ui="builder">
       <div className="title-row">
@@ -348,6 +361,22 @@ export default function AgentPanel({
                 · {run.provider_name} / {run.model}
               </p>
               <p className="agent-text">{run.goal}</p>
+              {run.owner_task_id && (
+                <p className="muted">
+                  所属作业 #{run.owner_task_id} ·{" "}
+                  {run.read_only
+                    ? "只读子代理"
+                    : "继承父任务能力，写入仍需逐次批准"}
+                </p>
+              )}
+              <OwnedTasks
+                tasks={snapshot.tasks}
+                ready={ready}
+                generation={generation}
+                run={run}
+                act={act}
+                choose={choose}
+              />
               <h2>模型输出</h2>
               <pre className="agent-output">
                 {run.output ||
@@ -454,7 +483,9 @@ export default function AgentPanel({
                           <p>
                             {invocation.name === "git_status"
                               ? "将运行 Git 状态命令，可能执行仓库配置中的过滤器。请核对工作区；批准只适用于本次查询。"
-                              : invocation.name === "run_command"
+                              : ["run_command", "start_background"].includes(
+                                    invocation.name,
+                                  )
                                 ? "此命令可访问工作区以外的宿主资源。请核对完整命令后决定。"
                                 : "请核对路径、内容和旧文件版本。批准仅适用于本次操作。"}
                           </p>

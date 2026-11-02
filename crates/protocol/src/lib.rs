@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-pub const VERSION: u32 = 3;
+pub const VERSION: u32 = 4;
 pub const MAX_FRAME: usize = 65_536;
 pub const METHODS: &[&str] = &[
     "system.hello",
@@ -32,6 +32,10 @@ pub const METHODS: &[&str] = &[
     "agent.steer",
     "agent.reconcile",
     "agent.resume",
+    "agent.tasks",
+    "agent.task",
+    "agent.stop-task",
+    "agent.reconcile-task",
 ];
 
 #[derive(Debug, Deserialize)]

@@ -25,6 +25,10 @@ pub fn public_run(doc: &Value, brief: bool) -> Value {
         "waiting",
         "created_at",
         "updated_at",
+        "owner_task_id",
+        "root_run_id",
+        "depth",
+        "read_only",
     ] {
         result[key] = doc[key].clone();
     }
@@ -202,7 +206,7 @@ impl Store {
     pub fn agent_runs(&self) -> Result<Vec<Value>, String> {
         let mut q = self
             .db
-            .prepare("SELECT document FROM agent_runs ORDER BY id DESC LIMIT 100")
+            .prepare("SELECT document FROM agent_runs ORDER BY id DESC")
             .map_err(|e| e.to_string())?;
         let rows = q
             .query_map([], |r| r.get::<_, String>(0))
@@ -245,7 +249,41 @@ impl Store {
         invocations: &mut [Value],
         kind: &str,
     ) -> Result<(), String> {
+        self.agent_commit(doc, invocations, &mut [], None, kind)
+    }
+    pub fn agent_commit(
+        &mut self,
+        doc: &mut Value,
+        invocations: &mut [Value],
+        tasks: &mut [Value],
+        child: Option<&mut Value>,
+        kind: &str,
+    ) -> Result<(), String> {
         let tx = self.db.transaction().map_err(|e| e.to_string())?;
+        if let Some(child) = child {
+            let client = format!("owned-task-{}", child["owner_task_id"]);
+            child["created_at"] = doc["updated_at"].clone();
+            child["updated_at"] = doc["updated_at"].clone();
+            tx.execute("INSERT INTO agent_runs(client_id,request,state,document) VALUES(?1,'{}','queued','{}')", [&client]).map_err(|e|e.to_string())?;
+            child["id"] = json!(tx.last_insert_rowid());
+            tx.execute(
+                "UPDATE agent_runs SET document=?1 WHERE id=?2",
+                params![child.to_string(), child["id"].as_i64()],
+            )
+            .map_err(|e| e.to_string())?;
+            tasks[0]["child_run_id"] = child["id"].clone();
+            tx.execute(
+                "INSERT INTO agent_events(run_id,epoch,kind,payload) VALUES(?1,1,'accepted',?2)",
+                params![
+                    child["id"].as_i64(),
+                    json!({"owner_task_id":child["owner_task_id"]}).to_string()
+                ],
+            )
+            .map_err(|e| e.to_string())?;
+        }
+        for task in tasks {
+            tx.execute("INSERT INTO owned_tasks(id,owner_run_id,root_run_id,document) VALUES(?1,?2,?3,?4) ON CONFLICT(id) DO UPDATE SET document=excluded.document",params![task["id"].as_i64(),task["owner_run_id"].as_i64(),task["root_run_id"].as_i64(),task.to_string()]).map_err(|e|e.to_string())?;
+        }
         for invocation in invocations.iter_mut() {
             if invocation["id"].as_i64().is_none() {
                 tx.execute(
@@ -284,7 +322,7 @@ impl Store {
             params![doc["state"].as_str(), doc.to_string(), doc["id"].as_i64()],
         )
         .map_err(|e| e.to_string())?;
-        if kind == "model_text" {
+        if matches!(kind, "model_text" | "background_output") {
             return tx.commit().map_err(|e| e.to_string());
         }
         let payload = json!({"version":1,"revision":doc["revision"],"state":doc["state"],"intent":doc["intent"],"step":doc["step"],"attempt":doc["attempt"],"error":doc["error"],"model_text":doc["model_text"],"last_model":if kind=="model_finished"{doc["last_model"].clone()}else{Value::Null},"invocations":invocations});

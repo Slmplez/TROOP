@@ -17,6 +17,8 @@ use troop_gateway::{
 };
 use troop_storage::{public_run, Store};
 use uuid::Uuid;
+mod tasks;
+use tasks::TaskLive;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -76,6 +78,9 @@ pub enum Update {
     Model(i64, i64, Result<gateway::Summary, gateway::Failure>),
     Ready(i64, i64, i64, blocking::Sender<bool>),
     Tool(i64, i64, i64, Value),
+    TaskReady(i64, i64, blocking::Sender<bool>),
+    TaskOutput(i64, i64, Value),
+    TaskDone(i64, i64, Value),
 }
 #[derive(Default)]
 struct Live {
@@ -90,6 +95,7 @@ pub struct Manager {
     sender: mpsc::Sender<Update>,
     pub receiver: mpsc::Receiver<Update>,
     receipts: PathBuf,
+    jobs: HashMap<i64, TaskLive>,
 }
 fn terminal(doc: &Value) -> bool {
     matches!(
@@ -145,6 +151,7 @@ impl Manager {
             sender,
             receiver,
             receipts,
+            jobs: HashMap::new(),
         })
     }
     pub fn owns_provider(&self, store: &Store, provider: &str) -> bool {
@@ -165,6 +172,7 @@ impl Manager {
         store.agent_save(doc, &mut [], kind)
     }
     async fn stop(&mut self, store: &mut Store, id: i64, intent: bool) -> Result<Value, String> {
+        self.stop_subtree(store, id, if intent { Some("cancel") } else { None })?;
         let mut doc = store.agent_run(id)?;
         if let Some(live) = self.live.get(&id).filter(|l| l.model.is_some()) {
             doc["model_text"] = json!(live.text);
@@ -176,7 +184,7 @@ impl Manager {
         ) {
             return Ok(public_run(&doc, false));
         }
-        if intent {
+        if intent && doc["intent"].is_null() {
             doc["intent"] = json!("cancel");
         }
         if doc["state"] == "interrupted"
@@ -208,6 +216,20 @@ impl Manager {
     }
     fn finish_stop(&mut self, store: &mut Store, doc: &mut Value) -> Result<(), String> {
         let id = doc["id"].as_i64().unwrap();
+        let tasks = store.owned_tasks(Store::task_root(doc))?;
+        let owned = tasks
+            .iter()
+            .filter(|t| t["owner_run_id"] == id)
+            .collect::<Vec<_>>();
+        if owned.iter().any(|t| tasks::active(t)) {
+            return Ok(());
+        }
+        let unresolved = owned.iter().any(|t| {
+            matches!(t["state"].as_str(), Some("indeterminate" | "interrupted"))
+                && t["reviewed"] != true
+        }) || store.agent_invocations(id)?.iter().any(|i| {
+            i["state"] == "indeterminate" && i["stopped"] != true && i["reviewed"] != true
+        });
         let mut invocations = store.agent_invocations(id)?;
         for inv in &mut invocations {
             if inv["state"] == "prepared" {
@@ -215,17 +237,25 @@ impl Manager {
                 inv["result"] = json!({"ok":false,"error":"未派发，任务已停止。"});
             }
         }
-        doc["state"] = json!(if doc["intent"] == "cancel" {
+        doc["state"] = json!(if unresolved {
+            "interrupted"
+        } else if doc["intent"] == "failure" {
+            "failed"
+        } else if doc["intent"] == "cancel" {
             "cancelled"
         } else {
             "interrupted"
         });
         doc["waiting"] = json!([]);
-        doc["error"] = json!(if doc["intent"] == "cancel" {
-            "任务已停止；已发生的效果和文件保留。"
-        } else {
-            "应用退出或执行中断；请核对记录后手动继续。"
-        });
+        if doc["intent"] != "failure" {
+            doc["error"] = json!(if unresolved {
+                "Owned work or process stop requires reconciliation; previous work will not be replayed."
+            } else if doc["intent"] == "cancel" {
+                "任务已停止；已发生的效果和文件保留。"
+            } else {
+                "应用退出或执行中断；请核对记录后手动继续。"
+            });
+        }
         store.agent_save(doc, &mut invocations, "stopped")?;
         self.live.remove(&id);
         Ok(())
@@ -237,6 +267,9 @@ impl Manager {
         p: Value,
     ) -> Result<Value, String> {
         match method {
+            "agent.tasks" | "agent.task" | "agent.stop-task" | "agent.reconcile-task" => {
+                self.task_rpc(store, method, p)
+            }
             "agent.events" => {
                 let a = params::<Events>(p)?;
                 if a.before.is_some_and(|b| b <= 0) {
@@ -257,7 +290,12 @@ impl Manager {
                 let id = params::<Id>(p)?.id;
                 let run = store.agent_run(id)?;
                 let invocations=store.agent_invocations(id)?.iter().map(|i|json!({"id":i["id"],"name":i["name"],"state":i["state"],"epoch":i["epoch"],"approval":i["approval"],"reviewed":i["reviewed"],"stopped":i["stopped"]})).collect::<Vec<_>>();
-                Ok(json!({"run":public_run(&run,false),"invocations":invocations}))
+                let tasks = store
+                    .owned_tasks(Store::task_root(&run))?
+                    .iter()
+                    .map(troop_storage::public_task)
+                    .collect::<Vec<_>>();
+                Ok(json!({"run":public_run(&run,false),"invocations":invocations,"tasks":tasks}))
             }
             "agent.invocation" => store.agent_invocation(params::<Id>(p)?.id),
             "agent.start" => {
@@ -392,6 +430,7 @@ impl Manager {
                 }
                 let id = params::<Id>(p)?.id;
                 let mut doc = store.agent_run(id)?;
+                self.check_resume_tasks(store, &doc)?;
                 if doc["state"] != "interrupted" || !doc["intent"].is_null() {
                     return Err("只有没有终止意图的中断任务可以手动继续。".into());
                 }
@@ -450,9 +489,11 @@ impl Manager {
         doc["supplements"] = json!(inputs);
         doc["pending"] = json!([]);
         doc["state"] = json!("queued");
+        doc["awaiting_owned"] = json!(false);
         store.agent_save(doc, &mut invocations, "input_applied")
     }
     pub fn pump(&mut self, store: &mut Store, model_capacity: usize) -> Result<(), String> {
+        self.pump_tasks(store)?;
         let mut available =
             model_capacity.saturating_sub(self.live.values().filter(|l| l.model.is_some()).count());
         let mut ids = self.live.keys().copied().collect::<Vec<_>>();
@@ -466,15 +507,20 @@ impl Manager {
                 continue;
             }
             let mut doc = store.agent_run(id)?;
-            if terminal(&doc) {
-                self.live.remove(&id);
+            if doc["state"] == "failed" && self.has_owned_work(store, &doc)? {
+                self.stop_subtree(store, id, Some("failure"))?;
                 continue;
             }
-            if !doc["intent"].is_null() {
+            if terminal(&doc) {
+                self.retire(store, id)?;
+                continue;
+            }
+            if !doc["intent"].is_null() || doc["state"] == "cancelling" {
                 self.finish_stop(store, &mut doc)?;
                 continue;
             }
             Self::apply_inputs(store, &mut doc)?;
+            self.consume_completions(store, &mut doc)?;
             if let Some(inv_id) = doc["pending"]
                 .as_array()
                 .and_then(|p| p.first())
@@ -482,7 +528,10 @@ impl Manager {
             {
                 let mut inv = store.agent_invocation(inv_id)?;
                 let name = inv["name"].as_str().unwrap_or("").to_owned();
-                if tools::needs_approval(&name) && inv["approval"].is_null() {
+                if tools::needs_approval(&name)
+                    && inv["approval"].is_null()
+                    && (doc["read_only"] != true || tools::read_only(&name))
+                {
                     if doc["waiting"] != json!(["approval"]) {
                         doc["state"] = json!("waiting");
                         doc["waiting"] = json!(["approval"]);
@@ -493,7 +542,10 @@ impl Manager {
                 let rejected = if inv["approval"] == false {
                     Some("用户拒绝此操作。".into())
                 } else {
-                    tools::validate(&name, &inv["arguments"]).err()
+                    tools::validate(&name, &inv["arguments"]).err().or_else(|| {
+                        (doc["read_only"] == true && !tools::read_only(&name))
+                            .then(|| "Read-only child agents cannot execute this capability".into())
+                    })
                 };
                 if let Some(error) = rejected {
                     inv["state"] = json!("failed");
@@ -503,7 +555,14 @@ impl Manager {
                     store.agent_save(&mut doc, std::slice::from_mut(&mut inv), "tool_rejected")?;
                     continue;
                 }
-                if self.live.values().any(|l| l.tool.is_some()) || store.agent_quarantined()? {
+                if self.owned_tool(store, &mut doc, &mut inv)? {
+                    continue;
+                }
+                if self.live.values().any(|l| l.tool.is_some())
+                    || !self.jobs.is_empty()
+                    || store.agent_quarantined()?
+                    || store.tasks_quarantined()?
+                {
                     if doc["waiting"] != json!(["resource"]) {
                         doc["state"] = json!("waiting");
                         doc["waiting"] = json!(["resource"]);
@@ -528,7 +587,7 @@ impl Manager {
                         }
                     }
                     store.agent_save(&mut doc, &mut old, "workspace_unavailable")?;
-                    self.live.remove(&id);
+                    self.retire(store, id)?;
                     continue;
                 }
                 inv["state"] = json!("dispatched");
@@ -559,8 +618,30 @@ impl Manager {
                     let _ = updates.blocking_send(Update::Tool(id, epoch, inv_id, result));
                 });
             } else if available > 0 {
+                if doc["awaiting_owned"] == true && self.has_owned_work(store, &doc)? {
+                    if doc["waiting"] != json!(["background"]) {
+                        doc["state"] = json!("waiting");
+                        doc["waiting"] = json!(["background"]);
+                        Self::save(store, &mut doc, "waiting_owned")?;
+                    }
+                    continue;
+                }
+                let tree = store.tree_runs(Store::task_root(&doc))?;
+                let tree_steps: u64 = tree.iter().map(|r| r["step"].as_u64().unwrap_or(0)).sum();
+                let tree_tools: usize = tree
+                    .iter()
+                    .map(|r| {
+                        store
+                            .agent_invocations(r["id"].as_i64().unwrap())
+                            .map(|i| i.len())
+                    })
+                    .collect::<Result<Vec<_>, _>>()?
+                    .iter()
+                    .sum();
                 if doc["step"].as_u64().unwrap_or(0) >= 16
                     || store.agent_invocations(id)?.len() >= 32
+                    || tree_steps >= 64
+                    || tree_tools >= 128
                     || doc["history"].to_string().len() > 192_000
                 {
                     doc["state"] = json!("failed");
@@ -568,7 +649,7 @@ impl Manager {
                     doc["error"] =
                         json!("任务已达到模型步骤、工具数量或上下文预算；记录与产物已保留。");
                     Self::save(store, &mut doc, "budget_exhausted")?;
-                    self.live.remove(&id);
+                    self.retire(store, id)?;
                     continue;
                 }
                 let config: Config =
@@ -585,7 +666,7 @@ impl Manager {
                         doc["error"] =
                             json!("无法读取此任务的模型凭据，请检查服务配置后创建新任务。");
                         Self::save(store, &mut doc, "credential_unavailable")?;
-                        self.live.remove(&id);
+                        self.retire(store, id)?;
                         continue;
                     }
                 };
@@ -603,7 +684,13 @@ impl Manager {
                     messages: vec![],
                     tools: Some(ToolWire {
                         history: history(&doc),
-                        definitions: tools::definitions(),
+                        definitions: tools::definitions()
+                            .into_iter()
+                            .filter(|d| {
+                                doc["read_only"] != true
+                                    || tools::read_only(d["name"].as_str().unwrap())
+                            })
+                            .collect(),
                     }),
                 };
                 let updates = self.sender.clone();
@@ -625,11 +712,18 @@ impl Manager {
         Ok(())
     }
     pub fn accept(&mut self, store: &mut Store, update: Update) -> Result<(), String> {
+        if matches!(
+            &update,
+            Update::TaskReady(..) | Update::TaskOutput(..) | Update::TaskDone(..)
+        ) {
+            return self.accept_task(store, update);
+        }
         let (id, epoch) = match &update {
             Update::Text(i, e, _)
             | Update::Model(i, e, _)
             | Update::Ready(i, e, ..)
             | Update::Tool(i, e, ..) => (*i, *e),
+            _ => unreachable!(),
         };
         let mut doc = store.agent_run(id)?;
         if !self.live.contains_key(&id) || doc["epoch"] != epoch {
@@ -667,7 +761,7 @@ impl Manager {
                         doc["intent"] = json!("failure");
                         doc["error"] = json!({"kind":error.kind,"message":error.message});
                         Self::save(store, &mut doc, "model_failed")?;
-                        self.live.remove(&id);
+                        self.retire(store, id)?;
                     }
                     Ok(summary) => {
                         let mut h = history(&doc);
@@ -684,7 +778,7 @@ impl Manager {
                             doc["intent"] = json!("failure");
                             doc["error"] = json!("模型输出使任务上下文超过 192KB；未派发工具。");
                             Self::save(store, &mut doc, "context_exhausted")?;
-                            self.live.remove(&id);
+                            self.retire(store, id)?;
                             return Ok(());
                         }
                         doc["last_model"] = json!({"finish_reason":summary.finish_reason,"usage":summary.usage,"call_count":summary.calls.len()});
@@ -699,25 +793,46 @@ impl Manager {
                                 "failed"
                             } else if has_input {
                                 "queued"
+                            } else if self.has_owned_work(store, &doc)?
+                                || self.has_unconsumed(store, &doc)?
+                            {
+                                "waiting"
                             } else {
                                 "completed"
                             });
+                            if doc["state"] == "waiting" {
+                                doc["awaiting_owned"] = json!(true);
+                                doc["waiting"] = json!(["background"]);
+                            }
                             if doc["state"] == "failed" {
                                 doc["intent"] = json!("failure");
                                 doc["error"] = json!("模型输出未完整结束，未执行后续操作。");
                             }
                             Self::save(store, &mut doc, "model_finished")?;
                             if terminal(&doc) {
-                                self.live.remove(&id);
+                                self.retire(store, id)?;
                             }
                         } else {
-                            if store.agent_invocations(id)?.len() + summary.calls.len() > 32 {
+                            let tree_tools: usize = store
+                                .tree_runs(Store::task_root(&doc))?
+                                .iter()
+                                .map(|r| {
+                                    store
+                                        .agent_invocations(r["id"].as_i64().unwrap())
+                                        .map(|i| i.len())
+                                })
+                                .collect::<Result<Vec<_>, _>>()?
+                                .iter()
+                                .sum();
+                            if store.agent_invocations(id)?.len() + summary.calls.len() > 32
+                                || tree_tools + summary.calls.len() > 128
+                            {
                                 doc["state"] = json!("failed");
                                 doc["intent"] = json!("failure");
                                 doc["error"] =
                                     json!("工具计划超过本次任务的 32 次调用预算，未派发。");
                                 Self::save(store, &mut doc, "budget_exhausted")?;
-                                self.live.remove(&id);
+                                self.retire(store, id)?;
                                 return Ok(());
                             }
                             let mut invocations=summary.calls.into_iter().map(|c:ToolCall|{let git=c.name=="git_status";let mut inv=json!({"run_id":id,"epoch":epoch,"call_id":c.id,"name":c.name,"arguments":c.arguments,"state":"prepared","approval":null,"result":null,"reviewed":false,"stopped":true});if git{inv["operation"]=tools::git_preview();}inv}).collect::<Vec<_>>();
@@ -774,7 +889,7 @@ impl Manager {
                         std::slice::from_mut(&mut inv),
                         "stop_unconfirmed",
                     )?;
-                    self.live.remove(&id);
+                    self.retire(store, id)?;
                 } else if doc["state"] == "cancelling" {
                     store.agent_save(&mut doc, std::slice::from_mut(&mut inv), "tool_stopped")?;
                     self.finish_stop(store, &mut doc)?;
@@ -787,7 +902,7 @@ impl Manager {
                         std::slice::from_mut(&mut inv),
                         "tool_indeterminate",
                     )?;
-                    self.live.remove(&id);
+                    self.retire(store, id)?;
                 } else {
                     append_result(&mut doc, &inv)?;
                     remove_pending(&mut doc, inv_id);
@@ -796,6 +911,7 @@ impl Manager {
                     store.agent_save(&mut doc, std::slice::from_mut(&mut inv), "tool_result")?;
                 }
             }
+            _ => unreachable!(),
         }
         Ok(())
     }
@@ -805,10 +921,19 @@ impl Manager {
             self.stop(store, id, false).await?;
         }
         let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(3);
-        while self.live.values().any(|l| l.tool.is_some()) {
+        while self.live.values().any(|l| l.tool.is_some()) || !self.jobs.is_empty() {
             match tokio::time::timeout_at(deadline, self.receiver.recv()).await {
                 Ok(Some(update)) => self.accept(store, update)?,
                 _ => return Err("无法确认工具停止；记录将保留以供重启核对。".into()),
+            }
+        }
+        for _ in 0..4 {
+            self.pump_tasks(store)?;
+            for id in self.live.keys().copied().collect::<Vec<_>>() {
+                let mut doc = store.agent_run(id)?;
+                if doc["state"] == "cancelling" {
+                    self.finish_stop(store, &mut doc)?;
+                }
             }
         }
         Ok(())
@@ -816,6 +941,9 @@ impl Manager {
 }
 impl Drop for Manager {
     fn drop(&mut self) {
+        for job in self.jobs.values() {
+            job.cancel.store(true, Ordering::SeqCst);
+        }
         for live in self.live.values_mut() {
             if let Some(model) = live.model.take() {
                 model.abort();

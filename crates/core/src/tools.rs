@@ -22,11 +22,31 @@ pub fn definitions() -> Vec<Value> {
         ("write_file", "Create/update a UTF-8 workspace file up to 8KB. expected_hash must be the previous SHA-256, or 'missing' for a new file. Requires user approval.", json!({"path":{"type":"string"},"content":{"type":"string"},"expected_hash":{"type":"string"}}), vec!["path","content","expected_hash"]),
         ("run_command", "Execute a Windows PowerShell command in the workspace, up to 60 seconds. Host access is not sandboxed. Requires approval of this exact command.", json!({"command":{"type":"string"}}), vec!["command"]),
         ("git_status", "Run Git status using the workspace's configuration. Repository filters may run host programs. Requires approval of this operation.", json!({}), vec![]),
+        ("spawn_agent", "Create an owned child agent with independent context in this workspace and model. access is read_only or inherit. Maximum depth 2; task tree shares budgets. Child writes/commands still require exact approval. Returns task_id; wait_task for its result.", json!({"goal":{"type":"string"},"access":{"type":"string","enum":["read_only","inherit"]}}), vec!["goal","access"]),
+        ("start_background", "Start an owned background PowerShell job. Requires approval of the exact command and timeout. timeout_seconds is a decimal string between 1 and 3600. Holds exclusive host resources until the entire process tree stops. Returns task_id.", json!({"command":{"type":"string"},"timeout_seconds":{"type":"string"}}), vec!["command","timeout_seconds"]),
+        ("task_status", "Read the bounded status/output of a task directly owned by this run. task_id is a decimal string.", json!({"task_id":{"type":"string"}}), vec!["task_id"]),
+        ("wait_task", "Wait for a directly owned task to finish without polling model calls. An interrupted or indeterminate task requires user reconciliation. task_id is a decimal string.", json!({"task_id":{"type":"string"}}), vec!["task_id"]),
+        ("stop_task", "Stop a directly owned task and all of its descendants, retaining results. Does not undo effects. task_id is a decimal string.", json!({"task_id":{"type":"string"}}), vec!["task_id"]),
     ];
     specs.into_iter().map(|(name,description,properties,required)|json!({"name":name,"description":description,"parameters":{"type":"object","properties":properties,"required":required,"additionalProperties":false}})).collect()
 }
 pub fn needs_approval(name: &str) -> bool {
-    matches!(name, "write_file" | "run_command" | "git_status")
+    matches!(
+        name,
+        "write_file" | "run_command" | "git_status" | "start_background"
+    )
+}
+pub fn read_only(name: &str) -> bool {
+    matches!(
+        name,
+        "list_directory"
+            | "read_file"
+            | "search_text"
+            | "spawn_agent"
+            | "task_status"
+            | "wait_task"
+            | "stop_task"
+    )
 }
 const GIT_STATUS_ARGS: &[&str] = &[
     "--no-pager",
@@ -58,11 +78,35 @@ pub fn validate(name: &str, args: &Value) -> Result<(), String> {
     {
         return Err("工具参数不完整或超过限制。".into());
     }
-    if name == "run_command"
+    if matches!(name, "run_command" | "start_background")
         && (args["command"].as_str().unwrap().trim().is_empty()
             || args["command"].as_str().unwrap().len() > 4000)
     {
         return Err("命令应为 1–4000 字节。".into());
+    }
+    if name == "start_background"
+        && !args["timeout_seconds"]
+            .as_str()
+            .and_then(|s| s.parse::<u64>().ok())
+            .is_some_and(|s| (1..=3600).contains(&s))
+    {
+        return Err("Background timeout must be 1–3600 seconds".into());
+    }
+    if name == "spawn_agent"
+        && (!matches!(args["access"].as_str(), Some("read_only" | "inherit"))
+            || args["goal"]
+                .as_str()
+                .is_none_or(|s| s.trim().is_empty() || s.len() > 8000))
+    {
+        return Err("Invalid child goal or access mode".into());
+    }
+    if matches!(name, "task_status" | "wait_task" | "stop_task")
+        && args["task_id"]
+            .as_str()
+            .and_then(|s| s.parse::<i64>().ok())
+            .is_none_or(|id| id <= 0)
+    {
+        return Err("Invalid owned task ID".into());
     }
     Ok(())
 }
@@ -182,7 +226,7 @@ fn collect(reader: impl Read + Send + 'static) -> Capture {
     });
     Capture { data: state, done }
 }
-fn command(mut command: Command) -> Result<Value, String> {
+fn command(mut command: Command, timeout: u64, progress: bool) -> Result<Value, String> {
     #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;
@@ -197,15 +241,26 @@ fn command(mut command: Command) -> Result<Value, String> {
     let stdout = collect(child.stdout.take().unwrap());
     let stderr = collect(child.stderr.take().unwrap());
     let start = Instant::now();
+    let mut notified = Instant::now();
     let status = loop {
         if let Some(status) = child.try_wait().map_err(|_| "无法核对命令状态。")? {
             break status;
         }
-        if start.elapsed() > Duration::from_secs(60) {
+        if progress && notified.elapsed() > Duration::from_millis(500) {
+            let out = stdout.data.lock().unwrap();
+            let err = stderr.data.lock().unwrap();
+            println!(
+                "{}",
+                json!({"progress":{"stdout":String::from_utf8_lossy(&out.0),"stderr":String::from_utf8_lossy(&err.0),"truncated":out.1||err.1}})
+            );
+            let _ = std::io::stdout().flush();
+            notified = Instant::now();
+        }
+        if start.elapsed() > Duration::from_secs(timeout) {
             let _ = child.kill();
             let _ = child.wait();
             return Ok(
-                json!({"effect_unknown":true,"error":"命令达到 60 秒上限；请核对已发生的效果。"}),
+                json!({"effect_unknown":true,"error":"Command timed out; reconcile any effects before continuing."}),
             );
         }
         std::thread::sleep(Duration::from_millis(15));
@@ -378,7 +433,7 @@ fn perform(workspace: &str, name: &str, args: &Value) -> Result<Value, String> {
             }
             Ok(json!({"matches":results,"truncated":truncated}))
         }
-        "run_command" => {
+        "run_command" | "start_background" => {
             let system = std::env::var_os("SystemRoot").ok_or("Windows 系统目录不可用。")?;
             let mut c = Command::new(
                 Path::new(&system).join("System32/WindowsPowerShell/v1.0/powershell.exe"),
@@ -391,7 +446,14 @@ fn perform(workspace: &str, name: &str, args: &Value) -> Result<Value, String> {
                 "-Command",
                 &script,
             ]);
-            command(c)
+            command(
+                c,
+                args["timeout_seconds"]
+                    .as_str()
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(60),
+                name == "start_background",
+            )
         }
         "git_status" => {
             let executable = trusted_git(&root)?;
@@ -399,7 +461,7 @@ fn perform(workspace: &str, name: &str, args: &Value) -> Result<Value, String> {
             c.current_dir(root)
                 .env("GIT_OPTIONAL_LOCKS", "0")
                 .args(GIT_STATUS_ARGS);
-            command(c)
+            command(c, 60, false)
         }
         _ => Err("未知工具。".into()),
     }
@@ -594,9 +656,17 @@ pub fn worker() -> Result<(), String> {
     Ok(())
 }
 pub fn execute(
+    work: Work,
+    cancel: Arc<AtomicBool>,
+    ready: impl FnOnce(mpsc::Sender<bool>) + Send,
+) -> Value {
+    execute_with_progress(work, cancel, ready, |_| {})
+}
+pub fn execute_with_progress(
     mut work: Work,
     cancel: Arc<AtomicBool>,
     ready: impl FnOnce(mpsc::Sender<bool>) + Send,
+    progress: impl Fn(Value),
 ) -> Value {
     let mut child_slot = None;
     let mut job_slot = None;
@@ -622,7 +692,7 @@ pub fn execute(
         let (lines, rx) = mpsc::channel();
         std::thread::spawn(move || {
             let mut output = BufReader::new(output);
-            for _ in 0..2 {
+            loop {
                 let mut line = String::new();
                 let n = output.by_ref().take(65_536).read_line(&mut line);
                 if !matches!(n,Ok(n) if n>0) {
@@ -647,7 +717,12 @@ pub fn execute(
         let mut permit = Some(ready);
         let mut gate: Option<mpsc::Receiver<bool>> = None;
         loop {
-            if cancel.load(Ordering::SeqCst) || start.elapsed() > Duration::from_secs(70) {
+            let timeout = work.arguments["timeout_seconds"]
+                .as_str()
+                .and_then(|s| s.parse::<u64>().ok())
+                .unwrap_or(60)
+                + 10;
+            if cancel.load(Ordering::SeqCst) || start.elapsed() > Duration::from_secs(timeout) {
                 return Err("执行已停止或超时；已发生效果需要核对。".into());
             }
             if let Some(ref gate_rx) = gate {
@@ -662,6 +737,7 @@ pub fn execute(
                 }
             }
             match rx.recv_timeout(Duration::from_millis(15)) {
+                Ok(v) if v["progress"].is_object() => progress(v["progress"].clone()),
                 Ok(v) if v["ready"] == true => {
                     accepted = true;
                     let (tx, rx) = mpsc::channel();

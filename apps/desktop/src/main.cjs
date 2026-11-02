@@ -243,6 +243,10 @@ async function bootstrap({ userData, show = true } = {}) {
     "steer",
     "reconcile",
     "resume",
+    "tasks",
+    "task",
+    "stop-task",
+    "reconcile-task",
   ]) {
     handle("agent-" + action, (input = {}) =>
       core.request("agent." + action, payload(input)),

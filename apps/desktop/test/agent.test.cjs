@@ -141,7 +141,7 @@ for (const protocol of ["chat_completions", "responses", "anthropic"])
     assert.ok(result.invocations.every((i) => i.state === "succeeded"));
     assert.equal(h.upstream.requests.length, 2);
     const first = h.upstream.requests[0].body;
-    assert.equal(first.tools.length, 6);
+    assert.equal(first.tools.length, 11);
     const second = JSON.stringify(h.upstream.requests[1].body);
     assert.ok(
       second.includes("owned-call-0") &&

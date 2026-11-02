@@ -165,7 +165,7 @@ function App() {
       </aside>
       <div className="topbar">
         <span>
-          TROOP <span className="version">0.3</span>
+          TROOP <span className="version">0.4</span>
         </span>
         <span>Windows · 本机</span>
       </div>

@@ -31,6 +31,10 @@ contextBridge.exposeInMainWorld(
     steerRun: (input) => call("troop:agent-steer", input),
     reconcileInvocation: (input) => call("troop:agent-reconcile", input),
     resumeRun: (id) => call("troop:agent-resume", { id }),
+    listOwnedTasks: (id) => call("troop:agent-tasks", { id }),
+    getOwnedTask: (id) => call("troop:agent-task", { id }),
+    stopOwnedTask: (id) => call("troop:agent-stop-task", { id }),
+    reconcileOwnedTask: (input) => call("troop:agent-reconcile-task", input),
     quit: () => call("troop:quit"),
     onStatus: (callback) => {
       if (typeof callback !== "function") throw Error("Callback required");
