@@ -17,6 +17,7 @@ use tokio::{
     process::{Child, ChildStdin, ChildStdout},
     time::timeout,
 };
+pub mod schema;
 mod sse;
 pub mod worker;
 pub const LIMIT: usize = 65_536;
@@ -92,6 +93,17 @@ fn url(input: &str) -> Result<Url, String> {
         );
     }
     Ok(u)
+}
+pub fn validate_endpoint(endpoint: &str) -> Result<(), String> {
+    let u = url(endpoint)?;
+    if u.query().is_some() {
+        return Err("MCP endpoint query must be removed; pass credentials through headers".into());
+    }
+    Ok(())
+}
+pub fn validate_header_names(names: &[String]) -> Result<(), String> {
+    let entries = names.iter().map(|s| (s.clone(), "value".into())).collect();
+    headers(&entries).map(|_| ())
 }
 fn headers(input: &BTreeMap<String, String>) -> Result<HeaderMap, String> {
     let mut out = HeaderMap::new();
@@ -563,6 +575,8 @@ impl Client {
                 {
                     return Err(failure("Invalid or duplicate MCP tool schema", false));
                 }
+                schema::compile(&t["inputSchema"])
+                    .map_err(|_| failure("Unsupported MCP inputSchema", false))?;
                 all.push(t.clone());
                 if all.len() > 500 {
                     return Err(failure("MCP catalogue exceeds capacity", false));

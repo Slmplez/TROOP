@@ -13,6 +13,7 @@ use troop_storage::Store;
 use uuid::Uuid;
 use zeroize::Zeroize;
 mod agent;
+mod mcp;
 mod tools;
 
 #[derive(Deserialize)]
@@ -198,6 +199,9 @@ impl Core {
         Ok(())
     }
     async fn dispatch(&mut self, method: &str, p: Value) -> Result<(Value, bool), String> {
+        if method.starts_with("mcp.") {
+            return Ok((mcp::dispatch(&mut self.store, method, p)?, false));
+        }
         if method.starts_with("agent.")
             || method.starts_with("memory.")
             || method.starts_with("skills.")
@@ -419,6 +423,7 @@ async fn run() -> Result<(), String> {
         return Err("Usage: troop-core --data-dir <absolute directory>".into());
     }
     let store = Store::open(&PathBuf::from(&args[2]))?;
+    mcp::recover(&store)?;
     let generation = format!(
         "{}-{}",
         std::process::id(),

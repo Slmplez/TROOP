@@ -1,8 +1,15 @@
 const { spawn } = require("node:child_process");
 const { EventEmitter } = require("node:events");
 const crypto = require("node:crypto");
-const PROTOCOL = 7;
+const PROTOCOL = 8;
 const ALLOWED = new Set([
+  "mcp.list",
+  "mcp.get",
+  "mcp.save",
+  "mcp.remove",
+  "mcp.revisions",
+  "mcp.preview",
+  "mcp.import",
   "skills.list",
   "skills.preview",
   "skills.import",

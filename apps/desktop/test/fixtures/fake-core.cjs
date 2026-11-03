@@ -22,7 +22,7 @@ readline.createInterface({ input: process.stdin }).on("line", (line) => {
     setTimeout(
       () =>
         send(r, {
-          protocol: 7,
+          protocol: 8,
           core_version: "test",
           capabilities: [...require("../../src/core-client.cjs").ALLOWED],
         }),

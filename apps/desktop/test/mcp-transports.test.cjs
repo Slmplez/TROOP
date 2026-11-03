@@ -108,6 +108,11 @@ async function server(t, mode = "json") {
             : undefined
           : "page2";
       if (mode === "schema") result.tools[0].inputSchema = { type: "array" };
+      if (mode === "external-ref")
+        result.tools[0].inputSchema = {
+          type: "object",
+          $ref: "file:///C:/private-mcp-schema.json",
+        };
     }
     if (q.method === "tools/call") {
       if (["401", "404"].includes(mode)) {
@@ -222,7 +227,7 @@ for (const mode of ["cross-origin", "version", "redirect", "oversize"])
       });
     assert.ok(r.open_error);
   });
-for (const mode of ["schema", "cursor"])
+for (const mode of ["schema", "cursor", "external-ref"])
   test(`MCP ${mode}: catalogue rejected without partial success`, async (t) => {
     const s = await server(t, mode),
       r = await probe({ endpoint: s.endpoint });

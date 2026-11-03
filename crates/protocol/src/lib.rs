@@ -1,10 +1,17 @@
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-pub const VERSION: u32 = 7;
+pub const VERSION: u32 = 8;
 pub const MAX_FRAME: usize = 65_536;
 pub const METHODS: &[&str] = &[
     "system.hello",
+    "mcp.list",
+    "mcp.get",
+    "mcp.save",
+    "mcp.remove",
+    "mcp.revisions",
+    "mcp.preview",
+    "mcp.import",
     "skills.list",
     "skills.preview",
     "skills.import",

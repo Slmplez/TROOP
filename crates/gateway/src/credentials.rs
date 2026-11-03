@@ -2,6 +2,68 @@
 fn valid(reference: &str) -> bool {
     reference.starts_with("TROOP/model/") && reference.len() < 200 && !reference.contains('\0')
 }
+/// Separate namespace: MCP credentials cannot be substituted for model credentials.
+pub mod mcp {
+    fn valid(r: &str) -> bool {
+        let p = r.split('/').collect::<Vec<_>>();
+        p.len() == 4
+            && p[0] == "TROOP"
+            && p[1] == "mcp"
+            && p[2..]
+                .iter()
+                .all(|s| s.len() == 36 && s.bytes().all(|b| b.is_ascii_hexdigit() || b == b'-'))
+    }
+    pub fn write(r: &str, value: &str) -> Result<(), String> {
+        if !valid(r) || value.len() > 2500 || value.contains('\0') {
+            return Err("Invalid MCP credential reference or value".into());
+        }
+        #[cfg(windows)]
+        {
+            let mut framed = format!("v1:{value}");
+            let result =
+                super::platform::write(r, &framed).map_err(|_| "Cannot save MCP credential".into());
+            zeroize::Zeroize::zeroize(&mut framed);
+            result
+        }
+        #[cfg(not(windows))]
+        {
+            Err("MCP credentials require Windows vault".into())
+        }
+    }
+    pub fn read(r: &str) -> Result<String, String> {
+        if !valid(r) {
+            return Err("Invalid MCP credential reference".into());
+        }
+        #[cfg(windows)]
+        {
+            let mut framed = super::platform::read(r)
+                .map_err(|_| "MCP credential missing; reconnect in settings")?;
+            let result = framed
+                .strip_prefix("v1:")
+                .map(str::to_owned)
+                .ok_or("MCP credential encoding invalid; reconnect in settings".into());
+            zeroize::Zeroize::zeroize(&mut framed);
+            result
+        }
+        #[cfg(not(windows))]
+        {
+            Err("MCP credentials require Windows vault".into())
+        }
+    }
+    pub fn delete(r: &str) -> Result<(), String> {
+        if !valid(r) {
+            return Err("Invalid MCP credential reference".into());
+        }
+        #[cfg(windows)]
+        {
+            super::platform::delete(r).map_err(|_| "Cannot remove MCP credential".into())
+        }
+        #[cfg(not(windows))]
+        {
+            Err("MCP credentials require Windows vault".into())
+        }
+    }
+}
 
 #[cfg(windows)]
 mod platform {
