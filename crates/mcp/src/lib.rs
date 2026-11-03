@@ -17,6 +17,7 @@ use tokio::{
     process::{Child, ChildStdin, ChildStdout},
     time::timeout,
 };
+pub mod oauth;
 pub mod schema;
 mod sse;
 pub mod worker;

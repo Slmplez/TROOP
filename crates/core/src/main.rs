@@ -14,6 +14,7 @@ use uuid::Uuid;
 use zeroize::Zeroize;
 mod agent;
 mod mcp;
+mod oauth;
 mod tools;
 
 #[derive(Deserialize)]
@@ -114,6 +115,7 @@ struct Active {
     notified: Instant,
 }
 struct Core {
+    oauth: oauth::Manager,
     store: Store,
     generation: String,
     sequence: u64,
@@ -199,6 +201,9 @@ impl Core {
         Ok(())
     }
     async fn dispatch(&mut self, method: &str, p: Value) -> Result<(Value, bool), String> {
+        if method.starts_with("mcp.oauth.") {
+            return Ok((self.oauth.dispatch(&mut self.store, method, p)?, false));
+        }
         if method.starts_with("mcp.") {
             return Ok((mcp::dispatch(&mut self.store, method, p)?, false));
         }
@@ -215,6 +220,7 @@ impl Core {
         let answer = match method {
             "system.ping" => json!({"ready":true}),
             "system.shutdown" => {
+                self.oauth.shutdown(&mut self.store)?;
                 self.agents.shutdown(&mut self.store).await?;
                 self.stop_all("cancelled", "应用退出，已停止本次生成。部分文本已保留。")
                     .await?;
@@ -459,6 +465,7 @@ async fn run() -> Result<(), String> {
         }
     });
     let mut core = Core {
+        oauth: oauth::Manager::new(),
         agents: agent::Manager::new(PathBuf::from(&args[2]))?,
         store,
         generation,
@@ -492,17 +499,21 @@ async fn run() -> Result<(), String> {
             }
             Some(message)=update.recv()=>core.accept(message)?,
             Some(message)=core.agents.receiver.recv()=>core.agents.accept(&mut core.store,message)?,
+            Some(message)=core.oauth.receiver.recv()=>core.oauth.accept(&mut core.store,message)?,
             _=schedule.tick()=>{},
         }
         core.agents
             .pump(&mut core.store, 4usize.saturating_sub(core.active.len()))?;
+        core.oauth.prune(&mut core.store)?;
     }
+    core.oauth.shutdown(&mut core.store)?;
     core.stop_all(
         "interrupted",
         "控制连接已断开；已保留接收的文本，不会自动续发。",
     )
     .await?;
     core.agents.shutdown(&mut core.store).await?;
+    core.oauth.shutdown(&mut core.store)?;
     Ok(())
 }
 #[tokio::main]

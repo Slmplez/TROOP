@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-pub const VERSION: u32 = 8;
+pub const VERSION: u32 = 9;
 pub const MAX_FRAME: usize = 65_536;
 pub const METHODS: &[&str] = &[
     "system.hello",
@@ -12,6 +12,11 @@ pub const METHODS: &[&str] = &[
     "mcp.revisions",
     "mcp.preview",
     "mcp.import",
+    "mcp.oauth.begin",
+    "mcp.oauth.status",
+    "mcp.oauth.cancel",
+    "mcp.oauth.refresh",
+    "mcp.oauth.disconnect",
     "skills.list",
     "skills.preview",
     "skills.import",

@@ -8,9 +8,14 @@ publish = false
 [dependencies]
 serde.workspace = true
 serde_json.workspace = true
-tokio = { workspace = true, features = ["process", "io-util"] }
-reqwest.workspace = true
+tokio = { workspace = true, features = ["process", "io-util", "net"] }
+reqwest = { workspace = true, features = ["form"] }
 jsonschema = { version = "=0.60.2", default-features = false }
+sha2 = "=0.10.9"
+base64 = "=0.23.1"
+form_urlencoded = "=1.2.2"
+uuid.workspace = true
+zeroize.workspace = true
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading"] }

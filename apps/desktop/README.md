@@ -1,6 +1,6 @@
 # TROOP
 
-TROOP 0.8.0：Rust Core + Electron 桌面应用。提供模型服务配置、流式对话，以及 Windows 本机 Agent 任务、工具审批、执行账本、停止与核对恢复；保留工作区管理、托盘和单实例。
+TROOP 0.9.0：Rust Core + Electron 桌面应用。提供模型服务配置、流式对话，以及 Windows 本机 Agent 任务、工具审批、执行账本、停止与核对恢复；保留工作区管理、托盘和单实例。
 
 开发任务：[本机 Agent 规格 #18](https://github.com/Slmplez/TROOP/issues/18)、[实现 #19](https://github.com/Slmplez/TROOP/issues/19)。网关与真实对话验收见 #13–#15，基础版本见 #11/#12。子代理与所属后台作业见[规格 #20](https://github.com/Slmplez/TROOP/issues/20)、[实现 #21](https://github.com/Slmplez/TROOP/issues/21)。记忆与上下文压缩见[规格 #22](https://github.com/Slmplez/TROOP/issues/22)、[实现 #23](https://github.com/Slmplez/TROOP/issues/23)。Skills 与工作流资料库见[实现 #25](https://github.com/Slmplez/TROOP/issues/25)；Windows Hooks 与模型端配方维护见[#26](https://github.com/Slmplez/TROOP/issues/26)、[#27](https://github.com/Slmplez/TROOP/issues/27)；MCP 与自动化留待后续开发。启动不需要 Docker 或产品账号；发送模型请求需要配置你使用的服务。
 
@@ -93,7 +93,7 @@ Chat Completions 默认使用 `max_completion_tokens`；服务需要旧版参数
 npm --prefix apps/desktop start -- --user-data-dir=E:\TroopData\Development
 ```
 
-同一数据目录只允许一个 Core 写入。本版本按版本事务迁移 SQLite schema 1/2/3/4/5/6/7→8，保留已有工作区、模型服务与会话。旧 Core 会拒绝新版数据库，请使用匹配的桌面/Core，不做降级打开。
+同一数据目录只允许一个 Core 写入。本版本按版本事务迁移 SQLite schema 1/2/3/4/5/6/7/8→9，保留已有工作区、模型服务与会话。旧 Core 会拒绝新版数据库，请使用匹配的桌面/Core，不做降级打开。
 
 ## 开发结构
 
@@ -110,9 +110,9 @@ npm --prefix apps/desktop start -- --user-data-dir=E:\TroopData\Development
 | `apps/desktop/renderer`            | React 对话、模型、工作区和连接界面                      |
 | `docs/implementation`              | 本次范围、验收与来源记录                                |
 
-内部协议为逐行 JSON-RPC，每帧最多 64 KiB，握手版本为 8。非握手调用必须匹配 Core generation，流通知带代际和递增序号；界面读取 Core 持久化快照。最多 64 个未决控制请求。Core 不开放网络监听；Agent 工具只能经固定任务接口派发，Renderer 没有通用 Shell、文件或 invoke 入口。
+内部协议为逐行 JSON-RPC，每帧最多 64 KiB，握手版本为 9。非握手调用必须匹配 Core generation，流通知带代际和递增序号；界面读取 Core 持久化快照。最多 64 个未决控制请求。Core 不开放网络监听；Agent 工具只能经固定任务接口派发，Renderer 没有通用 Shell、文件或 invoke 入口。
 
-SQLite schema 为 8，自动迁移 v1/v2/v3/v4/v5/v6/v7 并保留工作区、服务配置和会话；更高版本数据库拒绝打开。升级前备份应用数据，升级后不要用旧 Core 写入同一数据目录。开发构建使用带版本号的 Core 文件；运行中的旧窗口保持旧版本，需从托盘明确退出后再启动新版。
+SQLite schema 为 9，自动迁移 v1/v2/v3/v4/v5/v6/v7/v8 并保留工作区、服务配置和会话；更高版本数据库拒绝打开。升级前备份应用数据，升级后不要用旧 Core 写入同一数据目录。开发构建使用带版本号的 Core 文件；运行中的旧窗口保持旧版本，需从托盘明确退出后再启动新版。
 
 ## 检查
 
@@ -139,3 +139,7 @@ npm --prefix apps/desktop run smoke:hooks
 ### MCP 资料库开发接口
 
 0.8.0 已完成 Core 的 MCP 配置资料库、导入预览、修订与系统凭据；尚未接入 MCP 管理页、OAuth 和 Agent 工具，不代表整个 MCP 可用。资料库管理不会连接远端或启动配置命令。详见[资料库规格与验收](../../docs/implementation/TROOP_MCP_LIBRARY.md)。
+
+### MCP OAuth 开发接口
+
+0.9.0 已完成 Core 的 OAuth 登录、刷新与撤销：PKCE/loopback、系统凭据、取消和中断恢复。当前通过自有授权服务验收；尚未接入浏览器按钮、MCP Agent 工具及第三方真实服务验收。详见[OAuth 规格与验收](../../docs/implementation/TROOP_MCP_OAUTH.md)。
