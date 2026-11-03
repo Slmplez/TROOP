@@ -1,6 +1,6 @@
 {
   "name": "troop-desktop",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "private": true,
   "description": "TROOP independent Rust and Electron desktop",
   "main": "src/entry.cjs",
@@ -17,7 +17,8 @@
     "smoke:memory": "node scripts/memory-smoke.mjs",
     "smoke:skills": "node scripts/skills-smoke.mjs",
     "smoke:hooks": "node scripts/hooks-smoke.mjs",
-    "smoke:mcp-agent": "node scripts/mcp-agent-smoke.mjs"
+    "smoke:mcp-agent": "node scripts/mcp-agent-smoke.mjs",
+    "smoke:mcp-management": "node scripts/mcp-management-smoke.mjs"
   },
   "dependencies": {
     "react": "19.2.1",

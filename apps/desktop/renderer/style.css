@@ -948,7 +948,7 @@ select:focus-visible {
     padding: 22px 12px;
   }
   .scope {
-    margin-left: 0;
+    margin-left: 4px;
   }
   .sheet {
     padding: 25px 22px;

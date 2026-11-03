@@ -359,7 +359,7 @@ impl Manager {
                     .map(troop_storage::public_task)
                     .collect::<Vec<_>>();
                 Ok(
-                    json!({"run":public_run(&run,false),"invocations":invocations,"tasks":tasks,"hooks_unresolved":store.hook_calls(id)?.iter().any(|h|h["state"]=="indeterminate"&&h["reviewed"]!=true)}),
+                    json!({"run":public_run(&run,false),"invocations":invocations,"tasks":tasks,"hooks_unresolved":store.hook_calls(id)?.iter().any(|h|h["state"]=="indeterminate"&&h["reviewed"]!=true),"mcp_unresolved":store.mcp_connections(id)?.iter().any(|s|s["state"]=="indeterminate"&&s["reviewed"]!=true)}),
                 )
             }
             "agent.invocation" => store.agent_invocation(params::<Id>(p)?.id),

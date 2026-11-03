@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { call } from "./api";
 import OwnedTasks from "./OwnedTasks";
 import { HookHistory } from "./HooksPanel";
+import McpRunPanel from "./McpRunPanel";
 const states = {
   queued: "排队中",
   running: "正在执行",
@@ -23,6 +24,10 @@ const waits = {
   background: "等待所属子代理或后台作业",
   context: "正在压缩已提交的上下文",
   hook: "正在执行 Hook 规则",
+  host_resource: "等待宿主执行资源",
+  authentication: "等待 MCP 认证刷新",
+  mcp_discovery: "正在读取 MCP 工具目录",
+  mcp_cleanup: "正在关闭 MCP 所属连接",
 };
 const stopped = (state) =>
   ["completed", "failed", "cancelled", "interrupted"].includes(state);
@@ -235,6 +240,7 @@ export default function AgentPanel({
       )) &&
     active;
   const unresolved =
+    snapshot?.mcp_unresolved ||
     snapshot?.hooks_unresolved ||
     snapshot?.tasks?.some(
       (t) => ["interrupted", "indeterminate"].includes(t.state) && !t.reviewed,
@@ -616,23 +622,25 @@ export default function AgentPanel({
                         !active &&
                         !invocation.reviewed && (
                           <div className="agent-reconcile">
-                            <button
-                              disabled={!ready || busy}
-                              onClick={() =>
-                                act(() =>
-                                  call(
-                                    window.troop.reconcileInvocation({
-                                      id: invocation.id,
-                                      epoch: invocation.epoch,
-                                      source: "receipt",
-                                      note: "",
-                                    }),
-                                  ),
-                                )
-                              }
-                            >
-                              核对 Worker 回执
-                            </button>
+                            {!invocation.name.startsWith("mcp_") && (
+                              <button
+                                disabled={!ready || busy}
+                                onClick={() =>
+                                  act(() =>
+                                    call(
+                                      window.troop.reconcileInvocation({
+                                        id: invocation.id,
+                                        epoch: invocation.epoch,
+                                        source: "receipt",
+                                        note: "",
+                                      }),
+                                    ),
+                                  )
+                                }
+                              >
+                                核对 Worker 回执
+                              </button>
+                            )}
                             <label>
                               核对说明
                               <textarea
@@ -720,6 +728,15 @@ export default function AgentPanel({
                 visible={visible}
                 onChange={() => refreshRef.current()}
               />
+              {visible && (
+                <McpRunPanel
+                  runId={run.id}
+                  ready={ready}
+                  generation={generation}
+                  visible={visible}
+                  onChange={() => refreshRef.current()}
+                />
+              )}
               {active && (
                 <form
                   className="agent-steer"

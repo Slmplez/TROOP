@@ -8,6 +8,7 @@ import AgentPanel from "./AgentPanel";
 import MemoryPanel from "./MemoryPanel";
 import SkillsPanel from "./SkillsPanel";
 import HooksPanel from "./HooksPanel";
+import McpPanel from "./McpPanel";
 import { version } from "../package.json";
 
 const labels = {
@@ -115,6 +116,13 @@ function App() {
         </div>
         <div className="scope">本机工作空间</div>
         <nav aria-label="主导航">
+          <button
+            className={page === "mcp" ? "selected" : ""}
+            aria-current={page === "mcp" ? "page" : undefined}
+            onClick={() => setPage("mcp")}
+          >
+            MCP
+          </button>
           <button
             className={page === "hooks" ? "selected" : ""}
             onClick={() => setPage("hooks")}
@@ -258,6 +266,16 @@ function App() {
             ready={ready}
             generation={status.generation}
             workspaces={rows}
+          />
+        )}
+        {page === "mcp" && (
+          <McpPanel
+            ready={ready}
+            generation={status.generation}
+            onRun={(id) => {
+              setOpenRun(id);
+              setPage("agent");
+            }}
           />
         )}
         {page === "models" && (

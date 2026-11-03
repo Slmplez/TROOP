@@ -7,11 +7,13 @@ const {
   nativeImage,
   dialog,
   session,
+  shell,
 } = require("electron");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { CoreSupervisor } = require("./core-client.cjs");
 const { coreBinary } = require("./core-path.cjs");
+const { installMcp } = require("./mcp-ipc.cjs");
 const ROOT = path.resolve(__dirname, "..");
 async function bootstrap({ userData, show = true } = {}) {
   app.setName("TROOP");
@@ -309,6 +311,7 @@ async function bootstrap({ userData, show = true } = {}) {
     if (!validId(id)) throw Error("生成标识无效。");
     return core.request("chat.cancel", { turn_id: id });
   });
+  installMcp({ handle, core, payload, dialog, shell, window: () => win });
   handle("quit", () => {
     app.quit();
     return null;

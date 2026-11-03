@@ -1,8 +1,8 @@
 # TROOP
 
-TROOP 0.10.0：Rust Core + Electron 桌面应用。提供模型服务配置、流式对话，以及 Windows 本机 Agent 任务、MCP 工具审批、执行账本、停止与核对恢复；保留工作区管理、托盘和单实例。
+TROOP 0.10.1：Rust Core + Electron 桌面应用。提供模型服务配置、流式对话，以及 Windows 本机 Agent 任务、MCP 工具审批、执行账本、停止与核对恢复；保留工作区管理、托盘和单实例。
 
-开发任务：[本机 Agent 规格 #18](https://github.com/Slmplez/TROOP/issues/18)、[实现 #19](https://github.com/Slmplez/TROOP/issues/19)。网关与真实对话验收见 #13–#15，基础版本见 #11/#12。子代理与所属后台作业见[规格 #20](https://github.com/Slmplez/TROOP/issues/20)、[实现 #21](https://github.com/Slmplez/TROOP/issues/21)。记忆与上下文压缩见[规格 #22](https://github.com/Slmplez/TROOP/issues/22)、[实现 #23](https://github.com/Slmplez/TROOP/issues/23)。Skills 与工作流资料库见[实现 #25](https://github.com/Slmplez/TROOP/issues/25)；Windows Hooks 与模型端配方维护见[#26](https://github.com/Slmplez/TROOP/issues/26)、[#27](https://github.com/Slmplez/TROOP/issues/27)；MCP 接线见 [#46](https://github.com/Slmplez/TROOP/issues/46)，管理页与真实服务验收见 #47/#48；自动化留待后续开发。启动不需要 Docker 或产品账号；发送模型请求需要配置你使用的服务。
+开发任务：[本机 Agent 规格 #18](https://github.com/Slmplez/TROOP/issues/18)、[实现 #19](https://github.com/Slmplez/TROOP/issues/19)。网关与真实对话验收见 #13–#15，基础版本见 #11/#12。子代理与所属后台作业见[规格 #20](https://github.com/Slmplez/TROOP/issues/20)、[实现 #21](https://github.com/Slmplez/TROOP/issues/21)。记忆与上下文压缩见[规格 #22](https://github.com/Slmplez/TROOP/issues/22)、[实现 #23](https://github.com/Slmplez/TROOP/issues/23)。Skills 与工作流资料库见[实现 #25](https://github.com/Slmplez/TROOP/issues/25)；Windows Hooks 与模型端配方维护见[#26](https://github.com/Slmplez/TROOP/issues/26)、[#27](https://github.com/Slmplez/TROOP/issues/27)；MCP 接线见 [#46](https://github.com/Slmplez/TROOP/issues/46)，桌面管理见 [#47](https://github.com/Slmplez/TROOP/issues/47)，真实服务验收见 #48；自动化留待后续开发。启动不需要 Docker 或产品账号；发送模型请求需要配置你使用的服务。
 
 ## 本机启动
 
@@ -73,7 +73,7 @@ npm --prefix apps/desktop start
 
 Core 已接入 HTTP/SSE、Windows stdio、服务资料库和 OAuth，以及 Agent 动态工具、具体参数审批、前后 MCP Hooks。任务开始时冻结服务目录与配置；调用前复核权限与版本，超时、停止或崩溃后不自动重放。只读子代理不取得 MCP 执行能力。结果与附件有界入账，模型可分页读取本 Run 的文字归档。
 
-已有任务页能审批 MCP 调用；服务管理页、外部浏览器登录按钮、附件与 Session 核对界面由 #47 补齐，真实第三方服务验收由 #48 完成。当前资料通过开发用固定 Core 接口配置，不在 Renderer 暴露通用调用入口。详见 [Agent 接线与验收](../../docs/implementation/TROOP_MCP_AGENT.md)。活动派发共用宿主队列；空闲 stdio 服务保留状态，其自主后台行为无法由队列完全串行化，仍是当前用户的非沙箱宿主能力。
+侧栏“MCP”可添加/编辑服务、按 Agent 分配、管理凭据字段与工具禁用名单，预览导入旧配置并查看修订。保存配置不会连接或执行；启用 Windows 命令需确认完整程序、参数和目录。认证区可准备 OAuth，在系统浏览器完成登录，并刷新或断开授权。任务连接区提供调用、文字附件分页和 Session 停止核对；核对后回到任务页手动继续，旧调用不重放。真实第三方服务与默认浏览器兼容由 #48 单独验收。详见 [桌面使用与验收](../../docs/implementation/TROOP_MCP_DESKTOP.md)和 [Agent 接线](../../docs/implementation/TROOP_MCP_AGENT.md)。活动派发共用宿主队列；空闲 stdio 服务保留状态，其自主后台行为无法由队列完全串行化，仍是当前用户的非沙箱宿主能力。
 
 ### 普通对话
 
@@ -137,16 +137,17 @@ npm --prefix apps/desktop run smoke:memory
 npm --prefix apps/desktop run smoke:skills
 npm --prefix apps/desktop run smoke:hooks
 npm --prefix apps/desktop run smoke:mcp-agent
+npm --prefix apps/desktop run smoke:mcp-management
 ```
 
 冒烟报告和截图保存在被忽略的 `.tmp-troop-bootstrap/`，`latest-smoke.json` 指向最近一次完整成功结果；HTTP 测试配置在 `.tmp-troop-chat/`。测试使用自有 loopback HTTP/SSE 服务和随机假密钥，不调用商业模型；固定 IPC、Rust、SQLite、Windows 凭据、Renderer、托盘和正式入口使用真实实现。原生目录选择器仍由自有夹具替换。
 
-公开验收使用自有 loopback HTTP/SSE 服务、SQLite、Windows 进程和 Electron，覆盖模型网关、任务、记忆、Skills/Workflows 与 Hooks。验证结果分别见 docs/implementation 中的版本记录；其他环境的配置与运行资料不在公开文档范围。MCP 管理页和真实服务兼容、调度、签名安装包及长期负载仍待后续开发或验证。Windows 保持单屏基线，Docker 与整体 UI 优化继续暂停。
+公开验收使用自有 loopback HTTP/SSE 服务、SQLite、Windows 进程和 Electron，覆盖模型网关、任务、记忆、Skills/Workflows 与 Hooks。验证结果分别见 docs/implementation 中的版本记录；其他环境的配置与运行资料不在公开文档范围。MCP 真实服务兼容、调度、签名安装包及长期负载仍待后续开发或验证。Windows 保持单屏基线，Docker 与整体 UI 优化继续暂停。
 
 ### MCP 资料库开发接口
 
-0.8.0 已完成 Core 的 MCP 配置资料库、导入预览、修订与系统凭据；OAuth 和 Agent 工具已分别由 0.9/0.10 接入；MCP 管理页仍待 #47。资料库管理不会连接远端或启动配置命令。详见[资料库规格与验收](../../docs/implementation/TROOP_MCP_LIBRARY.md)。
+0.8.0 已完成 Core 的 MCP 配置资料库、导入预览、修订与系统凭据；OAuth 和 Agent 工具已分别由 0.9/0.10 接入；MCP 管理页已由 0.10.1 接入。资料库管理不会连接远端或启动配置命令。详见[资料库规格与验收](../../docs/implementation/TROOP_MCP_LIBRARY.md)。
 
 ### MCP OAuth 开发接口
 
-0.9.0 已完成 Core 的 OAuth 登录、刷新与撤销：PKCE/loopback、系统凭据、取消和中断恢复。当前通过自有授权服务验收；0.10 已接入 MCP Agent 工具；浏览器按钮及第三方真实服务验收仍待 #47/#48。详见[OAuth 规格与验收](../../docs/implementation/TROOP_MCP_OAUTH.md)。
+0.9.0 已完成 Core 的 OAuth 登录、刷新与撤销：PKCE/loopback、系统凭据、取消和中断恢复。当前通过自有授权服务验收；0.10 已接入 MCP Agent 工具；浏览器入口已由 0.10.1 接入，第三方真实服务与默认浏览器兼容仍待 #48。详见[OAuth 规格与验收](../../docs/implementation/TROOP_MCP_OAUTH.md)。
