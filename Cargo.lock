@@ -1586,7 +1586,7 @@ dependencies = [
 
 [[package]]
 name = "troop-core"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "base64",
  "regex",
@@ -1605,7 +1605,7 @@ dependencies = [
 
 [[package]]
 name = "troop-gateway"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "futures-util",
  "reqwest",
@@ -1618,7 +1618,7 @@ dependencies = [
 
 [[package]]
 name = "troop-mcp"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "base64",
  "form_urlencoded",
@@ -1635,7 +1635,7 @@ dependencies = [
 
 [[package]]
 name = "troop-protocol"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -1643,7 +1643,7 @@ dependencies = [
 
 [[package]]
 name = "troop-storage"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "base64",
  "rusqlite",

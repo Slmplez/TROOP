@@ -809,12 +809,14 @@ test("MCP malformed backend outcome is indeterminate and cannot trigger an autom
     1,
   );
 });
-for (const authCase of ["refresh", "reject401", "disconnect"])
+for (const authCase of ["refresh", "reject401", "disconnect", "opaque"])
   test(`MCP OAuth ${authCase} preserves binding and never replays an old request`, async (t) => {
     const { oauthServer } = require("./fixtures/oauth-server.cjs"),
       server = await oauthServer({
         mcp: true,
         rejectTool401: authCase === "reject401",
+        tokenPrefix:
+          authCase === "opaque" ? "owned:opaque=token!~+/_%" : undefined,
       }),
       h = await setup(t, {
         plan: ({ body }) =>

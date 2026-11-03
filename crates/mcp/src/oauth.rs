@@ -586,12 +586,9 @@ async fn exchange(
             return Err("Unsupported OAuth token type".into());
         }
         let access = text(&v, "access_token", 16_000)?;
-        if access.trim_end_matches('=').is_empty()
-            || !access
-                .trim_end_matches('=')
-                .bytes()
-                .all(|b| b.is_ascii_alphanumeric() || b"-._~+/".contains(&b))
-        {
+        // Access tokens are opaque. Preserve provider punctuation without decoding
+        // or normalizing, while excluding whitespace and non-ASCII header bytes.
+        if !access.bytes().all(|b| (0x21..=0x7e).contains(&b)) {
             return Err("Invalid OAuth bearer token encoding".into());
         }
         let refresh = if v.get("refresh_token").is_some() {

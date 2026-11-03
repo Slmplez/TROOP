@@ -39,3 +39,9 @@ token、refresh token 和 client secret 只保存在 Windows 凭据存储。Gran
 协议来源：[MCP 2025-06-18 Authorization](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization)、[原生应用 OAuth RFC8252](https://www.rfc-editor.org/rfc/rfc8252)、[撤销 RFC7009](https://www.rfc-editor.org/rfc/rfc7009)。
 
 最终结果：新增 28 项 OAuth 集成测试，完整 Node 回归 211/211 通过；Rust 工作区 19 项、Electron 基础 16 项通过。离线锁定构建、workspace/all-targets Clippy `-D warnings`、Rustfmt、Prettier 均通过。记录在忽略目录 .tmp-troop-mcp/oauth-\*.log；生产用户实例与原数据库未重启或升级。
+
+## 0.10.2 令牌兼容修正
+
+访问令牌按不透明值处理，原样保存和发送，不解码、不规范化，也不假定其标点符合 Base64。可接受非空、最多 16KB 的可见 ASCII 非空白内容；空格、制表符、换行、控制字符及非 ASCII 内容仍拒绝，拒绝时不持久化凭据。该规则用于兼容可安全放入 HTTP Authorization 请求头的服务令牌，并非宣称扩展后的字符集合符合 RFC6750 的 b64token 语法。
+
+新增自有服务回归验证带标点令牌的登录、同 Grant 刷新及实际 MCP 请求，并验证四类不安全输入不会入库。完整 Node 回归 259 项、Rust 20 项、Electron 管理页 10 组通过；Clippy all-targets `-D warnings`、Rustfmt 和 Prettier 通过。协议和数据库版本保持 10。以上只证明自有服务兼容，真实第三方与默认浏览器验收继续由 #48 单独记录。

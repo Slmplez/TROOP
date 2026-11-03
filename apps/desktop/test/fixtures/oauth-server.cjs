@@ -37,7 +37,8 @@ async function oauthServer(options = {}) {
       if (u.pathname === "/mcp") {
         if (
           options.mcp &&
-          req.headers.authorization === `Bearer owned-access-${refreshCount}`
+          req.headers.authorization ===
+            `Bearer ${options.tokenPrefix ?? "owned-access-"}${refreshCount}`
         ) {
           const q = JSON.parse(raw);
           if (q.id == null) {
@@ -195,7 +196,8 @@ async function oauthServer(options = {}) {
           return;
         return json(res, {
           access_token:
-            (options.longToken ? "x".repeat(6000) : "owned-access-") +
+            (options.tokenPrefix ??
+              (options.longToken ? "x".repeat(6000) : "owned-access-")) +
             refreshCount,
           refresh_token: options.noRefresh
             ? undefined

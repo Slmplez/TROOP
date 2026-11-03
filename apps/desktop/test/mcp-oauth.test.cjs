@@ -88,6 +88,40 @@ async function setup(t, options = {}) {
   };
   return { c, s, id, directory, data, status, db, begin, ready, finish, login };
 }
+test("OAuth opaque visible-ASCII tokens survive login and refresh without lexical decoding", async (t) => {
+  const h = await setup(t, { tokenPrefix: "owned:opaque=token!~+/_%" });
+  const a = await h.login();
+  await h.c.request("mcp.oauth.refresh", {
+    id: h.id,
+    auth_revision: a.revision,
+  });
+  const b = await until(async () => {
+    const s = await h.status();
+    return s.state !== "refreshing" && s;
+  });
+  assert.equal(b.state, "connected", b.error);
+  assert.equal(b.grant_id, a.grant_id);
+});
+
+for (const [name, tokenPrefix] of [
+  ["space", "owned token"],
+  ["tab", "owned\ttoken"],
+  ["CRLF", "owned\r\nX-Test: value"],
+  ["non-ASCII", "owned令牌"],
+])
+  test(`OAuth bearer rejects ${name} without persisting credentials`, async (t) => {
+    const h = await setup(t, { tokenPrefix });
+    await h.begin();
+    const a = await h.finish();
+    assert.equal(a.state, "error");
+    const d = h.db();
+    const row = d
+      .prepare("SELECT secret_refs FROM mcp_oauth WHERE server_id=?")
+      .get(h.id);
+    assert.deepEqual(JSON.parse(row.secret_refs), {});
+    d.close();
+  });
+
 test("OAuth public PKCE: issuer/resource binding, private vault chunks and persisted status", async (t) => {
   const h = await setup(t, { longToken: true });
   const a = await h.login();
