@@ -502,8 +502,11 @@ async fn run() -> Result<(), String> {
             Some(message)=core.oauth.receiver.recv()=>core.oauth.accept(&mut core.store,message)?,
             _=schedule.tick()=>{},
         }
-        core.agents
-            .pump(&mut core.store, 4usize.saturating_sub(core.active.len()))?;
+        core.agents.pump(
+            &mut core.store,
+            4usize.saturating_sub(core.active.len()),
+            &mut core.oauth,
+        )?;
         core.oauth.prune(&mut core.store)?;
     }
     core.oauth.shutdown(&mut core.store)?;
@@ -518,6 +521,14 @@ async fn run() -> Result<(), String> {
 }
 #[tokio::main]
 async fn main() {
+    if std::env::args().nth(1).as_deref() == Some("--mcp-stdio-worker") {
+        let code = if troop_mcp::worker::run().is_ok() {
+            0
+        } else {
+            1
+        };
+        std::process::exit(code);
+    }
     if std::env::args().nth(1).as_deref() == Some("--tool-worker") {
         let code = match tools::worker() {
             Ok(()) => 0,

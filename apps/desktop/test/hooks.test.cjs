@@ -72,7 +72,9 @@ test("all 17 supported Hook events have live dispatch evidence; opaque reasoning
           ? "Owned summary: commands and writes complete; do not replay."
           : "Owned matrix complete",
   });
-  const events = (await h.core.request("hooks.list", {})).events;
+  const supported = (await h.core.request("hooks.list", {})).events;
+  assert.equal(supported.length, 19);
+  const events = supported.filter((e) => !e.includes("MCPExecution"));
   assert.equal(events.length, 17);
   for (const event of events)
     await h.save({

@@ -182,6 +182,15 @@ pub struct Client {
     pub tools_changed: bool,
 }
 impl Client {
+    pub fn replace_headers(&mut self, values: BTreeMap<String, String>) -> Result<(), String> {
+        match &mut self.wire {
+            Wire::Http(h) => {
+                h.headers = headers(&values)?;
+                Ok(())
+            }
+            Wire::Stdio { .. } => Err("Cannot replace stdio credentials".into()),
+        }
+    }
     pub async fn http(
         endpoint: &str,
         extra_headers: BTreeMap<String, String>,

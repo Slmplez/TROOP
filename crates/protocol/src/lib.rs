@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-pub const VERSION: u32 = 9;
+pub const VERSION: u32 = 10;
 pub const MAX_FRAME: usize = 65_536;
 pub const METHODS: &[&str] = &[
     "system.hello",
@@ -49,6 +49,10 @@ pub const METHODS: &[&str] = &[
     "chat.send",
     "chat.cancel",
     "agent.list",
+    "agent.mcp-catalogue",
+    "agent.mcp-sessions",
+    "agent.mcp-reconcile",
+    "agent.mcp-artifact",
     "agent.get",
     "agent.content",
     "agent.events",

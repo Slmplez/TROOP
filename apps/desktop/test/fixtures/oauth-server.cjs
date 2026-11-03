@@ -35,6 +35,53 @@ async function oauthServer(options = {}) {
         });
       }
       if (u.pathname === "/mcp") {
+        if (
+          options.mcp &&
+          req.headers.authorization === `Bearer owned-access-${refreshCount}`
+        ) {
+          const q = JSON.parse(raw);
+          if (q.id == null) {
+            res.writeHead(202);
+            res.end();
+            return;
+          }
+          if (options.rejectTool401 && q.method === "tools/call") {
+            res.writeHead(401);
+            res.end();
+            return;
+          }
+          const result =
+            q.method === "initialize"
+              ? {
+                  protocolVersion: "2025-06-18",
+                  capabilities: { tools: {} },
+                  serverInfo: { name: "Owned OAuth MCP", version: "1" },
+                }
+              : q.method === "tools/list"
+                ? {
+                    tools: [
+                      {
+                        name: "echo",
+                        description: "Owned authenticated echo",
+                        inputSchema: {
+                          type: "object",
+                          properties: { text: { type: "string" } },
+                          required: ["text"],
+                          additionalProperties: false,
+                        },
+                      },
+                    ],
+                  }
+                : {
+                    content: [
+                      {
+                        type: "text",
+                        text: "authorized:" + q.params.arguments.text,
+                      },
+                    ],
+                  };
+          return json(res, { jsonrpc: "2.0", id: q.id, result });
+        }
         res.writeHead(401, {
           "www-authenticate": `Bearer resource_metadata="${base}/resource-metadata"`,
         });

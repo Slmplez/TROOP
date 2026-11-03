@@ -128,6 +128,7 @@ export default function AgentPanel({
             (i.state === "prepared" &&
               i.approval === null &&
               (i.hook_ask ||
+                i.name.startsWith("mcp_") ||
                 [
                   "write_file",
                   "run_command",
@@ -228,6 +229,7 @@ export default function AgentPanel({
     invocation?.state === "prepared" &&
     invocation.approval === null &&
     (invocation.hook_ask ||
+      invocation.name.startsWith("mcp_") ||
       ["write_file", "run_command", "git_status", "start_background"].includes(
         invocation.name,
       )) &&
@@ -559,13 +561,15 @@ export default function AgentPanel({
                       {approval && (
                         <div className="agent-approval">
                           <p>
-                            {invocation.name === "git_status"
-                              ? "将运行 Git 状态命令，可能执行仓库配置中的过滤器。请核对工作区；批准只适用于本次查询。"
-                              : ["run_command", "start_background"].includes(
-                                    invocation.name,
-                                  )
-                                ? "此命令可访问工作区以外的宿主资源。请核对完整命令后决定。"
-                                : "请核对路径、内容和旧文件版本。批准仅适用于本次操作。"}
+                            {invocation.name.startsWith("mcp_")
+                              ? "请核对 MCP 服务、运行位置、工具和完整参数。该服务可能产生外部效果；批准仅适用于本次调用。"
+                              : invocation.name === "git_status"
+                                ? "将运行 Git 状态命令，可能执行仓库配置中的过滤器。请核对工作区；批准只适用于本次查询。"
+                                : ["run_command", "start_background"].includes(
+                                      invocation.name,
+                                    )
+                                  ? "此命令可访问工作区以外的宿主资源。请核对完整命令后决定。"
+                                  : "请核对路径、内容和旧文件版本。批准仅适用于本次操作。"}
                           </p>
                           <button
                             id="agent-deny"

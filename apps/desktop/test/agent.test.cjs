@@ -148,7 +148,10 @@ for (const protocol of ["chat_completions", "responses", "anthropic"])
     assert.ok(result.invocations.every((i) => i.state === "succeeded"));
     assert.equal(h.upstream.requests.length, 2);
     const first = h.upstream.requests[0].body;
-    assert.equal(first.tools.length, 15);
+    assert.equal(first.tools.length, 16);
+    assert.ok(
+      first.tools.some((t) => (t.function ?? t).name === "read_mcp_artifact"),
+    );
     const second = JSON.stringify(h.upstream.requests[1].body);
     assert.ok(
       second.includes("owned-call-0") &&

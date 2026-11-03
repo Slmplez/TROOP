@@ -27,6 +27,7 @@ pub fn definitions() -> Vec<Value> {
         ("task_status", "Read the bounded status/output of a task directly owned by this run. task_id is a decimal string.", json!({"task_id":{"type":"string"}}), vec!["task_id"]),
         ("wait_task", "Wait for a directly owned task to finish without polling model calls. An interrupted or indeterminate task requires user reconciliation. task_id is a decimal string.", json!({"task_id":{"type":"string"}}), vec!["task_id"]),
         ("stop_task", "Stop a directly owned task and all of its descendants, retaining results. Does not undo effects. task_id is a decimal string.", json!({"task_id":{"type":"string"}}), vec!["task_id"]),
+        ("read_mcp_artifact","Read a UTF-8 page from an MCP result artifact belonging to this Run. Binary artifacts return metadata only. offset is a decimal byte offset.",json!({"artifact_id":{"type":"string"},"offset":{"type":"string"}}),vec!["artifact_id","offset"]),
     ];
     let mut result:Vec<Value>=specs.into_iter().map(|(name,description,properties,required)|json!({"name":name,"description":description,"parameters":{"type":"object","properties":properties,"required":required,"additionalProperties":false}})).collect();
     result.extend(crate::agent::memory::definitions());
@@ -34,13 +35,17 @@ pub fn definitions() -> Vec<Value> {
     result
 }
 pub fn needs_approval(name: &str) -> bool {
-    matches!(
-        name,
-        "write_file" | "run_command" | "git_status" | "start_background"
-    )
+    name.starts_with("mcp_")
+        || matches!(
+            name,
+            "write_file" | "run_command" | "git_status" | "start_background"
+        )
 }
 pub fn read_only(name: &str) -> bool {
-    if matches!(name, "recall_memory" | "read_skill" | "read_skill_file") {
+    if matches!(
+        name,
+        "recall_memory" | "read_skill" | "read_skill_file" | "read_mcp_artifact"
+    ) {
         return true;
     }
     matches!(
@@ -70,6 +75,13 @@ pub fn git_preview() -> Value {
     json!({"program":"Git（工作区外的 PATH 程序）","arguments":GIT_STATUS_ARGS})
 }
 pub fn validate(name: &str, args: &Value) -> Result<(), String> {
+    if name.starts_with("mcp_") {
+        return if args.is_object() && args.to_string().len() <= 12_000 {
+            Ok(())
+        } else {
+            Err("Invalid MCP arguments".into())
+        };
+    }
     if matches!(name, "read_skill" | "read_skill_file") {
         return crate::agent::skills::validate(name, args);
     }

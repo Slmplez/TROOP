@@ -32,6 +32,9 @@ impl Manager {
             .any(|t| !active(t) && t["consumed"] != true))
     }
     pub(super) fn retire(&mut self, store: &mut Store, id: i64) -> Result<(), String> {
+        if self.begin_mcp_cleanup(store, id)? {
+            return Ok(());
+        }
         let doc = store.agent_run(id)?;
         self.queue_memory(store, &doc)?;
         if owned(store, &doc)?.iter().any(active) {
@@ -96,6 +99,7 @@ impl Manager {
         for run_id in &ids {
             let doc = store.agent_run(*run_id)?;
             self.cancel_run_hooks(store, *run_id)?;
+            self.cancel_mcp(store, *run_id)?;
             if doc["state"] == "cancelling" {
                 let live = self.live.entry(*run_id).or_default();
                 if let Some(model) = live.model.take() {
@@ -280,6 +284,16 @@ impl Manager {
                 child["agent_id"] = doc["agent_id"].as_i64().map_or(json!(1), |id| json!(id));
                 child["skill_versions"] = doc["skill_versions"].clone();
                 child["hook_snapshot"] = doc["hook_snapshot"].clone();
+                child["mcp_snapshot"] = if child["read_only"] == true {
+                    json!([])
+                } else {
+                    doc["mcp_snapshot"].clone()
+                };
+                child["mcp_catalogue"] = if child["read_only"] == true {
+                    json!([])
+                } else {
+                    doc["mcp_catalogue"].clone()
+                };
                 let expanded = Self::expand_workflows(store, &mut child, goal, None)?;
                 child["history"] = json!([{"role":"user","content":expanded}]);
                 Self::finish_virtual(
@@ -513,6 +527,8 @@ impl Manager {
                     continue;
                 }
                 if !self.jobs.is_empty()
+                    || self.mcp_busy()
+                    || store.mcp_quarantined()?
                     || self.hook_commands_busy()
                     || store.hooks_quarantined()?
                     || self.live.values().any(|l| l.tool.is_some())

@@ -355,7 +355,7 @@ test("MCP migration from 7 preserves all old tables", async (t) => {
   await h.c.stop();
   let db = h.db();
   db.exec(
-    "DROP TABLE IF EXISTS mcp_oauth; DROP TABLE mcp_secret_gc; DROP TABLE mcp_revisions; DROP TABLE mcp_servers; PRAGMA user_version=7;",
+    "DROP TABLE IF EXISTS mcp_artifacts; DROP TABLE IF EXISTS mcp_connections; DROP TABLE IF EXISTS mcp_oauth; DROP TABLE mcp_secret_gc; DROP TABLE mcp_revisions; DROP TABLE mcp_servers; PRAGMA user_version=7;",
   );
   const old = snapshot(db);
   db.close();
@@ -363,7 +363,7 @@ test("MCP migration from 7 preserves all old tables", async (t) => {
   await h.c.stop();
   db = h.db();
   assert.deepEqual(snapshot(db), old);
-  assert.equal(db.prepare("PRAGMA user_version").get().user_version, 9);
+  assert.equal(db.prepare("PRAGMA user_version").get().user_version, 10);
   assert.equal(db.prepare("SELECT count(*) n FROM mcp_servers").get().n, 0);
   db.close();
 });

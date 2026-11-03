@@ -8,6 +8,7 @@ import AgentPanel from "./AgentPanel";
 import MemoryPanel from "./MemoryPanel";
 import SkillsPanel from "./SkillsPanel";
 import HooksPanel from "./HooksPanel";
+import { version } from "../package.json";
 
 const labels = {
   starting: "正在连接",
@@ -190,7 +191,7 @@ function App() {
       </aside>
       <div className="topbar">
         <span>
-          TROOP <span className="version">0.7</span>
+          TROOP <span className="version">{version}</span>
         </span>
         <span>Windows · 本机</span>
       </div>

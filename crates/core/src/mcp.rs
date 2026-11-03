@@ -9,6 +9,8 @@ use zeroize::Zeroize;
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Definition {
+    #[serde(default = "automatic_auth")]
+    auth_mode: String,
     name: String,
     #[serde(default = "manual_source")]
     source_kind: String,
@@ -171,6 +173,7 @@ fn parse_import(a: &ImportInput, store: &Store) -> Result<(String, Vec<Save>), S
                 String::new()
             };
             let definition = Definition {
+                auth_mode: "automatic".into(),
                 name: name.clone(),
                 source_kind: "json-import".into(),
                 transport: transport.into(),
@@ -223,6 +226,9 @@ fn call_timeout() -> u64 {
 fn manual_source() -> String {
     "manual".into()
 }
+fn automatic_auth() -> String {
+    "automatic".into()
+}
 fn startup_timeout() -> u64 {
     30
 }
@@ -231,7 +237,11 @@ fn unique<T: std::hash::Hash + Eq>(v: &[T]) -> bool {
 }
 impl Definition {
     fn validate(&self, store: &Store) -> Result<(), String> {
-        if !matches!(self.source_kind.as_str(), "manual" | "json-import")
+        if !matches!(
+            self.auth_mode.as_str(),
+            "automatic" | "none" | "headers" | "oauth"
+        ) || self.transport == "stdio" && self.auth_mode == "oauth"
+            || !matches!(self.source_kind.as_str(), "manual" | "json-import")
             || self.name.trim().is_empty()
             || self.name.len() > 160
             || self.name.chars().any(char::is_control)

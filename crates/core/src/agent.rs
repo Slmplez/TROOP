@@ -17,6 +17,7 @@ use troop_gateway::{
 };
 use troop_storage::{public_run, Store};
 use uuid::Uuid;
+mod mcp;
 mod tasks;
 use tasks::TaskLive;
 pub(crate) mod hooks;
@@ -83,6 +84,7 @@ struct Reconcile {
     note: String,
 }
 pub enum Update {
+    Mcp(Box<mcp::Event>),
     HookReady(i64, i64, blocking::Sender<bool>),
     HookDone(i64, i64, Value),
     Text(i64, i64, String),
@@ -112,6 +114,10 @@ pub struct Manager {
     maintenance: HashMap<i64, JoinHandle<()>>,
     memory_queue: std::collections::BTreeSet<i64>,
     hook_live: HashMap<i64, hooks::HookLive>,
+    mcp_work: HashMap<i64, mcp::Work>,
+    mcp_clients: HashMap<i64, Box<mcp::Connection>>,
+    mcp_closing: std::collections::HashSet<i64>,
+    mcp_cleanup: Vec<JoinHandle<()>>,
 }
 fn terminal(doc: &Value) -> bool {
     matches!(
@@ -173,6 +179,10 @@ impl Manager {
             maintenance: HashMap::new(),
             memory_queue: std::collections::BTreeSet::new(),
             hook_live: HashMap::new(),
+            mcp_work: HashMap::new(),
+            mcp_clients: HashMap::new(),
+            mcp_closing: Default::default(),
+            mcp_cleanup: vec![],
         })
     }
     pub fn owns_provider(&self, store: &Store, provider: &str) -> bool {
@@ -241,6 +251,9 @@ impl Manager {
     }
     fn finish_stop(&mut self, store: &mut Store, doc: &mut Value) -> Result<(), String> {
         let id = doc["id"].as_i64().unwrap();
+        if self.mcp_run_busy(store, id) {
+            return Ok(());
+        }
         if self.hook_live.values().any(|h| h.run == id) {
             return Ok(());
         }
@@ -253,9 +266,13 @@ impl Manager {
             return Ok(());
         }
         let unresolved = store
-            .hook_calls(id)?
+            .mcp_connections(id)?
             .iter()
-            .any(|h| h["state"] == "indeterminate" && h["reviewed"] != true)
+            .any(|s| s["state"] == "indeterminate" && s["reviewed"] != true)
+            || store
+                .hook_calls(id)?
+                .iter()
+                .any(|h| h["state"] == "indeterminate" && h["reviewed"] != true)
             || owned.iter().any(|t| {
                 matches!(t["state"].as_str(), Some("indeterminate" | "interrupted"))
                     && t["reviewed"] != true
@@ -299,6 +316,9 @@ impl Manager {
         method: &str,
         p: Value,
     ) -> Result<Value, String> {
+        if method.starts_with("agent.mcp-") {
+            return self.mcp_dispatch(store, method, p);
+        }
         if method.starts_with("hooks.") {
             return self.hooks_rpc(store, method, p);
         }
@@ -363,6 +383,7 @@ impl Manager {
                 config.endpoint()?;
                 let mut doc = json!({"state":"queued","epoch":1,"revision":0,"step":0,"intent":null,"workspace_id":a.workspace_id,"workspace":workspace,"provider_id":a.provider_id,"config":provider.config,"secret_ref":provider.secret_ref,"goal":a.goal,"history":[{"role":"user","content":a.goal}],"pending":[],"output":"","model_text":"","supplements":[],"waiting":[],"error":null});
                 doc["agent_id"] = json!(a.agent_id);
+                Self::freeze_mcp(store, &mut doc)?;
                 Self::freeze_hooks(store, &mut doc)?;
                 self.prepare_skills(store, &mut doc)?;
                 let expanded =
@@ -484,6 +505,13 @@ impl Manager {
                 }
                 let id = params::<Id>(p)?.id;
                 let mut doc = store.agent_run(id)?;
+                if store
+                    .mcp_connections(id)?
+                    .iter()
+                    .any(|s| s["state"] == "indeterminate" && s["reviewed"] != true)
+                {
+                    return Err("Reconcile MCP process stops before continuing".into());
+                }
                 self.check_resume_tasks(store, &doc)?;
                 if store
                     .hook_calls(id)?
@@ -579,7 +607,14 @@ impl Manager {
         doc["awaiting_owned"] = json!(false);
         store.agent_save(doc, &mut invocations, "input_applied")
     }
-    pub fn pump(&mut self, store: &mut Store, model_capacity: usize) -> Result<(), String> {
+    pub fn pump(
+        &mut self,
+        store: &mut Store,
+        model_capacity: usize,
+        oauth: &mut crate::oauth::Manager,
+    ) -> Result<(), String> {
+        self.prune_mcp(store)?;
+        self.mcp_cleanup.retain(|h| !h.is_finished());
         self.poll_hook_deadlines();
         self.pump_tasks(store)?;
         let mut ids = self.live.keys().copied().collect::<Vec<_>>();
@@ -594,6 +629,9 @@ impl Manager {
                 continue;
             }
             let mut doc = store.agent_run(id)?;
+            if self.finish_mcp_cleanup(store, &mut doc)? {
+                continue;
+            }
             if doc["state"] == "failed" && self.has_owned_work(store, &doc)? {
                 self.stop_subtree(store, id, Some("failure"))?;
                 continue;
@@ -618,6 +656,9 @@ impl Manager {
                 }
             }
             if !self.initial_hooks(store, &mut doc, model_capacity)? {
+                continue;
+            }
+            if !self.ensure_mcp(store, &mut doc, oauth)? {
                 continue;
             }
             Self::apply_inputs(store, &mut doc)?;
@@ -645,13 +686,14 @@ impl Manager {
                     continue;
                 }
                 let name = inv["name"].as_str().unwrap_or("").to_owned();
-                if tools::validate(&name, &inv["arguments"]).is_ok()
+                if Self::validate_tool(store, &doc, &name, &inv["arguments"]).is_ok()
                     && (doc["read_only"] != true || tools::read_only(&name))
                     && !self.pre_hooks(store, &mut doc, &mut inv, model_capacity)?
                 {
                     continue;
                 }
                 if (tools::needs_approval(&name) || inv["hook_ask"] == true)
+                    && Self::validate_tool(store, &doc, &name, &inv["arguments"]).is_ok()
                     && inv["approval"].is_null()
                     && (doc["read_only"] != true || tools::read_only(&name))
                 {
@@ -665,10 +707,13 @@ impl Manager {
                 let rejected = if inv["approval"] == false {
                     Some("用户拒绝此操作。".into())
                 } else {
-                    tools::validate(&name, &inv["arguments"]).err().or_else(|| {
-                        (doc["read_only"] == true && !tools::read_only(&name))
-                            .then(|| "Read-only child agents cannot execute this capability".into())
-                    })
+                    Self::validate_tool(store, &doc, &name, &inv["arguments"])
+                        .err()
+                        .or_else(|| {
+                            (doc["read_only"] == true && !tools::read_only(&name)).then(|| {
+                                "Read-only child agents cannot execute this capability".into()
+                            })
+                        })
                 };
                 if let Some(error) = rejected {
                     inv["state"] = json!("failed");
@@ -687,7 +732,12 @@ impl Manager {
                 if self.skill_tool(store, &mut doc, &mut inv)? {
                     continue;
                 }
+                if self.mcp_tool(store, &mut doc, &mut inv, oauth)? {
+                    continue;
+                }
                 if self.live.values().any(|l| l.tool.is_some())
+                    || self.mcp_busy()
+                    || store.mcp_quarantined()?
                     || self.hook_commands_busy()
                     || store.hooks_quarantined()?
                     || !self.jobs.is_empty()
@@ -838,6 +888,7 @@ impl Manager {
                                 doc["read_only"] != true
                                     || tools::read_only(d["name"].as_str().unwrap())
                             })
+                            .chain(mcp::definitions(&doc, store))
                             .collect(),
                     }),
                 };
@@ -860,6 +911,9 @@ impl Manager {
         Ok(())
     }
     pub fn accept(&mut self, store: &mut Store, update: Update) -> Result<(), String> {
+        if let Update::Mcp(e) = update {
+            return self.accept_mcp(store, *e);
+        }
         if matches!(&update, Update::HookReady(..) | Update::HookDone(..)) {
             return self.accept_hook(store, update);
         }
@@ -1021,6 +1075,9 @@ impl Manager {
                                 return Ok(());
                             }
                             let mut invocations=summary.calls.into_iter().map(|c:ToolCall|{let git=c.name=="git_status";let mut inv=json!({"run_id":id,"epoch":epoch,"call_id":c.id,"name":c.name,"arguments":c.arguments,"state":"prepared","approval":null,"result":null,"reviewed":false,"stopped":true});if git{inv["operation"]=tools::git_preview();}inv}).collect::<Vec<_>>();
+                            for inv in &mut invocations {
+                                Self::bind_mcp(&doc, inv);
+                            }
                             doc["state"] = json!("waiting");
                             doc["waiting"] = json!(["tool"]);
                             doc["reset_pending"] = json!(true);
@@ -1043,7 +1100,7 @@ impl Manager {
                 store.agent_save(&mut doc, std::slice::from_mut(&mut inv), "worker_accepted")?;
                 let _ = gate.send(true);
             }
-            Update::Tool(_, _, inv_id, result) => {
+            Update::Tool(_, _, inv_id, mut result) => {
                 if self.live[&id].tool != Some(inv_id) {
                     return Ok(());
                 }
@@ -1051,6 +1108,9 @@ impl Manager {
                 live.tool = None;
                 live.cancel = None;
                 let mut inv = store.agent_invocation(inv_id)?;
+                if let Some(a) = result.as_object_mut().and_then(|m| m.remove("_artifacts")) {
+                    inv["_mcp_artifacts"] = a;
+                }
                 let unknown = result["indeterminate"] == true;
                 let stop_confirmed = result["stopped"] == true;
                 let succeeded = result["ok"] == true
@@ -1116,6 +1176,7 @@ impl Manager {
         }
         let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(3);
         while self.live.values().any(|l| l.tool.is_some())
+            || self.mcp_busy()
             || !self.jobs.is_empty()
             || !self.hook_live.is_empty()
         {
@@ -1138,6 +1199,12 @@ impl Manager {
 }
 impl Drop for Manager {
     fn drop(&mut self) {
+        for w in self.mcp_work.values() {
+            w.handle.abort();
+        }
+        for h in &self.mcp_cleanup {
+            h.abort();
+        }
         for h in self.hook_live.values_mut() {
             if let Some(model) = h.model.take() {
                 model.abort();

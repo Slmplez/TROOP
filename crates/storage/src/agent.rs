@@ -309,6 +309,29 @@ impl Store {
             tx.execute("INSERT INTO owned_tasks(id,owner_run_id,root_run_id,document) VALUES(?1,?2,?3,?4) ON CONFLICT(id) DO UPDATE SET document=excluded.document",params![task["id"].as_i64(),task["owner_run_id"].as_i64(),task["root_run_id"].as_i64(),task.to_string()]).map_err(|e|e.to_string())?;
         }
         for invocation in invocations.iter_mut() {
+            if let Some(list) = invocation
+                .as_object_mut()
+                .and_then(|m| m.remove("_mcp_artifacts"))
+            {
+                use base64::Engine;
+                for mut artifact in list.as_array().cloned().unwrap_or_default() {
+                    let encoded = artifact
+                        .as_object_mut()
+                        .and_then(|m| m.remove("_bytes"))
+                        .and_then(|v| v.as_str().map(str::to_owned))
+                        .ok_or("Invalid MCP artifact payload")?;
+                    let bytes = base64::engine::general_purpose::STANDARD
+                        .decode(encoded)
+                        .map_err(|_| "Invalid MCP artifact payload")?;
+                    if bytes.len() > 524288
+                        || artifact["run_id"] != doc["id"]
+                        || artifact["invocation_id"] != invocation["id"]
+                    {
+                        return Err("MCP artifact ownership or size invalid".into());
+                    }
+                    tx.execute("INSERT INTO mcp_artifacts(id,run_id,invocation_id,document,content) VALUES(?1,?2,?3,?4,?5)",params![artifact["id"].as_str(),doc["id"].as_i64(),invocation["id"].as_i64(),artifact.to_string(),bytes]).map_err(|e|e.to_string())?;
+                }
+            }
             if invocation["id"].as_i64().is_none() {
                 tx.execute(
                     "INSERT INTO agent_invocations(run_id,document) VALUES(?1,'{}')",

@@ -1,7 +1,7 @@
 const { spawn } = require("node:child_process");
 const { EventEmitter } = require("node:events");
 const crypto = require("node:crypto");
-const PROTOCOL = 9;
+const PROTOCOL = 10;
 const ALLOWED = new Set([
   "mcp.list",
   "mcp.get",
@@ -46,6 +46,10 @@ const ALLOWED = new Set([
   "chat.send",
   "chat.cancel",
   "agent.list",
+  "agent.mcp-catalogue",
+  "agent.mcp-sessions",
+  "agent.mcp-reconcile",
+  "agent.mcp-artifact",
   "agent.get",
   "agent.content",
   "agent.events",

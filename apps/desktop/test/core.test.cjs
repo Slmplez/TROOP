@@ -103,12 +103,12 @@ test("protocol rejects bad handshakes, stale generations, unknown fields and dup
   let v = await send("pre", "workspace.add", { path: work });
   assert.equal(v.error.data.kind, "handshake_required");
   v = await send("bad", "system.hello", {
-    protocol: 99,
+    protocol: 109,
     client: "troop-desktop",
   });
   assert.equal(v.error.data.kind, "protocol_mismatch");
   v = await send("hello", "system.hello", {
-    protocol: 9,
+    protocol: 10,
     client: "troop-desktop",
   });
   const generation = v.result.generation;

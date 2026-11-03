@@ -9,12 +9,14 @@ mod agent;
 mod chat;
 mod hooks;
 mod mcp;
+mod mcp_runtime;
 pub mod memory;
 mod oauth;
 mod skills;
 mod tasks;
 pub use agent::public_run;
 pub use chat::*;
+pub use mcp::McpServer;
 pub use tasks::public_task;
 
 #[derive(Serialize)]
@@ -56,8 +58,25 @@ impl Store {
         let version: i64 = db
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .map_err(|e| e.to_string())?;
-        if version > 9 {
+        if version > 10 {
             return Err("Database was created by a newer TROOP version".into());
+        }
+        let has_table = |name: &str| {
+            db.query_row(
+                "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name=?1)",
+                [name],
+                |r| r.get::<_, bool>(0),
+            )
+            .map_err(|e| e.to_string())
+        };
+        if has_table("external_profiles")?
+            || version >= 8 && !has_table("mcp_servers")?
+            || version >= 9 && !has_table("mcp_oauth")?
+            || version >= 10 && (!has_table("mcp_connections")? || !has_table("mcp_artifacts")?)
+        {
+            return Err(
+                "Incompatible database lineage; use the matching or unified TROOP Core".into(),
+            );
         }
         db.execute_batch(
             "PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;",
@@ -92,6 +111,9 @@ impl Store {
         if version < 9 {
             oauth::migrate(&mut db)?;
         }
+        if version < 10 {
+            mcp_runtime::migrate(&mut db)?;
+        }
         db.execute("UPDATE turns SET status='interrupted',error_kind='core_interrupted',error_message='应用或 Core 上次中断；已保留收到的文本，请手动发送新消息。',finished_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE status='streaming'", []).map_err(|e|e.to_string())?;
         let mut store = Self { db, _lock: lock };
         store.agent_recover()?;
@@ -99,6 +121,7 @@ impl Store {
         store.memory_recover()?;
         store.hooks_recover()?;
         store.oauth_recover()?;
+        store.mcp_runtime_recover()?;
         Ok(store)
     }
     pub fn list(&self, offset: i64) -> Result<WorkspacePage, String> {
@@ -198,6 +221,55 @@ mod tests {
     use std::time::{SystemTime, UNIX_EPOCH};
 
     #[test]
+    fn foreign_and_partial_lineages_are_rejected_without_database_mutation() {
+        for (version, tables) in [
+            (8, "CREATE TABLE external_profiles(id TEXT);"),
+            (10, "CREATE TABLE external_profiles(id TEXT);"),
+            (8, ""),
+            (9, "CREATE TABLE mcp_servers(id TEXT);"),
+            (
+                10,
+                "CREATE TABLE mcp_servers(id TEXT); CREATE TABLE mcp_oauth(id TEXT);",
+            ),
+        ] {
+            let directory = std::env::temp_dir().join(format!(
+                "troop-lineage-{}-{}",
+                std::process::id(),
+                SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_nanos()
+            ));
+            fs::create_dir_all(&directory).unwrap();
+            let database = directory.join("troop.sqlite3");
+            let connection = Connection::open(&database).unwrap();
+            connection
+                .execute_batch(&format!("{tables} PRAGMA user_version={version};"))
+                .unwrap();
+            let schema: i64 = connection
+                .pragma_query_value(None, "schema_version", |r| r.get(0))
+                .unwrap();
+            drop(connection);
+            assert!(matches!(Store::open(&directory), Err(message) if message.contains("lineage")));
+            let connection = Connection::open(database).unwrap();
+            let mode: String = connection
+                .pragma_query_value(None, "journal_mode", |r| r.get(0))
+                .unwrap();
+            let after: i64 = connection
+                .pragma_query_value(None, "schema_version", |r| r.get(0))
+                .unwrap();
+            let after_version: i64 = connection
+                .pragma_query_value(None, "user_version", |r| r.get(0))
+                .unwrap();
+            assert_eq!(mode, "delete");
+            assert_eq!(schema, after);
+            assert_eq!(version, after_version);
+            drop(connection);
+            fs::remove_dir_all(directory).unwrap();
+        }
+    }
+
+    #[test]
     fn newer_database_is_rejected_before_changing_its_journal_mode() {
         let directory = std::env::temp_dir().join(format!(
             "troop-newer-schema-{}-{}",
@@ -210,7 +282,7 @@ mod tests {
         fs::create_dir_all(&directory).unwrap();
         let database = directory.join("troop.sqlite3");
         let connection = Connection::open(&database).unwrap();
-        connection.execute_batch("PRAGMA user_version=10;").unwrap();
+        connection.execute_batch("PRAGMA user_version=11;").unwrap();
         drop(connection);
         assert!(matches!(Store::open(&directory), Err(message) if message.contains("newer")));
         let connection = Connection::open(database).unwrap();
@@ -221,7 +293,7 @@ mod tests {
         let version: i64 = connection
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .unwrap();
-        assert_eq!(version, 10);
+        assert_eq!(version, 11);
     }
 
     #[test]

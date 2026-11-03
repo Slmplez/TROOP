@@ -26,6 +26,8 @@ pub struct Metadata {
 }
 #[derive(Serialize, Deserialize)]
 pub struct Grant {
+    #[serde(default)]
+    pub binding_id: String,
     pub resource: String,
     pub metadata: Metadata,
     pub client_id: String,
@@ -413,6 +415,7 @@ pub async fn begin(mut o: Options) -> Result<(Flow, String), String> {
         state,
         verifier,
         grant: Grant {
+            binding_id: Uuid::new_v4().to_string(),
             resource: o.resource.clone(),
             metadata,
             client_id,
@@ -453,6 +456,7 @@ impl Flow {
         exchange(&c, &mut self.grant, form).await?;
         // Flow owns a Drop implementation: move the grant through replacement.
         let empty = Grant {
+            binding_id: String::new(),
             resource: String::new(),
             metadata: self.grant.metadata.clone(),
             client_id: String::new(),

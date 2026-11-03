@@ -72,6 +72,13 @@ fn number(d: &Value) -> i64 {
 fn refs(d: &Value) -> bool {
     d["secret_refs"].as_object().is_some_and(|m| !m.is_empty())
 }
+pub(crate) fn binding(d: &Value) -> String {
+    d["grant_id"]
+        .as_str()
+        .filter(|s| !s.is_empty())
+        .map(str::to_owned)
+        .unwrap_or_else(|| crate::tools::hash(d["secret_refs"].to_string().as_bytes()))
+}
 fn public(mut d: Value) -> Value {
     d.as_object_mut().unwrap().remove("secret_refs");
     d
@@ -96,8 +103,15 @@ fn read_grant(d: &Value) -> Result<Grant, String> {
         }
         text.push_str(&part);
     }
-    let grant: Grant =
+    let mut grant: Grant =
         serde_json::from_str(&text).map_err(|_| "OAuth credential encoding invalid")?;
+    let identity = binding(d);
+    if grant.binding_id.is_empty() {
+        grant.binding_id = identity.clone();
+    }
+    if grant.binding_id != identity {
+        return Err("OAuth grant identity mismatch".into());
+    }
     if d["resource"] != grant.resource
         || d["issuer"] != grant.metadata.issuer
         || d["metadata"]["token_endpoint"] != grant.metadata.token_endpoint
@@ -135,10 +149,60 @@ fn persist(
         start = end;
     }
     let d = json!({"server_id":id,"server_revision":server_revision,"state":"connected","resource":grant.resource,"issuer":grant.metadata.issuer,"metadata":grant.metadata,"client_id":grant.client_id,"auth_method":grant.auth_method,"scopes":grant.scopes,"expires_at":grant.expires_at,"has_refresh_token":grant.refresh_token.is_some(),"updated_at":oauth::now(),"error":null});
+    let mut d = d;
+    d["grant_id"] = json!(grant.binding_id);
     store.oauth_save(id, server_revision, expected, &d, &json!(bindings))?;
     Ok(())
 }
 impl Manager {
+    /// None waits for an existing/new refresh. Tokens remain internal to the transport path.
+    pub(crate) fn mcp_access(
+        &mut self,
+        store: &mut Store,
+        id: &str,
+        revision: i64,
+        identity: &str,
+        allow_refresh: bool,
+    ) -> Result<Option<(Zeroizing<String>, i64, bool)>, String> {
+        let d = store.oauth_get(id)?;
+        if d["server_revision"] != revision || binding(&d) != identity {
+            return Err("OAuth grant changed; start a new task after connecting".into());
+        }
+        if d["state"] == "refreshing" {
+            return Ok(None);
+        }
+        if d["state"] != "connected" {
+            return Err(
+                "OAuth connection unavailable; reconnect before starting a new task".into(),
+            );
+        }
+        let expiring = d["expires_at"]
+            .as_u64()
+            .is_some_and(|e| e <= oauth::now() + 120);
+        if expiring && d["has_refresh_token"] == true {
+            if !allow_refresh {
+                return Err("MCP automatic refresh budget exhausted".into());
+            }
+            if self.jobs.len() >= 4 {
+                return Ok(None);
+            }
+            self.dispatch(
+                store,
+                "mcp.oauth.refresh",
+                json!({"id":id,"auth_revision":number(&d)}),
+            )?;
+            return Ok(Some((Zeroizing::new(String::new()), number(&d), true)));
+        }
+        if d["expires_at"].as_u64().is_some_and(|e| e <= oauth::now()) {
+            return Err("OAuth access token expired; reconnect required".into());
+        }
+        let grant = read_grant(&d)?;
+        Ok(Some((
+            Zeroizing::new(format!("Bearer {}", grant.access_token)),
+            number(&d),
+            false,
+        )))
+    }
     pub fn new() -> Self {
         let (sender, receiver) = mpsc::channel(32);
         Self {
@@ -203,6 +267,12 @@ impl Manager {
                     .is_some_and(|v| v.contains(&json!("authorization")))
                 {
                     return Err("Remove the manual Authorization header before OAuth login".into());
+                }
+                if matches!(
+                    server.config["auth_mode"].as_str(),
+                    Some("none" | "headers")
+                ) {
+                    return Err("Select automatic or OAuth authentication before login".into());
                 }
                 if number(&old) != a.auth_revision {
                     return Err("OAuth operation superseded".into());

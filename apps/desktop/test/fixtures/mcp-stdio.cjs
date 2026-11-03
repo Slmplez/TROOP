@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { spawn } = require("node:child_process");
 const [mode, directory] = process.argv.slice(2);
+let toolCalls = 0;
 if (mode === "tree") {
   spawn(
     process.execPath,
@@ -46,7 +47,17 @@ readline.createInterface({ input: process.stdin }).on("line", (line) => {
         ],
       };
     else
-      result = { content: [{ type: "text", text: q.params.arguments.text }] };
+      result = {
+        content: [
+          {
+            type: "text",
+            text:
+              mode === "stateful"
+                ? `${++toolCalls}:${q.params.arguments.text}`
+                : q.params.arguments.text,
+          },
+        ],
+      };
     process.stdout.write(
       JSON.stringify({
         jsonrpc: "2.0",

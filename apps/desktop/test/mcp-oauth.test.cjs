@@ -472,7 +472,9 @@ test("OAuth schema 8 upgrade preserves MCP definitions and starts with no author
   await h.c.stop();
   let db = h.db();
   const before = db.prepare("SELECT * FROM mcp_servers ORDER BY id").all();
-  db.exec("DROP TABLE mcp_oauth;PRAGMA user_version=8;");
+  db.exec(
+    "DROP TABLE mcp_artifacts;DROP TABLE mcp_connections;DROP TABLE mcp_oauth;PRAGMA user_version=8;",
+  );
   db.close();
   await h.c.start();
   assert.equal((await h.status()).state, "disconnected");
@@ -482,6 +484,6 @@ test("OAuth schema 8 upgrade preserves MCP definitions and starts with no author
     db.prepare("SELECT * FROM mcp_servers ORDER BY id").all(),
     before,
   );
-  assert.equal(db.prepare("PRAGMA user_version").get().user_version, 9);
+  assert.equal(db.prepare("PRAGMA user_version").get().user_version, 10);
   db.close();
 });
