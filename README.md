@@ -150,4 +150,4 @@ npm --prefix apps/desktop run smoke:mcp-management
 
 ### MCP OAuth 开发接口
 
-0.9.0 已完成 Core 的 OAuth 登录、刷新与撤销：PKCE/loopback、系统凭据、取消和中断恢复。当前通过自有授权服务验收；0.10 已接入 MCP Agent 工具；浏览器入口已由 0.10.1 接入，第三方真实服务与默认浏览器兼容仍待 #48。详见[OAuth 规格与验收](docs/implementation/TROOP_MCP_OAUTH.md)。
+0.9.0 已完成 Core 的 OAuth 登录、刷新与撤销：PKCE/loopback、系统凭据、取消和中断恢复。当前通过自有授权服务验收；0.10 已接入 MCP Agent 工具；浏览器入口已由 0.10.1 接入，0.10.2 已通过 [#48](https://github.com/Slmplez/TROOP/issues/48) 的受测只读链路与默认浏览器验收；到期条件为受控本地设置，未等待自然到期。详见[OAuth 规格与验收](docs/implementation/TROOP_MCP_OAUTH.md)。
