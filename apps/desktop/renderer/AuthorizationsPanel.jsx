@@ -13,6 +13,8 @@ const operations = {
   tool_call: [
     "read_file",
     "group_reply",
+    "propose_followup",
+    "request_handoff",
     "list_directory",
     "search_text",
     "write_file",

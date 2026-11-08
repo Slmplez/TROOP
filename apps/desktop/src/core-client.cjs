@@ -3,8 +3,18 @@ const { EventEmitter } = require("node:events");
 const crypto = require("node:crypto");
 const PROTOCOL = 10;
 const ALLOWED = new Set([
-  "followups.preview", "followups.list", "followups.get", "followups.history",
-  "followups.save", "followups.request", "followups.run", "followups.set_enabled", "followups.cancel",
+  "followups.preview",
+  "followups.chain",
+  "followups.list",
+  "followups.get",
+  "followups.history",
+  "followups.save",
+  "followups.request",
+  "followups.run",
+  "followups.set_enabled",
+  "followups.cancel",
+  "followups.stop_chain",
+  "followups.handoff",
   "schedules.set_enabled",
   "schedules.preview",
   "schedules.get",

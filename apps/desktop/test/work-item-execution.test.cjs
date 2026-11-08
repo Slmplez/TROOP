@@ -283,7 +283,7 @@ test("work dispatch and receipt roll back together before activation, and a sche
   await h.core.stop();
   db = new DatabaseSync(path.join(h.data, "troop.sqlite3"));
   db.exec(
-    "DROP TABLE reminder_notifications; DROP TABLE reminder_slots; DROP TABLE reminder_states; DROP TABLE reminder_preferences; DROP TABLE group_executors; DROP TABLE group_chains; DROP TRIGGER group_project_revoked; DROP TABLE group_deliveries; DROP TABLE group_messages; DROP TABLE group_chats; DROP TABLE work_item_runs; PRAGMA user_version=24;",
+    "DROP TABLE followup_appointments; DROP TABLE followup_chains; DROP TABLE followup_states; DROP TABLE reminder_notifications; DROP TABLE reminder_slots; DROP TABLE reminder_states; DROP TABLE reminder_preferences; DROP TABLE group_executors; DROP TABLE group_chains; DROP TRIGGER group_project_revoked; DROP TABLE group_deliveries; DROP TABLE group_messages; DROP TABLE group_chats; DROP TABLE work_item_runs; PRAGMA user_version=24;",
   );
   db.close();
   await h.core.start();

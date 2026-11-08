@@ -1,0 +1,29 @@
+(node:23712) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ follow-up policy and appointment persist once and dispatch one work-linked Run (389.5809ms)
+✔ pause invalidates old appointments and resume never replays them (729.1606ms)
+✔ changed authorization blocks appointments without execution (333.1951ms)
+✔ native Run proposes a durable bounded check and the chain keeps its cumulative limit (521.8099ms)
+✔ missed appointments are recorded, while explicit manual checks retain their own identity (462.0298ms)
+✔ cancelled work stops its chain and cannot be revived by an old appointment (333.8845ms)
+✔ receipt failure rolls back the policy, chain and appointment before activation (165.307ms)
+✔ schema 29 work and rule data migrate with empty follow-up state (198.7677ms)
+✔ native handoff keeps two Agents in the same chain and a receiver check shares the root limit (595.44ms)
+✔ an unconfigured route and a broader receiving scope cannot create a handoff (1290.3962ms)
+✔ pausing preserves an in-flight Run and resume does not restore its old appointment (966.4428ms)
+✔ chain stop fences current execution and pending checks and survives restart (467.5096ms)
+✔ deadline and root work cancellation stop the whole causal chain (764.3066ms)
+✔ policy definition edits invalidate old appointments while preserving consumed limits (460.8494ms)
+✔ two Agents handing work back and forth stop at the original chain limit (1470.2469ms)
+✔ handoff rechecks dependencies and cannot release an unaccepted predecessor (963.5213ms)
+✔ stopping the source prevents its queued follow-up from starting (467.3927ms)
+✔ a failed chain-stop receipt rolls back fences and appointments before any runtime stop (2060.6944ms)
+✔ a group-origin check inherits its upstream wake budget and whole-chain stop (854.3907ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14271.9599

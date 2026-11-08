@@ -47,7 +47,98 @@ module.exports = ({ object: o, array: a, oneOf: e, method: m }) => {
     start: "Start|CliStart",
     "expected_plan_sha256?": "string|null",
   };
+  const followupFields = {
+    name: "string",
+    enabled: "boolean",
+    work_item_id: "id",
+    agent_id: "id",
+    workspace_id: "id",
+    "project_id?": "string|null",
+    start: "Start|CliStart",
+    "expected_plan_sha256?": "string|null",
+    expires_at_ms: "id",
+    min_interval_ms: "id",
+    max_runs: "id",
+    "handoff_policy_ids?": a("string"),
+  };
+  const followupRuleFields = {
+    ...followupFields,
+    kind: e("followup"),
+    id: "string",
+    revision: "id",
+    cancelled: "boolean",
+    work_definition_revision: "id",
+    work_generation: "count",
+  };
   const types = {
+    FollowupDefinition: o(followupFields),
+    FollowupRule: o(followupRuleFields),
+    FollowupChain: o({
+      id: "string",
+      revision: "id",
+      root_policy_id: "string",
+      generation: "count",
+      stopped: "boolean",
+      wake_count: "count",
+      wake_limit: "id",
+      expires_at_ms: "id",
+      upstream_group_run_id: "id|null",
+      "stop_reason?": "string",
+    }),
+    FollowupState: o({
+      generation: "id",
+      wake_count: "count",
+      last_started_at_ms: "id|null",
+      current_run_id: "id|null",
+      "current_chain_id?": "string",
+    }),
+    FollowupAppointment: o({
+      id: "id",
+      revision: "id",
+      policy_id: "string",
+      policy_revision: "id",
+      policy_generation: "id",
+      chain_id: "string",
+      chain_generation: "count",
+      client_key: "string",
+      request: "json",
+      source_run_id: "id|null",
+      at_ms: "id",
+      reason: "string",
+      expected_change: "string",
+      manual: "boolean",
+      "kind?": e("handoff"),
+      state: e("pending", "waiting", "blocked", "cancelled", "dispatched"),
+      run_id: "id|null",
+      created_at_ms: "id",
+      "status_reason?": "string|null",
+      "dispatched_at_ms?": "id",
+      "frozen_definition?": "json",
+      "run?": "Run|null",
+    }),
+    FollowupPolicy: o({
+      ...followupRuleFields,
+      state: "FollowupState",
+      chain: "FollowupChain",
+      appointments: a("FollowupAppointment"),
+      current_blocker: "string|null",
+      allowed_actions: o({
+        save: "ActionAvailability",
+        set_enabled: "ActionAvailability",
+        request: "ActionAvailability",
+        cancel: "ActionAvailability",
+        stop_chain: "ActionAvailability",
+      }),
+    }),
+    FollowupRequest: o({
+      id: "string",
+      expected_revision: "id",
+      client_request_id: "string",
+      at_ms: "id",
+      reason: "string",
+      expected_change: "string",
+      "source_run_id?": "id|null",
+    }),
     ScheduledDefinition: o(scheduledFields),
     ScheduledRule: o({
       ...scheduledFields,
@@ -117,7 +208,7 @@ module.exports = ({ object: o, array: a, oneOf: e, method: m }) => {
     }),
     RuleDefinition:
       "EventRuleDefinition|ReminderDefinition|ScheduledDefinition",
-    AutomationRule: "EventRule|ReminderRule|ScheduledRule",
+    AutomationRule: "EventRule|ReminderRule|ScheduledRule|FollowupRule",
     ReminderOccurrence: o({
       id: "id",
       rule_id: "string",
@@ -1376,6 +1467,85 @@ module.exports = ({ object: o, array: a, oneOf: e, method: m }) => {
       ),
       ...options,
     });
+  add(
+    "followups.preview",
+    "followupPreview",
+    o({ "id?": "string", policy: "FollowupDefinition" }),
+    o({ plan_sha256: "string", plan: "json" }),
+  );
+  add(
+    "followups.list",
+    "followups",
+    o({ "before?": "string" }),
+    o({ items: a("FollowupPolicy"), next_before: "string|null" }),
+  );
+  add("followups.get", "followup", o({ id: "string" }), "FollowupPolicy");
+  add("followups.chain", "followupChain", o({ id: "string" }), "FollowupChain");
+  add(
+    "followups.stop_chain",
+    "followupStopChain",
+    o({ id: "string", expected_revision: "id" }),
+    "FollowupChain",
+    true,
+  );
+  add(
+    "followups.handoff",
+    "followupHandoff",
+    o({
+      source_run_id: "id",
+      route_id: "string",
+      client_request_id: "string",
+      reason: "string",
+      expected_change: "string",
+    }),
+    "FollowupAppointment",
+    true,
+  );
+  add(
+    "followups.history",
+    "followupHistory",
+    o({ id: "string", "before?": "id" }),
+    o({ items: a("FollowupAppointment"), next_before: "id|null" }),
+  );
+  add(
+    "followups.save",
+    "followupSave",
+    o({
+      "id?": "string",
+      expected_revision: "count",
+      policy: "FollowupDefinition",
+    }),
+    "FollowupPolicy",
+    true,
+  );
+  add(
+    "followups.request",
+    "followupRequest",
+    "FollowupRequest",
+    "FollowupAppointment",
+    true,
+  );
+  add(
+    "followups.run",
+    "followupRun",
+    "FollowupRequest",
+    "FollowupAppointment",
+    true,
+  );
+  add(
+    "followups.set_enabled",
+    "followupSetEnabled",
+    o({ id: "string", expected_revision: "id", enabled: "boolean" }),
+    "FollowupPolicy",
+    true,
+  );
+  add(
+    "followups.cancel",
+    "followupCancel",
+    o({ id: "string", expected_revision: "id" }),
+    "FollowupPolicy",
+    true,
+  );
   add("authorizations.list", "authorizationList", "Page", "AuthorizationPage");
   add("authorizations.get", "authorizationGet", "ResourceId", "Authorization");
   add(

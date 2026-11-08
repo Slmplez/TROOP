@@ -120,6 +120,34 @@ impl Manager {
         run: &Value,
         inv: &mut Value,
     ) -> Result<(), String> {
+        if matches!(
+            inv["name"].as_str(),
+            Some("propose_followup" | "request_handoff")
+        ) {
+            if let Some(reason) = self.authorization_blocker(store, run) {
+                return Err(reason);
+            }
+            let grant = store.authorization_get(
+                run["authorization_id"]
+                    .as_str()
+                    .ok_or("预约提议需要明确授权。")?,
+            )?;
+            if run["work_item_id"].as_i64().is_none()
+                || grant["purpose"] != "tool_call"
+                || !grant["operations"]
+                    .as_array()
+                    .is_some_and(|operations| operations.contains(&inv["name"]))
+            {
+                return Err("本次执行没有工作预约提议授权。".into());
+            }
+            inv["permission_plan"] = json!({"allowed":true,"grant_id":grant["id"],"grant_revision":grant["revision"],"work_item_id":run["work_item_id"],"operation":inv["name"],"enforcement":"Core binds current source Run and work; policy, generation, scope and limits checked inside proposal transaction"});
+            return self.providers.tools.validate(
+                store,
+                run,
+                inv["name"].as_str().unwrap(),
+                &inv["arguments"],
+            );
+        }
         if inv["name"] == "group_reply" {
             if let Some(reason) = self.authorization_blocker(store, run) {
                 return Err(reason);

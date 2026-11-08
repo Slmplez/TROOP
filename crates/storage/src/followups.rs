@@ -99,4 +99,17 @@ impl Store {
     pub fn followup_runs(&self, chain: &str) -> Result<Vec<Value>, String> {
         rows(&self.db,"SELECT document FROM agent_runs WHERE json_extract(document,'$.followup_chain_id')=?1 ORDER BY id",[chain])
     }
+    pub fn followup_chain_pending(&self, chain: &str) -> Result<Vec<Value>, String> {
+        rows(&self.db,"SELECT document FROM followup_appointments WHERE json_extract(document,'$.chain_id')=?1 AND json_extract(document,'$.state') IN ('pending','waiting') ORDER BY id",[chain])
+    }
+    pub fn followup_group_runs(&self, chain: &str) -> Result<Vec<Value>, String> {
+        rows(&self.db,"SELECT document FROM agent_runs WHERE json_extract(document,'$.followup_group_chain_id')=?1 ORDER BY id",[chain])
+    }
+    pub fn followup_chains(&self) -> Result<Vec<Value>, String> {
+        rows(
+            &self.db,
+            "SELECT document FROM followup_chains ORDER BY id",
+            [],
+        )
+    }
 }

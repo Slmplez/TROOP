@@ -1,0 +1,37 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `\\?\E:\Repo\ASCET\grok-bot-0.18\target\debug\incremental\troop_protocol-1lhklkxxpsgqb\s-hnz01bw95b-0ws0y2s-working`
+
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `\\?\E:\Repo\ASCET\grok-bot-0.18\target\debug\incremental\troop_protocol-0gdup8jlez23r\s-hnz01bwcdk-0if10gr-working`
+
+warning: `troop-protocol` (lib) generated 1 warning
+warning: `troop-protocol` (lib test) generated 1 warning
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `\\?\E:\Repo\ASCET\grok-bot-0.18\target\debug\incremental\troop_storage-0nc6c9jr6x9nx\s-hnz01c0owc-0h0ui2l-working`
+
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `\\?\E:\Repo\ASCET\grok-bot-0.18\target\debug\incremental\troop_storage-0nmy4p9khc6q4\s-hnz01c0rsh-1pa2bpt-working`
+
+warning: `troop-storage` (lib) generated 1 warning
+warning: `troop-storage` (lib test) generated 1 warning
+    Checking troop-core v0.10.2 (E:\Repo\ASCET\grok-bot-0.18\crates\core)
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `\\?\E:\Repo\ASCET\grok-bot-0.18\target\debug\incremental\omp_protocol_probe-0fays4hb6dqrt\s-hnz01ceub5-1e094na-working`
+
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `\\?\E:\Repo\ASCET\grok-bot-0.18\target\debug\incremental\claude_protocol_probe-2z148tal23lv6\s-hnz01ceo2o-1qpoc41-working`
+
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `\\?\E:\Repo\ASCET\grok-bot-0.18\target\debug\incremental\grok_protocol_probe-2fm14tqmllzyy\s-hnz01cfbta-166yub0-working`
+
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `\\?\E:\Repo\ASCET\grok-bot-0.18\target\debug\incremental\copilot_protocol_probe-36csppgtdb8zh\s-hnz01ce0ia-0cihwv7-working`
+
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `\\?\E:\Repo\ASCET\grok-bot-0.18\target\debug\incremental\opencode_protocol_probe-2y82slymporxm\s-hnz01cebx6-0bpqx5m-working`
+
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `\\?\E:\Repo\ASCET\grok-bot-0.18\target\debug\incremental\cli_protocol_probe-1lulfkn4gig9e\s-hnz01ce5ec-00xsqee-working`
+
+warning: hard linking files in the incremental compilation cache failed. copying files instead. consider moving the cache directory to a file system which supports hard linking in session dir `\\?\E:\Repo\ASCET\grok-bot-0.18\target\debug\incremental\pi_protocol_probe-3fpso0y29otl7\s-hnz01cf0pg-0g5qlcd-working`
+
+warning: `troop-core` (example "omp_protocol_probe") generated 1 warning
+warning: `troop-core` (example "claude_protocol_probe") generated 1 warning
+warning: `troop-core` (example "grok_protocol_probe") generated 1 warning
+warning: `troop-core` (example "copilot_protocol_probe") generated 1 warning
+warning: `troop-core` (example "opencode_protocol_probe") generated 1 warning
+warning: `troop-core` (example "cli_protocol_probe") generated 1 warning
+warning: `troop-core` (example "pi_protocol_probe") generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.32s

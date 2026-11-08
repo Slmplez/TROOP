@@ -5,7 +5,7 @@ use uuid::Uuid;
 pub(crate) const WAKE_LIMIT: i64 = 16;
 pub(crate) const PARALLEL_LIMIT: usize = 2;
 pub(crate) fn usage(store: &Store, run: &Value) -> Result<(u64, usize), String> {
-    let root = if run["group_chain_id"].is_null() {
+    let root = if run["group_chain_id"].is_null() && run["followup_group_chain_id"].is_null() {
         run["root_run_id"]
             .as_i64()
             .map(|id| store.agent_run(id))
@@ -16,6 +16,7 @@ pub(crate) fn usage(store: &Store, run: &Value) -> Result<(u64, usize), String> 
     };
     let group = root["group_chain_id"]
         .as_str()
+        .or_else(|| root["followup_group_chain_id"].as_str())
         .map(|chain| chain_usage(store, chain))
         .transpose()?
         .unwrap_or((0, 0));
@@ -25,17 +26,31 @@ pub(crate) fn usage(store: &Store, run: &Value) -> Result<(u64, usize), String> 
 pub(crate) fn chain_usage(store: &Store, chain: &str) -> Result<(u64, usize), String> {
     let mut steps = 0;
     let mut tools = 0;
-    for delivery in store.group_chain_deliveries(chain)? {
-        if let Some(id) = delivery["run_id"].as_i64() {
+    let mut seen = std::collections::HashSet::new();
+    for origin in chain_runs(store, chain)? {
+        if let Some(id) = origin["id"].as_i64() {
             for run in store.tree_runs(id)? {
+                let id = run["id"].as_i64().ok_or("执行身份无效。")?;
+                if !seen.insert(id) {
+                    continue;
+                }
                 steps += run["step"].as_u64().unwrap_or(0);
-                tools += store
-                    .agent_invocations(run["id"].as_i64().ok_or("执行身份无效。")?)?
-                    .len();
+                tools += store.agent_invocations(id)?.len();
             }
         }
     }
     Ok((steps, tools))
+}
+pub(crate) fn chain_runs(store: &Store, chain: &str) -> Result<Vec<Value>, String> {
+    let mut runs = store.followup_group_runs(chain)?;
+    for delivery in store.group_chain_deliveries(chain)? {
+        if let Some(id) = delivery["run_id"].as_i64() {
+            if !runs.iter().any(|run| run["id"] == id) {
+                runs.push(store.agent_run(id)?);
+            }
+        }
+    }
+    Ok(runs)
 }
 pub(crate) fn now() -> i64 {
     std::time::SystemTime::now()

@@ -271,6 +271,28 @@ impl Manager {
                     }
                 }
             }
+            for chain in store.followup_chains()? {
+                let linked = chain["upstream_group_run_id"]
+                    .as_i64()
+                    .map(|id| {
+                        store
+                            .agent_run(id)
+                            .map(|run| run["group_chain_id"] == request.id)
+                    })
+                    .transpose()?
+                    .unwrap_or(false);
+                if linked {
+                    let (_, stopped) = self.stop_followup_chain(
+                        store,
+                        chain["id"]
+                            .as_str()
+                            .ok_or_else(|| "跟进链身份缺失。".to_owned())?,
+                        "用户停止了上游群协作链。",
+                    )?;
+                    plan.runs.extend(stopped.runs);
+                    plan.tasks.extend(stopped.tasks);
+                }
+            }
             return Ok((
                 self.group_execution_read(store, "groups.chain", json!({"id":request.id}))?,
                 Some(plan),
@@ -420,13 +442,11 @@ impl Manager {
                 store.group_chain_for_message(delivery["message_id"].as_i64().unwrap())?
             };
             if let Some(chain) = chain {
-                let active = store
-                    .group_chain_deliveries(chain["id"].as_str().ok_or("协作链身份无效。")?)?
-                    .into_iter()
-                    .filter_map(|delivery| delivery["run_id"].as_i64())
-                    .filter_map(|id| store.agent_run(id).ok())
-                    .filter(|run| !lifecycle::run_final(run))
-                    .count();
+                let active =
+                    group::chain_runs(store, chain["id"].as_str().ok_or("协作链身份无效。")?)?
+                        .into_iter()
+                        .filter(|run| !lifecycle::run_final(run))
+                        .count();
                 if active >= group::PARALLEL_LIMIT {
                     continue;
                 }

@@ -16,6 +16,8 @@ struct Definition {
     expires_at_ms: i64,
     min_interval_ms: i64,
     max_runs: i64,
+    #[serde(default)]
+    handoff_policy_ids: Vec<String>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -35,10 +37,20 @@ struct Request {
     expected_change: String,
     source_run_id: Option<i64>,
 }
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Handoff {
+    source_run_id: i64,
+    route_id: String,
+    client_request_id: String,
+    reason: String,
+    expected_change: String,
+}
 fn current_work(store: &Store, policy: &Value) -> Result<Value, String> {
     let item = store.work_item(policy["work_item_id"].as_i64().ok_or("工作项无效。")?)?;
     if work::definition_revision(&item) != policy["work_definition_revision"].as_i64().unwrap_or(0)
-        || item["generation"] != policy["work_generation"]
+        || item["generation"].as_i64().unwrap_or(0)
+            != policy["work_generation"].as_i64().unwrap_or(0)
     {
         return Err("工作定义或取消代次已变化，请重新确认跟进策略。".into());
     }
@@ -82,6 +94,29 @@ impl Manager {
                 .saturating_mul(1000)
         {
             return Err("跟进期限超出授权有效期。".into());
+        }
+        if definition.handoff_policy_ids.len() > 8
+            || definition
+                .handoff_policy_ids
+                .iter()
+                .collect::<std::collections::HashSet<_>>()
+                .len()
+                != definition.handoff_policy_ids.len()
+        {
+            return Err("最多配置八条不同的交接路由。".into());
+        }
+        for target in &definition.handoff_policy_ids {
+            Uuid::parse_str(target).map_err(|_| "交接策略身份无效。")?;
+            if Some(target.as_str()) == id {
+                return Err("交接路由不能指向当前策略。".into());
+            }
+            let target = follow::policy(store, target)?;
+            if target["cancelled"] == true
+                || target["workspace_id"] != definition.workspace_id
+                || target["project_id"] != value["project_id"]
+            {
+                return Err("交接目标已取消或不在相同项目与工作区。".into());
+            }
         }
         self.automatic_material(store, value, id)
     }
@@ -145,6 +180,9 @@ impl Manager {
             before: Option<i64>,
         }
         let request = params::<Query>(input)?;
+        if method == "followups.chain" {
+            return store.followup_chain(&request.id);
+        }
         let policy = follow::policy(store, &request.id)?;
         if method == "followups.get" {
             return self.followup_public(store, policy, now);
@@ -174,8 +212,18 @@ impl Manager {
     fn followup_public(&self, store: &Store, mut policy: Value, now: i64) -> Result<Value, String> {
         let id = policy["id"].as_str().ok_or("策略身份无效。")?.to_owned();
         let state = store.followup_state(&id)?.ok_or("跟进状态缺失。")?;
-        let chain = store.followup_chain(&id)?;
-        let blocker = self.followup_ready(store, &policy, now).err();
+        let chain = store.followup_chain(state["current_chain_id"].as_str().unwrap_or(&id))?;
+        let blocker = self.followup_ready(store, &policy, now).err().or_else(|| {
+            if chain["stopped"] == true
+                || chain["expires_at_ms"].as_i64().unwrap_or(0) <= now
+                || chain["wake_count"].as_i64().unwrap_or(0)
+                    >= chain["wake_limit"].as_i64().unwrap_or(0)
+            {
+                Some("协作链已停止或达到期限／次数上限。".to_owned())
+            } else {
+                None
+            }
+        });
         policy["state"] = state;
         policy["chain"] = chain;
         policy["appointments"] = json!(store.followup_pending(&id)?);
@@ -227,7 +275,7 @@ impl Manager {
         }
         let item = store.work_item(policy["work_item_id"].as_i64().unwrap())?;
         policy["work_definition_revision"] = json!(work::definition_revision(&item));
-        policy["work_generation"] = item["generation"].clone();
+        policy["work_generation"] = json!(item["generation"].as_i64().unwrap_or(0));
         current_work(store, &policy)?;
         policy["kind"] = json!("followup");
         policy["cancelled"] = json!(false);
@@ -245,6 +293,25 @@ impl Manager {
         store.save_followup_state(&id, &state)?;
         if previous.is_none() {
             store.save_followup_chain(json!({"id":id,"root_policy_id":id,"generation":0,"stopped":false,"wake_count":0,"wake_limit":saved["max_runs"],"expires_at_ms":saved["expires_at_ms"],"upstream_group_run_id":null}))?;
+        } else {
+            let mut chain = store.followup_chain(&id)?;
+            chain["wake_limit"] = saved["max_runs"].clone();
+            let expiry = if let Some(origin) = chain["upstream_group_run_id"].as_i64() {
+                let run = store.agent_run(origin)?;
+                let upstream = store.group_chain(
+                    run["group_chain_id"]
+                        .as_str()
+                        .ok_or_else(|| "上游协作链缺失。".to_owned())?,
+                )?;
+                saved["expires_at_ms"]
+                    .as_i64()
+                    .unwrap_or(0)
+                    .min(upstream["expires_at"].as_i64().unwrap_or(0) * 1000)
+            } else {
+                saved["expires_at_ms"].as_i64().unwrap_or(0)
+            };
+            chain["expires_at_ms"] = json!(expiry);
+            store.save_followup_chain(chain)?;
         }
         self.followup_public(store, saved, now).map_err(Into::into)
     }
@@ -303,12 +370,9 @@ impl Manager {
         self.followup_ready(store, &policy, now)?;
         if !crate::groups::text_valid(&request.reason, 600, true)
             || !crate::groups::text_valid(&request.expected_change, 600, true)
-            || request.at_ms
-                < now.saturating_add(if manual {
-                    0
-                } else {
-                    policy["min_interval_ms"].as_i64().unwrap_or(60_000)
-                })
+            || (!manual
+                && request.at_ms
+                    < now.saturating_add(policy["min_interval_ms"].as_i64().unwrap_or(60_000)))
             || request.at_ms >= policy["expires_at_ms"].as_i64().unwrap_or(0)
         {
             return Err("预约时间、理由或预期变化超出当前策略。".into());
@@ -317,64 +381,224 @@ impl Manager {
             return Err("同一工作项最多保留八个待处理预约。".into());
         }
         let state = store.followup_state(&request.id)?.ok_or("跟进状态缺失。")?;
-        let mut chain_id = request.id.clone();
+        let mut chain_id = state["current_chain_id"]
+            .as_str()
+            .unwrap_or(&request.id)
+            .to_owned();
         if let Some(id) = request.source_run_id {
-            let mut source = store.agent_run(id)?;
-            let item = current_work(store, &policy)?;
-            if source["work_item_id"] != item["id"]
-                || source["work_definition_revision"] != policy["work_definition_revision"]
-                || source["agent_id"] != policy["agent_id"]
-                || source["intent"].is_string()
-                || lifecycle::run_terminal(&source)
-                || source["root_run_id"].is_number()
-                || (source["followup_policy_generation"].is_number()
-                    && source["followup_policy_generation"] != state["generation"])
-            {
-                return Err("来源执行或跟进代次已失效。".into());
-            }
-            let origin_grant = store.authorization_get(
-                source["authorization_id"]
-                    .as_str()
-                    .ok_or("来源缺少授权。")?,
-            )?;
-            let target_grant =
-                store.authorization_get(policy["start"]["authorization_id"].as_str().unwrap())?;
-            if crate::group_runtime::scope(&origin_grant)
-                != crate::group_runtime::scope(&target_grant)
-                || origin_grant["engine_id"] != target_grant["engine_id"]
-            {
-                return Err("预约不能扩大来源执行的能力范围。".into());
-            }
-            if let Some(reason) = self.authorization_blocker(store, &source) {
-                return Err(reason);
-            }
-            chain_id = source["followup_chain_id"]
-                .as_str()
-                .unwrap_or(&request.id)
-                .to_owned();
-            let mut chain = store.followup_chain(&chain_id)?;
-            if source["group_chain_id"].is_string() && chain["upstream_group_run_id"].is_null() {
-                chain["upstream_group_run_id"] = json!(id);
-                let upstream = store.group_chain(source["group_chain_id"].as_str().unwrap())?;
-                chain["expires_at_ms"] = json!(chain["expires_at_ms"]
-                    .as_i64()
-                    .unwrap_or(0)
-                    .min(upstream["expires_at"].as_i64().unwrap_or(0) * 1000));
-                chain = store.save_followup_chain(chain)?;
-            }
-            source["followup_chain_id"] = json!(chain_id);
-            source["followup_chain_generation"] = chain["generation"].clone();
-            source["followup_policy_id"] = json!(request.id);
-            source["followup_policy_generation"] = state["generation"].clone();
-            source["followup_work_generation"] = item["generation"].clone();
-            store.agent_save(&mut source, &mut [], "followup_proposed")?;
+            let (_, chain) = self.bind_followup_origin(store, &policy, id)?;
+            chain_id = chain["id"].as_str().ok_or("链身份无效。")?.to_owned();
         }
         let chain = store.followup_chain(&chain_id)?;
-        if chain["stopped"] == true || request.at_ms >= chain["expires_at_ms"].as_i64().unwrap_or(0)
+        if chain["stopped"] == true
+            || request.at_ms >= chain["expires_at_ms"].as_i64().unwrap_or(0)
+            || chain["wake_count"].as_i64().unwrap_or(0)
+                >= chain["wake_limit"].as_i64().unwrap_or(0)
         {
             return Err("预约超出协作链期限或链已停止。".into());
         }
         store.save_followup_appointment(json!({"policy_id":request.id,"policy_revision":policy["revision"],"policy_generation":state["generation"],"chain_id":chain_id,"chain_generation":chain["generation"],"client_key":request.client_request_id,"request":fingerprint,"source_run_id":request.source_run_id,"at_ms":request.at_ms,"reason":request.reason,"expected_change":request.expected_change,"manual":manual,"state":"pending","run_id":null,"created_at_ms":now}))
+    }
+
+    fn bind_followup_origin(
+        &self,
+        store: &mut Store,
+        policy: &Value,
+        id: i64,
+    ) -> Result<(Value, Value), String> {
+        let policy_id = policy["id"].as_str().ok_or("策略身份无效。")?;
+        let state = store.followup_state(policy_id)?.ok_or("跟进状态缺失。")?;
+
+        let mut source = store.agent_run(id)?;
+        let item = current_work(store, policy)?;
+        if source["work_item_id"] != item["id"]
+            || source["work_definition_revision"] != policy["work_definition_revision"]
+            || source["agent_id"] != policy["agent_id"]
+            || source["intent"].is_string()
+            || lifecycle::run_terminal(&source)
+            || source["root_run_id"].is_number()
+            || (source["followup_policy_generation"].is_number()
+                && source["followup_policy_generation"] != state["generation"])
+        {
+            return Err("来源执行或跟进代次已失效。".into());
+        }
+        let origin_grant = store.authorization_get(
+            source["authorization_id"]
+                .as_str()
+                .ok_or("来源缺少授权。")?,
+        )?;
+        let target_grant =
+            store.authorization_get(policy["start"]["authorization_id"].as_str().unwrap())?;
+        if crate::group_runtime::scope(&origin_grant) != crate::group_runtime::scope(&target_grant)
+            || origin_grant["engine_id"] != target_grant["engine_id"]
+        {
+            return Err("预约不能扩大来源执行的能力范围。".into());
+        }
+        if let Some(reason) = self.authorization_blocker(store, &source) {
+            return Err(reason);
+        }
+        let chain_id = source["followup_chain_id"]
+            .as_str()
+            .unwrap_or(policy_id)
+            .to_owned();
+        let mut chain = store.followup_chain(&chain_id)?;
+        if source["group_chain_id"].is_string() && chain["upstream_group_run_id"].is_null() {
+            chain["upstream_group_run_id"] = json!(id);
+            let upstream = store.group_chain(source["group_chain_id"].as_str().unwrap())?;
+            chain["expires_at_ms"] = json!(chain["expires_at_ms"]
+                .as_i64()
+                .unwrap_or(0)
+                .min(upstream["expires_at"].as_i64().unwrap_or(0) * 1000));
+            chain = store.save_followup_chain(chain)?;
+        }
+        source["followup_chain_id"] = json!(chain_id);
+        source["followup_chain_generation"] = chain["generation"].clone();
+        source["followup_policy_id"] = json!(policy_id);
+        source["followup_policy_generation"] = state["generation"].clone();
+        source["followup_work_generation"] = json!(item["generation"].as_i64().unwrap_or(0));
+
+        source["followup_expires_at_ms"] = json!(chain["expires_at_ms"]
+            .as_i64()
+            .unwrap_or(0)
+            .min(policy["expires_at_ms"].as_i64().unwrap_or(0)));
+        if source["group_chain_id"].is_string() {
+            source["followup_group_chain_id"] = source["group_chain_id"].clone();
+        }
+        store.agent_save(&mut source, &mut [], "followup_source_bound")?;
+        Ok((source, chain))
+    }
+    fn handoff_appointment(
+        &self,
+        store: &mut Store,
+        request: &Handoff,
+        now: i64,
+    ) -> Result<Value, String> {
+        let source_id = request.source_run_id;
+        let target_id = request.route_id.as_str();
+        let key = request.client_request_id.as_str();
+        let reason = request.reason.as_str();
+        let expected = request.expected_change.as_str();
+        Uuid::parse_str(key).map_err(|_| "交接身份无效。")?;
+        let fingerprint = json!({"kind":"handoff","source_run_id":source_id,"route_id":target_id,"reason":reason,"expected_change":expected});
+        if let Some(previous) = store.followup_duplicate(target_id, key)? {
+            if previous["request"] != fingerprint {
+                return Err("交接身份已用于其他参数。".into());
+            }
+            return Ok(previous);
+        }
+        let source = store.agent_run(source_id)?;
+        let origin = store.rules_all()?["items"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .find(|value| {
+                value["kind"] == "followup"
+                    && value["work_item_id"] == source["work_item_id"]
+                    && value["cancelled"] != true
+            })
+            .cloned()
+            .ok_or("来源工作缺少跟进策略。")?;
+        self.followup_ready(store, &origin, now)?;
+        if !origin["handoff_policy_ids"]
+            .as_array()
+            .is_some_and(|routes| routes.contains(&json!(target_id)))
+        {
+            return Err("该交接路由尚未配置。".into());
+        }
+        let target = follow::policy(store, target_id)?;
+        self.followup_ready(store, &target, now)?;
+        if origin["workspace_id"] != target["workspace_id"]
+            || origin["project_id"] != target["project_id"]
+        {
+            return Err("交接不能跨越已确认的项目或工作区。".into());
+        }
+        let origin_grant = store.authorization_get(
+            source["authorization_id"]
+                .as_str()
+                .ok_or("来源缺少授权。")?,
+        )?;
+        let target_grant = store.authorization_get(
+            target["start"]["authorization_id"]
+                .as_str()
+                .ok_or("接收方缺少授权。")?,
+        )?;
+        if !origin_grant["operations"]
+            .as_array()
+            .is_some_and(|operations| operations.contains(&json!("request_handoff")))
+            || crate::group_runtime::scope(&origin_grant)
+                != crate::group_runtime::scope(&target_grant)
+            || origin_grant["engine_id"] != target_grant["engine_id"]
+        {
+            return Err("交接超出来源授权能力上限。".into());
+        }
+        let item = current_work(store, &target)?;
+        if let Some(reason) = work::dependency_blocker(store, &item) {
+            return Err(reason);
+        }
+        if !crate::groups::text_valid(reason, 600, true)
+            || !crate::groups::text_valid(expected, 600, true)
+        {
+            return Err("交接需要有界理由与预期变化。".into());
+        }
+        let (_, chain) = self.bind_followup_origin(store, &origin, source_id)?;
+        if chain["stopped"] == true
+            || chain["wake_count"].as_i64().unwrap_or(0)
+                >= chain["wake_limit"].as_i64().unwrap_or(0)
+            || now >= chain["expires_at_ms"].as_i64().unwrap_or(0)
+        {
+            return Err("原协作链已停止或达到期限／次数上限。".into());
+        }
+        if store.followup_pending(target_id)?.len() >= 8 {
+            return Err("接收方预约队列已满。".into());
+        }
+        let state = store
+            .followup_state(target_id)?
+            .ok_or("接收方跟进状态缺失。")?;
+        store.save_followup_appointment(json!({"policy_id":target_id,"policy_revision":target["revision"],"policy_generation":state["generation"],"chain_id":chain["id"],"chain_generation":chain["generation"],"client_key":key,"request":fingerprint,"source_run_id":source_id,"at_ms":now,"reason":reason,"expected_change":expected,"manual":false,"kind":"handoff","state":"pending","run_id":null,"created_at_ms":now}))
+    }
+    pub(super) fn stop_followup_chain(
+        &self,
+        store: &mut Store,
+        id: &str,
+        reason: &str,
+    ) -> Result<(Value, StopPlan), String> {
+        let mut chain = store.followup_chain(id)?;
+        let mut plan = StopPlan {
+            runs: vec![],
+            tasks: vec![],
+        };
+        if chain["stopped"] == true {
+            return Ok((chain, plan));
+        }
+        chain["stopped"] = json!(true);
+        chain["generation"] = json!(chain["generation"].as_i64().unwrap_or(0) + 1);
+        chain["stop_reason"] = json!(reason);
+        let chain = store.save_followup_chain(chain)?;
+        for mut appointment in store.followup_chain_pending(id)? {
+            appointment["state"] = json!("cancelled");
+            appointment["status_reason"] = json!(reason);
+            store.save_followup_appointment(appointment)?;
+        }
+        for run in store.followup_runs(id)? {
+            if lifecycle::run_final(&run) {
+                continue;
+            }
+            let run_id = run["id"].as_i64().ok_or("链执行身份无效。")?;
+            self.flush_subtree_output(store, run_id)?;
+            let stopped = store.stop_tree(
+                run_id,
+                Some("cancel"),
+                &self.jobs.keys().copied().collect::<Vec<_>>(),
+            )?;
+            store.request_run_stop(run_id, true)?;
+            plan.runs.extend(stopped.runs);
+            plan.tasks.extend(stopped.tasks);
+        }
+        plan.runs.sort_unstable();
+        plan.runs.dedup();
+        plan.tasks.sort_unstable();
+        plan.tasks.dedup();
+        Ok((chain, plan))
     }
     pub(super) fn followup_command(
         &mut self,
@@ -383,6 +607,28 @@ impl Manager {
         input: Value,
         now: i64,
     ) -> Result<(Value, Option<StopPlan>), OperationFailure> {
+        if method == "followups.stop_chain" {
+            #[derive(Deserialize)]
+            #[serde(deny_unknown_fields)]
+            struct Stop {
+                id: String,
+                expected_revision: i64,
+            }
+            let request = params::<Stop>(input)?;
+            let chain = store.followup_chain(&request.id)?;
+            crate::groups::check_revision(Some(&chain), request.expected_revision)?;
+            return self
+                .stop_followup_chain(store, &request.id, "用户停止了整条跟进协作链。")
+                .map(|(value, plan)| (value, Some(plan)))
+                .map_err(Into::into);
+        }
+        if method == "followups.handoff" {
+            let request = params::<Handoff>(input)?;
+            return self
+                .handoff_appointment(store, &request, now)
+                .map(|value| (value, None))
+                .map_err(Into::into);
+        }
         if method == "followups.save" {
             return self
                 .save_followup(store, input, now)
@@ -473,6 +719,74 @@ impl Manager {
                 .ok_or_else(|| "链身份缺失。".to_owned())?,
         )?;
         let material = self.followup_ready(store, &policy, now);
+        let source = appointment["source_run_id"]
+            .as_i64()
+            .map(|id| store.agent_run(id))
+            .transpose()?;
+        let source_check = || -> Result<(), String> {
+            let Some(source) = source.as_ref() else {
+                return Ok(());
+            };
+            if source["intent"].is_string()
+                || matches!(
+                    source["state"].as_str(),
+                    Some("cancelled" | "failed" | "interrupted" | "cancelling")
+                )
+                || source["followup_chain_id"] != chain["id"]
+                || source["followup_chain_generation"] != chain["generation"]
+            {
+                return Err("来源执行已停止、未核对或因果链失效。".into());
+            }
+            if let Some(reason) = self.authorization_blocker(store, source) {
+                return Err(reason);
+            }
+            let origin_id = source["followup_policy_id"]
+                .as_str()
+                .ok_or("来源跟进身份缺失。")?;
+            let origin = follow::policy(store, origin_id)?;
+            let origin_state = store
+                .followup_state(origin_id)?
+                .ok_or("来源跟进状态缺失。")?;
+            if origin["enabled"] != true
+                || origin["cancelled"] == true
+                || origin_state["generation"] != source["followup_policy_generation"]
+            {
+                return Err("来源策略已暂停、取消或修订。".into());
+            }
+            current_work(store, &origin)?;
+            if appointment["kind"] == "handoff" {
+                if !origin["handoff_policy_ids"]
+                    .as_array()
+                    .is_some_and(|routes| routes.contains(&policy["id"]))
+                {
+                    return Err("原交接路由已失效。".into());
+                }
+                if origin["workspace_id"] != policy["workspace_id"]
+                    || origin["project_id"] != policy["project_id"]
+                {
+                    return Err("交接范围已变化。".into());
+                }
+            } else if origin["id"] != policy["id"] {
+                return Err("预约所属工作已变化。".into());
+            }
+            let source_grant = store.authorization_get(
+                source["authorization_id"]
+                    .as_str()
+                    .ok_or("来源授权缺失。")?,
+            )?;
+            let target_grant = store.authorization_get(
+                policy["start"]["authorization_id"]
+                    .as_str()
+                    .ok_or("接收授权缺失。")?,
+            )?;
+            if crate::group_runtime::scope(&source_grant)
+                != crate::group_runtime::scope(&target_grant)
+                || source_grant["engine_id"] != target_grant["engine_id"]
+            {
+                return Err("当前接收授权超出来源能力上限。".into());
+            }
+            Ok(())
+        };
         let invalid = if state["generation"] != appointment["policy_generation"]
             || chain["generation"] != appointment["chain_generation"]
             || chain["stopped"] == true
@@ -493,7 +807,11 @@ impl Manager {
         {
             Some("预约时间已错过，保留记录并等待明确补跑。".to_owned())
         } else {
-            material.as_ref().err().cloned()
+            material
+                .as_ref()
+                .err()
+                .cloned()
+                .or_else(|| source_check().err())
         };
         if let Some(reason) = invalid {
             appointment["state"] = json!("blocked");
@@ -504,14 +822,63 @@ impl Manager {
                 .map_err(Into::into);
         }
         let item = current_work(store, &policy)?;
-        let wait = work::followup_start_blocker(store, &item).or_else(|| {
-            (state["last_started_at_ms"]
-                .as_i64()
-                .unwrap_or(i64::MIN / 2)
-                .saturating_add(policy["min_interval_ms"].as_i64().unwrap_or(60_000))
-                > now)
-                .then(|| "等待跟进最小启动间隔。".to_owned())
-        });
+        let chain_runs = store.followup_runs(chain["id"].as_str().unwrap())?;
+        let active = chain_runs
+            .iter()
+            .filter(|run| !lifecycle::run_final(run))
+            .count();
+        let upstream = chain["upstream_group_run_id"]
+            .as_i64()
+            .map(|id| {
+                store.agent_run(id).and_then(|run| {
+                    store.group_chain(run["group_chain_id"].as_str().ok_or("上游链身份缺失。")?)
+                })
+            })
+            .transpose()?;
+        let upstream_active = upstream
+            .as_ref()
+            .map(|upstream| {
+                crate::group_runtime::chain_runs(store, upstream["id"].as_str().unwrap()).map(
+                    |runs| {
+                        runs.into_iter()
+                            .filter(|run| !lifecycle::run_final(run))
+                            .count()
+                    },
+                )
+            })
+            .transpose()?
+            .unwrap_or(0);
+        if let Some(upstream) = upstream.as_ref() {
+            if let Some(reason) = crate::group_runtime::chain_blocker(upstream) {
+                return Err(reason.into());
+            }
+            if upstream["wake_count"].as_i64().unwrap_or(0)
+                >= upstream["wake_limit"].as_i64().unwrap_or(0)
+            {
+                return Err("上游协作链已达到启动次数上限。".to_owned().into());
+            }
+        }
+        let usage = chain_runs
+            .first()
+            .map(|run| crate::group_runtime::usage(store, run))
+            .transpose()?
+            .unwrap_or((0, 0));
+        if usage.0 >= 64 || usage.1 >= 128 {
+            return Err("协作链已达到累计模型步骤或工具数量上限。".to_owned().into());
+        }
+        let wait = work::followup_start_blocker(store, &item)
+            .or_else(|| {
+                (state["last_started_at_ms"]
+                    .as_i64()
+                    .unwrap_or(i64::MIN / 2)
+                    .saturating_add(policy["min_interval_ms"].as_i64().unwrap_or(60_000))
+                    > now)
+                    .then(|| "等待跟进最小启动间隔。".to_owned())
+            })
+            .or_else(|| {
+                (active >= 2 || upstream_active >= 2 || self.live.len() >= 16)
+                    .then(|| "等待协作链或全局执行并发容量。".to_owned())
+            });
         if let Some(reason) = wait {
             if appointment["state"] != "waiting" || appointment["status_reason"] != reason {
                 appointment["state"] = json!("waiting");
@@ -529,11 +896,8 @@ impl Manager {
                 .take(limit)
                 .collect::<String>()
         };
-        let source = appointment["source_run_id"]
-            .as_i64()
-            .map(|id| store.agent_run(id))
-            .transpose()?;
-        let context = json!({"work_item_id":item["id"],"definition_revision":work::definition_revision(&item),"goal_excerpt":excerpt(&item["goal"],200),"acceptance_excerpt":excerpt(&item["acceptance"],200),"appointment_id":appointment["id"],"reason":appointment["reason"],"expected_change":appointment["expected_change"],"source":source.as_ref().map(|run|json!({"run_id":run["id"],"revision":run["revision"],"output_excerpt":excerpt(&run["output"],400),"output_truncated":run["output"].as_str().is_some_and(|text|text.chars().count()>400)}))});
+        let routes=policy["handoff_policy_ids"].as_array().into_iter().flatten().map(|id|follow::policy(store,id.as_str().ok_or("交接身份无效。")?).map(|target|json!({"route_id":target["id"],"name":target["name"],"agent_id":target["agent_id"],"work_item_id":target["work_item_id"]}))).collect::<Result<Vec<_>,String>>()?;
+        let context = json!({"work_item_id":item["id"],"definition_revision":work::definition_revision(&item),"goal_excerpt":excerpt(&item["goal"],200),"acceptance_excerpt":excerpt(&item["acceptance"],200),"appointment_id":appointment["id"],"reason":appointment["reason"],"expected_change":appointment["expected_change"],"followup_limits":{"now_ms":now,"earliest_proposal_at_ms":now.saturating_add(policy["min_interval_ms"].as_i64().unwrap_or(60_000)),"expires_at_ms":policy["expires_at_ms"].as_i64().unwrap_or(0).min(chain["expires_at_ms"].as_i64().unwrap_or(0)),"remaining_starts_after_this_run":chain["wake_limit"].as_i64().unwrap_or(0).saturating_sub(chain["wake_count"].as_i64().unwrap_or(0)+1)},"handoff_routes":routes,"source":source.as_ref().map(|run|json!({"run_id":run["id"],"revision":run["revision"],"output_excerpt":excerpt(&run["output"],400),"output_truncated":run["output"].as_str().is_some_and(|text|text.chars().count()>400)}))});
         start["goal"] = json!(format!(
             "{}\n\n本次预约复查的有界资料\n{}",
             start["goal"].as_str().unwrap_or(""),
@@ -558,7 +922,16 @@ impl Manager {
         run["followup_chain_generation"] = chain["generation"].clone();
         run["followup_policy_id"] = policy["id"].clone();
         run["followup_policy_generation"] = state["generation"].clone();
-        run["followup_work_generation"] = item["generation"].clone();
+        run["followup_work_generation"] = json!(item["generation"].as_i64().unwrap_or(0));
+        run["followup_expires_at_ms"] = json!(chain["expires_at_ms"]
+            .as_i64()
+            .unwrap_or(0)
+            .min(policy["expires_at_ms"].as_i64().unwrap_or(0)));
+        if let Some(mut upstream) = upstream {
+            run["followup_group_chain_id"] = upstream["id"].clone();
+            upstream["wake_count"] = json!(upstream["wake_count"].as_i64().unwrap_or(0) + 1);
+            store.save_group_chain(upstream)?;
+        }
         run["chain_id"] = chain["id"].clone();
         run["trigger"] = json!({"kind":"followup.due","policy_id":policy["id"],"policy_revision":policy["revision"],"appointment_id":appointment["id"],"source_run_id":appointment["source_run_id"],"permission":plan});
         store.agent_save(&mut run, &mut [], "followup_admitted")?;
@@ -567,6 +940,7 @@ impl Manager {
         state["wake_count"] = json!(state["wake_count"].as_i64().unwrap_or(0) + 1);
         state["last_started_at_ms"] = json!(now);
         state["current_run_id"] = json!(run_id);
+        state["current_chain_id"] = run["followup_chain_id"].clone();
         store.save_followup_state(id, &state)?;
         appointment["state"] = json!("dispatched");
         appointment["status_reason"] = Value::Null;
@@ -581,6 +955,65 @@ impl Manager {
         store: &mut Store,
         clock: &crate::reminders::Clock,
     ) -> Result<(), String> {
+        for chain in store.followup_chains()? {
+            if chain["stopped"] == true {
+                continue;
+            }
+            let now = clock.now()?;
+            let root_policy = follow::policy(
+                store,
+                chain["root_policy_id"].as_str().ok_or("根跟进身份缺失。")?,
+            )?;
+            let root_work = store.work_item(
+                root_policy["work_item_id"]
+                    .as_i64()
+                    .ok_or("根工作身份缺失。")?,
+            )?;
+            let deadline = store
+                .followup_runs(chain["id"].as_str().unwrap())?
+                .iter()
+                .any(|run| {
+                    !lifecycle::run_final(run)
+                        && run["followup_expires_at_ms"]
+                            .as_i64()
+                            .is_some_and(|expiry| expiry <= now)
+                });
+            let upstream = chain["upstream_group_run_id"]
+                .as_i64()
+                .map(|id| {
+                    store
+                        .agent_run(id)
+                        .map(|run| crate::group_runtime::run_blocker(store, &run).is_some())
+                })
+                .transpose()?
+                .unwrap_or(false);
+            if now < chain["expires_at_ms"].as_i64().unwrap_or(0)
+                && root_work["cancelled"] != true
+                && !deadline
+                && !upstream
+            {
+                continue;
+            }
+            let id = chain["id"].as_str().unwrap();
+            let (_, plan) = store.execute_operation(
+                "followups",
+                &Uuid::new_v4().to_string(),
+                "followups.expire",
+                &json!({"id":id}),
+                None,
+                |store| {
+                    self.stop_followup_chain(
+                        store,
+                        id,
+                        "跟进期限已到、根工作已取消或上游协作链已失效。",
+                    )
+                    .map_err(Into::into)
+                },
+            )?;
+            if let Some(plan) = plan {
+                self.cancel_stop_plan(store, plan)?;
+            }
+        }
         for policy in store.rules_all()?["items"]
             .as_array()
             .into_iter()
@@ -632,7 +1065,10 @@ impl Manager {
         run: &mut Value,
         inv: &mut Value,
     ) -> Result<bool, String> {
-        if inv["name"] != "propose_followup" {
+        if !matches!(
+            inv["name"].as_str(),
+            Some("propose_followup" | "request_handoff")
+        ) {
             return Ok(false);
         }
         let policy = store.rules_all()?["items"]
@@ -656,19 +1092,38 @@ impl Manager {
                 let policy = policy
                     .as_ref()
                     .ok_or_else(|| "本次工作没有跟进策略。".to_owned())?;
-                let request = Request {
-                    id: policy["id"].as_str().unwrap().to_owned(),
-                    expected_revision: policy["revision"].as_i64().unwrap(),
-                    client_request_id: Uuid::new_v4().to_string(),
-                    at_ms: input["at_ms"]
-                        .as_str()
-                        .and_then(|value| value.parse().ok())
-                        .ok_or_else(|| "预约时间需要毫秒时间戳。".to_owned())?,
-                    reason: input["reason"].as_str().unwrap_or("").to_owned(),
-                    expected_change: input["expected_change"].as_str().unwrap_or("").to_owned(),
-                    source_run_id: run["id"].as_i64(),
+                let appointment = if inv["name"] == "request_handoff" {
+                    self.handoff_appointment(
+                        store,
+                        &Handoff {
+                            source_run_id: run["id"]
+                                .as_i64()
+                                .ok_or_else(|| "来源执行身份缺失。".to_owned())?,
+                            route_id: input["route_id"].as_str().unwrap_or("").to_owned(),
+                            client_request_id: Uuid::new_v4().to_string(),
+                            reason: input["reason"].as_str().unwrap_or("").to_owned(),
+                            expected_change: input["expected_change"]
+                                .as_str()
+                                .unwrap_or("")
+                                .to_owned(),
+                        },
+                        follow::now_ms(),
+                    )?
+                } else {
+                    let request = Request {
+                        id: policy["id"].as_str().unwrap().to_owned(),
+                        expected_revision: policy["revision"].as_i64().unwrap(),
+                        client_request_id: Uuid::new_v4().to_string(),
+                        at_ms: input["at_ms"]
+                            .as_str()
+                            .and_then(|value| value.parse().ok())
+                            .ok_or_else(|| "预约时间需要毫秒时间戳。".to_owned())?,
+                        reason: input["reason"].as_str().unwrap_or("").to_owned(),
+                        expected_change: input["expected_change"].as_str().unwrap_or("").to_owned(),
+                        source_run_id: run["id"].as_i64(),
+                    };
+                    self.request_followup(store, request, follow::now_ms(), false)?
                 };
-                let appointment = self.request_followup(store, request, follow::now_ms(), false)?;
                 *run = store.agent_run(run["id"].as_i64().unwrap())?;
                 inv["state"] = json!("succeeded");
                 inv["result"] = json!({"ok":true,"appointment":appointment});

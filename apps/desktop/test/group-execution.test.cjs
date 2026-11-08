@@ -1032,7 +1032,7 @@ test("schema 26 group history migrates without replay and resumes the original d
   await h.core.stop();
   const { DatabaseSync } = require("node:sqlite"),
     db = new DatabaseSync(path.join(h.data, "troop.sqlite3"));
-  db.exec(`DROP TABLE reminder_notifications; DROP TABLE reminder_slots; DROP TABLE reminder_states; DROP TABLE reminder_preferences; DROP TABLE group_executors; DROP TABLE group_chains; DROP INDEX group_delivery_run; DROP INDEX group_topic_source; DROP INDEX group_topic_parent; DROP TRIGGER group_project_revoked;
+  db.exec(`DROP TABLE followup_appointments; DROP TABLE followup_chains; DROP TABLE followup_states; DROP TABLE reminder_notifications; DROP TABLE reminder_slots; DROP TABLE reminder_states; DROP TABLE reminder_preferences; DROP TABLE group_executors; DROP TABLE group_chains; DROP INDEX group_delivery_run; DROP INDEX group_topic_source; DROP INDEX group_topic_parent; DROP TRIGGER group_project_revoked;
  CREATE TRIGGER group_project_revoked AFTER DELETE ON memory_members BEGIN
  UPDATE group_deliveries SET document=json_set(document,'$.state','cancelled') WHERE agent_id=OLD.agent_id AND json_extract(document,'$.state') IN ('queued','waiting_resume'); END;
  UPDATE group_messages SET document=json_remove(document,'$.chain_id','$.chain_generation','$.source_run_id','$.work_item_id','$.execute_work_item','$.scope_ceiling');
@@ -1043,7 +1043,7 @@ test("schema 26 group history migrates without replay and resumes the original d
   const migrated = new DatabaseSync(path.join(h.data, "troop.sqlite3"), {
     readOnly: true,
   });
-  assert.equal(migrated.prepare("PRAGMA user_version").get().user_version, 29);
+  assert.equal(migrated.prepare("PRAGMA user_version").get().user_version, 30);
   migrated.close();
   await configure(h, g);
   let current = await deliveryFor(h, g, sent);
