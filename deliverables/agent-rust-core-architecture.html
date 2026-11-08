@@ -327,11 +327,14 @@
         <div class="brand">TROOP<span>AGENT RUST CORE</span></div>
         <div class="nav-links">
           <button data-view="overview" aria-pressed="true">01　整体架构</button>
+          <button data-view="native" aria-pressed="false">
+            02　原生 Agent
+          </button>
           <button data-view="execution" aria-pressed="false">
-            02　执行与恢复
+            03　执行与恢复
           </button>
           <button data-view="memory" aria-pressed="false">
-            03　记忆与上下文
+            04　记忆与上下文
           </button>
         </div>
         <div class="nav-foot">
@@ -379,6 +382,11 @@
           <h2>实现与验收范围</h2>
           <ul>
             <li>
+              原生 Agent 由 Rust Core
+              直接运行，连接已配置的模型服务，循环完成上下文组装、模型决策、工具调用与结果入账。可在“原生
+              Agent”视图查看完整路径。
+            </li>
+            <li>
               执行基础、W1／W2 工作项、G1／G2／G3 群聊与话题、S1／S2
               提醒与定时执行，以及 F1 事件驱动工作已接通。
             </li>
@@ -417,6 +425,26 @@
   .edge-label{font-size:12px;fill:#516553;paint-order:stroke;stroke:white;stroke-width:5px;stroke-linejoin:round}
 `;
       const descriptions = {
+        native: [
+          "原生 Agent · Rust 执行循环",
+          "由 Rust Core 的 Manager 推进固定执行循环。按本次 Run 组装上下文，通过 ModelProvider 请求模型，校验工具调用，在授权与执行门禁允许后派发，保存结果并继续或结束。",
+          "crates/core/src/agent.rs · agent/commands.rs · agent/providers.rs",
+        ],
+        native_result: [
+          "工具结果持久入账",
+          "保存调用状态、输出、停止事实及待核对效果。模型下一轮使用已提交的结果，外部效果不明时进入核对路径。",
+          "crates/core/src/agent.rs · agent/model.rs · crates/storage/src/agent.rs",
+        ],
+        native_history: [
+          "下一轮上下文",
+          "将工具结果与补充指令纳入下一安全边界的上下文，重新检查当前记忆、Skills 与权限。达到压缩条件时保存摘要检查点。",
+          "crates/core/src/agent/context.rs · agent/memory.rs · agent/model.rs",
+        ],
+        native_finish: [
+          "原生 Run 完成",
+          "根据模型输出和所属作业状态确定 Run 结果。关联工作项仍按其验收条件明确接纳，记忆维护按独立配置触发。",
+          "crates/core/src/agent.rs · agent/tasks.rs · agent/work_items.rs",
+        ],
         ui: [
           "React 页面",
           "工作项、群聊、规则、执行详情和资源页面。草稿与页面选择属于前端状态。",
@@ -509,7 +537,7 @@
         ],
         gateway: [
           "模型服务连接",
-          "原生请求经过 troop-gateway。外部 CLI 经其自身配置连接模型服务，执行范围仍由 Core 的权限计划核验。",
+          "原生请求经过 troop-gateway，支持 Chat Completions、Responses 与 Anthropic Messages。外部 CLI 经其自身配置连接模型服务，执行范围仍由 Core 的权限计划核验。",
           "crates/gateway/ · crates/core/src/agent/external.rs",
         ],
         store: [
@@ -605,19 +633,19 @@
         overview: {
           title: "Agent Rust Core 整体架构",
           intro:
-            "从桌面与事件入口，经业务编排进入统一执行控制。模型、工具和上下文在启动处装配，业务状态由 Core 事务提交。",
-          height: 1100,
-          default: "run",
+            "从桌面与事件入口，经业务编排进入统一执行控制。原生 Agent 在 Rust Core 内运行模型与工具循环，外部 CLI 通过独立 Adapter 接入。",
+          height: 1210,
+          default: "native",
           principle: [
             "Core 统一接纳业务状态",
             "Worker 报告执行事实，客户端展示快照并提交操作。图中连线表示主要交付关系，业务模块通过共享事务与存储协作。",
           ],
           groups: [
             [18, 14, 1124, 150, "ELECTRON / 桌面与通知"],
-            [18, 198, 740, 540, "RUST CORE / 业务编排与能力接口"],
-            [790, 198, 352, 578, "事件接入与受管执行"],
-            [18, 784, 1124, 140, "持久化"],
-            [18, 960, 1124, 122, "后续切片"],
+            [18, 198, 740, 650, "RUST CORE / 业务编排与原生 Agent"],
+            [790, 198, 352, 688, "事件接入与受管执行"],
+            [18, 894, 1124, 140, "持久化"],
+            [18, 1070, 1124, 122, "后续切片"],
           ],
           nodes: [
             node("ui", 40, 62, 244, "React 页面", "对话 / 看板 / 群聊 / 规则"),
@@ -675,15 +703,23 @@
               "范围 / 审批 / 撤权 / 资源冲突",
             ),
             node(
+              "native",
+              42,
+              625,
+              692,
+              "原生 Agent · Rust 执行循环",
+              "上下文 → 模型决策 → 工具调用 → 结果入账 → 下一轮 / 完成",
+            ),
+            node(
               "context",
               42,
-              636,
+              746,
               210,
               "ContextContributor",
               "记忆 / Skills / 历史",
             ),
-            node("model", 282, 636, 210, "ModelProvider", "模型协议与历史编码"),
-            node("tools", 522, 636, 212, "ToolProvider", "目录 / 参数 / 结果"),
+            node("model", 282, 746, 210, "ModelProvider", "模型协议与历史编码"),
+            node("tools", 522, 746, 212, "ToolProvider", "目录 / 参数 / 结果"),
             node(
               "receiver",
               812,
@@ -719,7 +755,7 @@
             node(
               "gateway",
               812,
-              688,
+              798,
               308,
               "模型服务连接",
               "原生网关 / CLI 自有连接",
@@ -727,16 +763,24 @@
             node(
               "store",
               42,
-              827,
+              937,
               1074,
               "troop-storage · SQLite",
               "业务修订 · 操作账本 · Run / Task · 事件 / 投递 · 记忆 · 证据引用",
             ),
-            node("f2", 42, 994, 326, "F2 持续策略与预约复查", "后续扩展", true),
+            node(
+              "f2",
+              42,
+              1104,
+              326,
+              "F2 持续策略与预约复查",
+              "后续扩展",
+              true,
+            ),
             node(
               "f3",
               410,
-              994,
+              1104,
               326,
               "F3 受控交接与整链恢复",
               "后续扩展",
@@ -745,7 +789,7 @@
             node(
               "deploy",
               778,
-              994,
+              1104,
               338,
               "C4 真实公网部署验收",
               "后续验收",
@@ -766,18 +810,145 @@
             ["M476 448V475H215"],
             ["M655 448V475H476V500"],
             ["M372 539H410"],
-            ["M215 578V610H147V636"],
-            ["M215 610H387V636"],
-            ["M252 675H282"],
-            ["M572 578V610H628V636"],
+            ["M215 578V625"],
+            ["M572 578V625"],
+            ["M147 703V746"],
+            ["M387 703V746"],
+            ["M628 703V746"],
             ["M966 323V356"],
             ["M812 395H778V460H476V448"],
-            ["M734 675H773V509H812"],
-            ["M966 548V580"],
-            ["M966 658V688"],
-            ["M387 714V751H784V727H812"],
-            ["M387 714V758H390V827"],
+            ["M734 785H773V509H812"],
+            ["M734 539H778V619H812"],
+            ["M966 658V798"],
+            ["M387 824V861H784V837H812"],
+            ["M387 824V868H390V937"],
             ["M734 409H765V179H992V140"],
+          ],
+        },
+        native: {
+          title: "原生 Agent · Rust 执行循环",
+          intro:
+            "任务页通过 agent.start 创建原生 Run。Rust Core 组装上下文并直接请求模型，将模型返回的工具调用交给受管执行路径，保存结果后进入下一轮。",
+          height: 890,
+          default: "native",
+          principle: [
+            "原生执行循环由 Rust Core 推进",
+            "ModelProvider 隐藏模型协议，ToolProvider 隐藏工具目录与参数规则，ContextContributor 隐藏资料装配。外部 CLI 使用各自 Adapter 和运行时，两条路径共用 Run、权限、账本与停止核对。",
+          ],
+          groups: [[18, 18, 1124, 850, "NATIVE AGENT / 已接通的原生执行路径"]],
+          nodes: [
+            node(
+              "run",
+              65,
+              75,
+              300,
+              "原生 Run 接纳",
+              "agent.start / Agent / 工作区 / 模型",
+            ),
+            node(
+              "native",
+              430,
+              75,
+              300,
+              "Rust 原生 Agent",
+              "固定循环 / 安全边界 / 补充指令",
+            ),
+            node(
+              "context",
+              795,
+              75,
+              300,
+              "上下文组装",
+              "私有与共享记忆 / Skills / 历史",
+            ),
+            node(
+              "native_finish",
+              65,
+              260,
+              300,
+              "完成当前 Run",
+              "模型完成 / 所属作业结果已处理",
+            ),
+            node(
+              "model",
+              430,
+              260,
+              300,
+              "模型决策与工具调用",
+              "ModelProvider / 结构化响应",
+            ),
+            node(
+              "gateway",
+              795,
+              260,
+              300,
+              "troop-gateway",
+              "Chat / Responses / Messages",
+            ),
+            node(
+              "native_history",
+              65,
+              465,
+              300,
+              "准备下一轮上下文",
+              "已提交结果 / 当前资料 / 压缩检查点",
+            ),
+            node(
+              "gate",
+              430,
+              465,
+              300,
+              "授权、审批与执行门禁",
+              "具体参数 / 范围 / 修订 / 撤权",
+            ),
+            node(
+              "tools",
+              795,
+              465,
+              300,
+              "工具目录与参数校验",
+              "ToolProvider / 受管派发",
+            ),
+            node(
+              "reconcile",
+              65,
+              690,
+              300,
+              "停止、中断与效果核对",
+              "可用动作 / 明确恢复 / 旧调用核对",
+            ),
+            node(
+              "native_result",
+              430,
+              690,
+              300,
+              "工具结果持久入账",
+              "输出 / 状态 / 副作用 / 回执",
+            ),
+            node(
+              "worker",
+              795,
+              690,
+              300,
+              "工具执行与所属作业",
+              "文件 / Shell / MCP / Hook / 子代理",
+            ),
+          ],
+          edges: [
+            ["M365 114H430"],
+            ["M730 114H795"],
+            ["M945 153V210H580V260"],
+            ["M730 286H795"],
+            ["M795 316H730"],
+            ["M430 299H365"],
+            ["M580 338V465"],
+            ["M730 504H795"],
+            ["M945 543V690"],
+            ["M795 729H730"],
+            ["M430 729H400V504H365"],
+            ["M215 465V395H37V194H580V153"],
+            ["M430 752H365"],
+            ["M215 690V620H580V543"],
           ],
         },
         execution: {
