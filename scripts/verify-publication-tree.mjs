@@ -16,7 +16,8 @@ try {
   await mkdir(exported);
   await run(tar, ["-xf", archive, "-C", exported]);
   await run(git, ["init", "--quiet"], { cwd: exported });
-  await run(git, ["add", "--all"], { cwd: exported });
+  // The archive contains only tracked paths, including assets now ignored in new checkouts.
+  await run(git, ["add", "--all", "--force"], { cwd: exported });
 
   const [sourceTree, exportedTree, sourceFiles, exportedFiles] = await Promise.all([
     capture(git, ["rev-parse", "HEAD^{tree}"], { cwd: repoRoot }),
