@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
@@ -12,10 +12,12 @@ const archive = path.join(scratch, "repository.tar");
 const exported = path.join(scratch, "exported");
 
 try {
-  await run(git, ["archive", "--format=tar", `--output=${archive}`, "HEAD"], { cwd: repoRoot });
+  await run(git, ["-c", "core.autocrlf=false", "archive", "--format=tar", `--output=${archive}`, "HEAD"], { cwd: repoRoot });
   await mkdir(exported);
   await run(tar, ["-xf", archive, "-C", exported]);
   await run(git, ["init", "--quiet"], { cwd: exported });
+  // Compare archived bytes without normalizing historical line endings during reindexing.
+  await writeFile(path.join(exported, ".git", "info", "attributes"), "* -text\n");
   // The archive contains only tracked paths, including assets now ignored in new checkouts.
   await run(git, ["add", "--all", "--force"], { cwd: exported });
 
