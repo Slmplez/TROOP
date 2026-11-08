@@ -1,0 +1,324 @@
+{
+  "upstream": "GUYI-AI/gugu",
+  "revision": "59ff154175892e6bab19fc89425cac278964389b",
+  "scope": "upstream_registry_reference",
+  "registry": "packages/session-plugins/src/agents/registry.ts",
+  "withheldSource": "packages/session-plugins/src/agents/conformance/p0-families.ts",
+  "count": 30,
+  "notes": [
+    "The 30 entries preserve upstream provenance. Current delivery targets are Claude Code, Codex, Pi and OpenCode, selected by the user on 2026-11-08. The other 26 are outside current scope.",
+    "Not being withheld does not prove eligibility for the upstream default offer; its registry also checks support and integration capabilities.",
+    "ACP declarations are static index.ts observations, not runtime compatibility results.",
+    "No TROOP provider runtime acceptance has been performed by this inventory."
+  ],
+  "engines": [
+    {
+      "id": "amp",
+      "name": "Amp",
+      "source": "packages/session-plugins/src/agents/impl/amp/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/amp/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "not_found",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "antigravity",
+      "name": "Antigravity",
+      "source": "packages/session-plugins/src/agents/impl/antigravity/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/antigravity/index.ts",
+      "upstream_withheld": false,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "auggie",
+      "name": "Auggie",
+      "source": "packages/session-plugins/src/agents/impl/auggie/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/auggie/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "claude",
+      "name": "Claude Code",
+      "source": "packages/session-plugins/src/agents/impl/claude/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/claude/index.ts",
+      "upstream_withheld": false,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": true
+    },
+    {
+      "id": "cline",
+      "name": "Cline",
+      "source": "packages/session-plugins/src/agents/impl/cline/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/cline/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "codebuddy",
+      "name": "CodeBuddy Code",
+      "source": "packages/session-plugins/src/agents/impl/codebuddy/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/codebuddy/index.ts",
+      "upstream_withheld": false,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "codebuff",
+      "name": "Codebuff",
+      "source": "packages/session-plugins/src/agents/impl/codebuff/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/codebuff/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "not_found",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "codex",
+      "name": "Codex",
+      "source": "packages/session-plugins/src/agents/impl/codex/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/codex/index.ts",
+      "upstream_withheld": false,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": true
+    },
+    {
+      "id": "commandcode",
+      "name": "Command Code",
+      "source": "packages/session-plugins/src/agents/impl/commandcode/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/commandcode/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "not_found",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "continue",
+      "name": "Continue",
+      "source": "packages/session-plugins/src/agents/impl/continue/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/continue/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "not_found",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "copilot",
+      "name": "GitHub Copilot",
+      "source": "packages/session-plugins/src/agents/impl/copilot/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/copilot/index.ts",
+      "upstream_withheld": false,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "source": "packages/session-plugins/src/agents/impl/cursor/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/cursor/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "devin",
+      "name": "Devin",
+      "source": "packages/session-plugins/src/agents/impl/devin/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/devin/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "droid",
+      "name": "Droid",
+      "source": "packages/session-plugins/src/agents/impl/droid/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/droid/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini CLI",
+      "source": "packages/session-plugins/src/agents/impl/gemini/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/gemini/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "grok",
+      "name": "Grok",
+      "source": "packages/session-plugins/src/agents/impl/grok/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/grok/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "hermes",
+      "name": "Hermes Agent",
+      "source": "packages/session-plugins/src/agents/impl/hermes/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/hermes/index.ts",
+      "upstream_withheld": false,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "junie",
+      "name": "Junie",
+      "source": "packages/session-plugins/src/agents/impl/junie/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/junie/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "kilocode",
+      "name": "Kilocode",
+      "source": "packages/session-plugins/src/agents/impl/kilocode/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/kilocode/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "kimi",
+      "name": "Kimi",
+      "source": "packages/session-plugins/src/agents/impl/kimi/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/kimi/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "kiro",
+      "name": "Kiro (AWS)",
+      "source": "packages/session-plugins/src/agents/impl/kiro/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/kiro/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "mimocode",
+      "name": "MiMo Code",
+      "source": "packages/session-plugins/src/agents/impl/mimocode/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/mimocode/index.ts",
+      "upstream_withheld": false,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "mistral",
+      "name": "Mistral Vibe",
+      "source": "packages/session-plugins/src/agents/impl/mistral/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/mistral/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "oh-my-pi",
+      "name": "Oh My Pi",
+      "source": "packages/session-plugins/src/agents/impl/oh-my-pi/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/oh-my-pi/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "opencode",
+      "name": "OpenCode",
+      "source": "packages/session-plugins/src/agents/impl/opencode/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/opencode/index.ts",
+      "upstream_withheld": false,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": true
+    },
+    {
+      "id": "pi",
+      "name": "Pi",
+      "source": "packages/session-plugins/src/agents/impl/pi/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/pi/index.ts",
+      "upstream_withheld": false,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": true
+    },
+    {
+      "id": "qoder",
+      "name": "Qoder CLI",
+      "source": "packages/session-plugins/src/agents/impl/qoder/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/qoder/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "qwen",
+      "name": "Qwen Code",
+      "source": "packages/session-plugins/src/agents/impl/qwen/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/qwen/index.ts",
+      "upstream_withheld": false,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "zcode",
+      "name": "ZCode",
+      "source": "packages/session-plugins/src/agents/impl/zcode/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/zcode/index.ts",
+      "upstream_withheld": false,
+      "acp_declaration_in_index": "supported",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    },
+    {
+      "id": "zero",
+      "name": "Zero",
+      "source": "packages/session-plugins/src/agents/impl/zero/index.ts",
+      "source_url": "https://github.com/GUYI-AI/gugu/blob/59ff154175892e6bab19fc89425cac278964389b/packages/session-plugins/src/agents/impl/zero/index.ts",
+      "upstream_withheld": true,
+      "acp_declaration_in_index": "not_found",
+      "troop_runtime_validation": "not_run",
+      "in_current_scope": false
+    }
+  ],
+  "selected_ids": [
+    "claude",
+    "codex",
+    "pi",
+    "opencode"
+  ],
+  "selected_count": 4,
+  "selection_decision": "user-2026-11-08-four-clis"
+}

@@ -1,0 +1,37 @@
+{
+  "name": "troop-desktop",
+  "version": "0.10.2",
+  "private": true,
+  "description": "TROOP independent Rust and Electron desktop",
+  "main": "src/entry.cjs",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "contracts:generate": "node scripts/generate-client-contract.mjs",
+    "contracts:check": "node scripts/generate-client-contract.mjs --check",
+    "start": "node scripts/start.mjs",
+    "prepare:electron": "node node_modules/electron/install.js",
+    "test": "node --test test/*.test.cjs",
+    "format": "prettier --write src renderer scripts test package.json",
+    "format:check": "prettier --check src renderer scripts test package.json",
+    "smoke": "node scripts/smoke.mjs",
+    "smoke:agent": "node scripts/agent-smoke.mjs",
+    "smoke:tasks": "node scripts/tasks-smoke.mjs",
+    "smoke:memory": "node scripts/memory-smoke.mjs",
+    "smoke:skills": "node scripts/skills-smoke.mjs",
+    "smoke:hooks": "node scripts/hooks-smoke.mjs",
+    "smoke:mcp-agent": "node scripts/mcp-agent-smoke.mjs",
+    "smoke:mcp-management": "node scripts/mcp-management-smoke.mjs"
+  },
+  "dependencies": {
+    "react": "19.2.1",
+    "react-dom": "19.2.1"
+  },
+  "devDependencies": {
+    "electron": "42.1.0",
+    "esbuild": "0.28.2",
+    "prettier": "3.6.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

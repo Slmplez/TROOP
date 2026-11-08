@@ -1,0 +1,1167 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>TROOP · Agent Rust Core 架构</title>
+    <style>
+      :root {
+        --ink: #20352d;
+        --muted: #54675e;
+        --paper: #f4f5f0;
+        --line: #cbd4c9;
+        --green: #285a43;
+        --soft: #e9f0e7;
+        --amber: #805625;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font:
+          15px/1.65 system-ui,
+          "Microsoft YaHei",
+          "PingFang SC",
+          sans-serif;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+        background: white;
+        border: 1px solid #9caba0;
+        border-radius: 5px;
+        padding: 7px 13px;
+      }
+      button:hover {
+        background: var(--soft);
+      }
+      button:focus-visible,
+      a:focus-visible {
+        outline: 3px solid #4d8560;
+        outline-offset: 3px;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .shell {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr);
+        max-width: 1680px;
+        margin: auto;
+        min-height: 100vh;
+      }
+      nav {
+        padding: 36px 22px;
+        border-right: 1px solid var(--line);
+      }
+      .brand {
+        font-size: 21px;
+        font-weight: 750;
+        letter-spacing: 0.08em;
+      }
+      .brand span {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        margin-top: 2px;
+        color: var(--muted);
+      }
+      .nav-links {
+        display: grid;
+        gap: 8px;
+        margin-top: 44px;
+      }
+      .nav-links button {
+        text-align: left;
+        border-color: transparent;
+        background: transparent;
+        padding: 12px;
+      }
+      .nav-links button[aria-pressed="true"] {
+        background: #dfe9dd;
+        color: #214a34;
+        font-weight: 650;
+      }
+      .nav-foot {
+        margin-top: 44px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      main {
+        min-width: 0;
+        padding: 34px 36px 48px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        align-items: start;
+      }
+      .eyebrow {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+      }
+      h1 {
+        font-size: 30px;
+        line-height: 1.3;
+        margin: 0;
+        font-weight: 650;
+      }
+      h2 {
+        font-size: 20px;
+        margin: 0 0 8px;
+      }
+      h3 {
+        font-size: 16px;
+        margin: 0 0 8px;
+      }
+      p {
+        margin: 9px 0;
+      }
+      .intro {
+        max-width: 900px;
+        color: var(--muted);
+        margin: 16px 0 24px;
+      }
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding: 12px 0;
+        border-top: 1px solid var(--line);
+      }
+      .legend,
+      .zoom {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 13px;
+      }
+      .legend i {
+        display: inline-block;
+        width: 23px;
+        height: 9px;
+        background: #e9f0e7;
+        border: 1px solid #6f9176;
+        margin-right: 6px;
+      }
+      .legend i.pending {
+        border: 1px dashed var(--amber);
+        background: #faf4e8;
+      }
+      .zoom {
+        gap: 7px;
+      }
+      #zoom-label {
+        min-width: 46px;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+      .stage {
+        border: 1px solid var(--line);
+        background: white;
+        overflow: auto;
+        max-height: 79vh;
+        scrollbar-gutter: stable;
+      }
+      .stage svg {
+        display: block;
+        max-width: none;
+        height: auto;
+      }
+      .hint {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 8px;
+      }
+      .below {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+        gap: 36px;
+        margin-top: 28px;
+      }
+      .inspector {
+        border-left: 3px solid #567b5d;
+        padding-left: 18px;
+        min-height: 145px;
+      }
+      .source {
+        font:
+          12px/1.7 ui-monospace,
+          Consolas,
+          monospace;
+        overflow-wrap: anywhere;
+        color: var(--muted);
+      }
+      .facts {
+        border-top: 1px solid var(--line);
+        margin-top: 30px;
+        padding-top: 22px;
+      }
+      .facts ul {
+        padding-left: 20px;
+        margin-top: 12px;
+      }
+      .facts li {
+        margin-bottom: 9px;
+      }
+      footer {
+        overflow-wrap: anywhere;
+        margin-top: 32px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .status {
+        font-size: 12px;
+        background: #e1ebde;
+        padding: 5px 9px;
+        white-space: nowrap;
+      }
+      .noscript {
+        padding: 20px;
+        background: #fff3d8;
+      }
+      .scope-note {
+        color: #755127;
+      }
+      @media (max-width: 900px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+        nav {
+          padding: 20px 22px 0;
+          border: 0;
+        }
+        .brand span,
+        .nav-foot {
+          display: none;
+        }
+        .nav-links {
+          margin: 18px 0 0;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px;
+        }
+        .nav-links button {
+          padding: 8px 12px;
+        }
+        main {
+          padding: 24px 22px;
+        }
+        .below {
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
+        h1 {
+          font-size: 26px;
+        }
+        .status {
+          white-space: normal;
+        }
+        header {
+          flex-wrap: wrap;
+        }
+      }
+      @media print {
+        body {
+          background: white;
+        }
+        nav,
+        .toolbar,
+        .hint,
+        header button {
+          display: none;
+        }
+        .shell {
+          display: block;
+        }
+        main {
+          padding: 0;
+        }
+        .stage {
+          max-height: none;
+          overflow: visible;
+          border: 0;
+        }
+        .stage svg {
+          width: 100% !important;
+        }
+        .below,
+        .facts {
+          break-inside: avoid;
+        }
+        header {
+          margin-bottom: 12px;
+        }
+        h1 {
+          font-size: 24px;
+        }
+        footer {
+          font-size: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <noscript
+      ><p class="noscript">
+        此文件使用内嵌 JavaScript 绘制 SVG
+        架构图，请在浏览器中允许本地脚本运行。无需网络连接。
+      </p></noscript
+    >
+    <div class="shell">
+      <nav aria-label="架构视图">
+        <div class="brand">TROOP<span>AGENT RUST CORE</span></div>
+        <div class="nav-links">
+          <button data-view="overview" aria-pressed="true">01　整体架构</button>
+          <button data-view="execution" aria-pressed="false">
+            02　执行与恢复
+          </button>
+          <button data-view="memory" aria-pressed="false">
+            03　记忆与上下文
+          </button>
+        </div>
+        <div class="nav-foot">
+          本地实现快照<br />2026-11-08<br />Schema 29 · F1<br /><br />编译时组合<br />固定原生执行循环<br />模型、工具、上下文可替换
+        </div>
+      </nav>
+      <main>
+        <header>
+          <div>
+            <p class="eyebrow">ARCHITECTURE / IMPLEMENTATION MAP</p>
+            <h1 id="page-title">Agent Rust Core 整体架构</h1>
+          </div>
+          <button id="print">打印当前视图</button>
+        </header>
+        <p class="intro" id="intro"></p>
+        <div class="toolbar">
+          <div class="legend">
+            <span><i></i>已接通模块</span
+            ><span><i class="pending"></i>后续扩展</span>
+          </div>
+          <div class="zoom">
+            <button id="zoom-out" aria-label="缩小图纸">−</button
+            ><output id="zoom-label">100%</output
+            ><button id="zoom-in" aria-label="放大图纸">＋</button
+            ><button id="fit">适应宽度</button>
+          </div>
+        </div>
+        <section class="stage" id="stage" aria-label="架构图纸"></section>
+        <p class="hint">
+          点击模块或使用 Tab 与 Enter
+          查看职责。图纸支持缩放，窄屏可在图纸内横向滚动。
+        </p>
+        <div class="below">
+          <section class="inspector" aria-live="polite">
+            <h2 id="detail-title">Rust Core</h2>
+            <p id="detail-body"></p>
+            <p class="source" id="detail-path"></p>
+          </section>
+          <section>
+            <h2 id="principle-title"></h2>
+            <p id="principle-body"></p>
+          </section>
+        </div>
+        <section class="facts">
+          <h2>实现与验收范围</h2>
+          <ul>
+            <li>
+              执行基础、W1／W2 工作项、G1／G2／G3 群聊与话题、S1／S2
+              提醒与定时执行，以及 F1 事件驱动工作已接通。
+            </li>
+            <li>
+              当前 CLI 范围为 Claude
+              Code、Codex、Pi、OpenCode。运行时问答、审批与隔离能力按引擎版本及实际权限计划检查。
+            </li>
+            <li>
+              F1 最新回归为桌面 625 项，602 通过、23 既有跳过，Rust 57
+              项通过。近期事件闭环使用本机 mock 模型与 mock 平台，CLI
+              协议与真实模型证据分别记录。
+            </li>
+            <li class="scope-note">
+              F2 预约复查、F3 受控交接与整链恢复扩展，以及 C4
+              真实公网部署继续推进。统一对话创建、文件办公和 Browser／Computer
+              生产化接线按各自专项承接。
+            </li>
+          </ul>
+        </section>
+        <footer>
+          本图为逻辑职责与主要交付关系。Core 保存业务事实，Worker
+          报告执行事实，Renderer 展示快照并提交明确操作。依据
+          docs/implementation/TROOP_CORE_EXTENSION_TASK_PLAN.md 与
+          verification/work-events-f1-2026-11-08/result.json。
+        </footer>
+      </main>
+    </div>
+    <script>
+      const svgStyle = `
+  text{font-family:system-ui,'Microsoft YaHei','PingFang SC',sans-serif;fill:#20352d}
+  .group{fill:#f6f8f3;stroke:#cbd4c9;stroke-width:1}.group-title{font-size:14px;font-weight:650;fill:#48614f}
+  .node rect{fill:white;stroke:#8aa38d;stroke-width:1.2;rx:6}.node .name{font-size:17px;font-weight:650}.node .sub{font-size:13px;fill:#53675a}
+  .node{cursor:pointer;outline:none}.node:hover rect,.node:focus rect,.node.selected rect{stroke:#245438;stroke-width:2.4;fill:#edf4e9}
+  .node.pending rect{stroke:#99713c;stroke-dasharray:6 4;fill:#fbf7ee}.node.pending .sub{fill:#795b32}
+  .edge{fill:none;stroke:#788d7a;stroke-width:1.4;marker-end:url(#arrow)}.edge.future{stroke:#99713c;stroke-dasharray:5 5}
+  .edge-label{font-size:12px;fill:#516553;paint-order:stroke;stroke:white;stroke-width:5px;stroke-linejoin:round}
+`;
+      const descriptions = {
+        ui: [
+          "React 页面",
+          "工作项、群聊、规则、执行详情和资源页面。草稿与页面选择属于前端状态。",
+          "apps/desktop/renderer/",
+        ],
+        client: [
+          "Client Models 与操作账本",
+          "共享资源快照、分页和持久 follow。写入先保留操作身份，断线后查询同一操作结果。",
+          "apps/desktop/renderer/client/",
+        ],
+        main: [
+          "可信桌面宿主",
+          "Preload 暴露受限接口。Electron Main 验证 IPC，托管 Core 进程、窗口、托盘及系统通知投递。",
+          "apps/desktop/src/main.cjs · preload.cjs · core-client.cjs",
+        ],
+        rpc: [
+          "查询、命令与能力协商",
+          "受托管 stdio 上使用 JSON-RPC。查询提供快照与 follow，命令进入修订检查、幂等和操作账本。",
+          "crates/core/src/main.rs · crates/protocol/",
+        ],
+        ledger: [
+          "事务与操作账本",
+          "业务变化、事件、派发记录和操作回执同事务提交。运行时外部效果在提交后激活。",
+          "crates/storage/src/operations.rs · crates/core/src/agent/commands.rs",
+        ],
+        work: [
+          "工作项与依赖",
+          "保存目标、负责 Agent、项目、工作区和依赖。Run 的结果经明确工作接纳后释放依赖。",
+          "crates/core/src/work_items.rs · agent/work_items.rs",
+        ],
+        group: [
+          "群聊与一层话题",
+          "寻址、监听、持久投递、Agent 消费和显式回复。话题继承范围，复用执行与协作链。",
+          "crates/core/src/groups.rs · topics.rs · agent/group_runtime.rs",
+        ],
+        rules: [
+          "事件规则 F1",
+          "复核来源当前状态、目标定义、全部依赖和授权。等待记录保持身份，人工停止后旧等待事件结束自动推进。",
+          "crates/core/src/agent/rules.rs · crates/storage/src/rules.rs",
+        ],
+        time: [
+          "时间调度 S1／S2",
+          "固定时区计算槽位并去重。纯提醒写通知意图，定时 Agent 创建独立 Run。错过时间按规则跳过并记录。",
+          "crates/core/src/reminders.rs · agent/schedules.rs · crates/protocol/src/schedule.rs",
+        ],
+        run: [
+          "Run／Task 生命周期",
+          "App 管理 Run，Run 拥有所属 Task 与调用。统一处理停止、效果核对、恢复和执行结果。",
+          "crates/core/src/agent.rs · agent/tasks.rs · crates/protocol/src/lifecycle.rs",
+        ],
+        gate: [
+          "权限与执行门禁",
+          "检查当前授权、修订、有效期、目录、工具参数及实际引擎能力。处理资源冲突、撤权和运行时审批。",
+          "crates/core/src/authorizations.rs · agent/permissions.rs · agent/execution.rs",
+        ],
+        context: [
+          "ContextContributor",
+          "按本次 Agent、项目和权限装配版本化片段，保存来源及使用记录。原生装配包括记忆、Skills 与有界历史。",
+          "crates/core/src/agent/context.rs · agent/providers.rs",
+        ],
+        model: [
+          "ModelProvider",
+          "原生聊天、执行循环、压缩、记忆维护和提示 Hook 共用模型接口。维护模型可单独配置。",
+          "crates/core/src/agent/model.rs · crates/gateway/",
+        ],
+        tools: [
+          "ToolProvider",
+          "统一工具目录、参数校验、审批分类与结果。执行由权限和 Ready 门禁控制。",
+          "crates/core/src/agent/tool_provider.rs · tools.rs",
+        ],
+        receiver: [
+          "外部事件接收器",
+          "GitHub、GitLab、Webhook 经来源认证进入持久 Inbox。支持本地接收与独立部署。",
+          "crates/core/src/events.rs",
+        ],
+        inbox: [
+          "Inbox 与当前状态复核",
+          "保留事件身份、去重、交付和 ACK。Core 消费时重新检查来源状态、期限、规则与权限。",
+          "crates/storage/src/events.rs · crates/core/src/events.rs",
+        ],
+        worker: [
+          "受管 Worker 与执行环境",
+          "执行文件、Shell、Hook／MCP 或 CLI 作业，报告协议与进程事实，保留回执和进程树停止信息。",
+          "crates/core/src/tools.rs · cli_process.rs · sandbox.rs · crates/mcp/",
+        ],
+        cli: [
+          "四 CLI Adapter",
+          "Claude Code、Codex、Pi、OpenCode 分别解码各自协议与交互。外部 CLI 使用自身运行时和模型连接。",
+          "crates/core/src/claude.rs · codex.rs · pi.rs · opencode.rs",
+        ],
+        gateway: [
+          "模型服务连接",
+          "原生请求经过 troop-gateway。外部 CLI 经其自身配置连接模型服务，执行范围仍由 Core 的权限计划核验。",
+          "crates/gateway/ · crates/core/src/agent/external.rs",
+        ],
+        store: [
+          "SQLite 持久化",
+          "保存业务修订、操作账本、Run／Task、工具调用、事件、投递、记忆及证据引用。独立事件接收器可拥有自己的 Inbox 存储。",
+          "crates/storage/",
+        ],
+        f2: [
+          "F2 后续扩展",
+          "持续策略、Agent 提议的检查时间、理由与预期变化。预约由 Core 校验后登记，到期创建检查 Run。",
+          "docs/implementation/TROOP_CORE_EXTENSION_TASK_PLAN.md",
+        ],
+        f3: [
+          "F3 后续扩展",
+          "在已有群协作链停止基础上，完善受控交接、整链恢复及持续工作控制。",
+          "docs/implementation/TROOP_CORE_EXTENSION_TASK_PLAN.md",
+        ],
+        deploy: [
+          "C4 部署验收",
+          "当前已完成约定的 mock 平台链路。真实仓库、公网接收、平台重投及轮换需要对应部署证据。",
+          "docs/implementation/TROOP_CORE_EXTENSION_TASK_PLAN.md",
+        ],
+        source: [
+          "任务进入",
+          "用户交办、群消息、时间槽位或有效外部事件，经各自接纳规则进入执行编排。",
+          "crates/core/src/agent/",
+        ],
+        review: [
+          "固定证据与工作接纳",
+          "外部 CLI 先进行固定证据审核。工作项按目标与验收条件明确接纳，之后更新看板并产生接纳事件。",
+          "crates/core/src/agent/external.rs · agent/work_items.rs",
+        ],
+        reconcile: [
+          "执行核对与恢复",
+          "查明进程停止事实、已有结果和副作用。未决结果阻止旧动作自动重放，恢复使用后端可用动作。",
+          "crates/protocol/src/lifecycle.rs · crates/core/src/agent/actions.rs",
+        ],
+        notice: [
+          "纯提醒与通知回执",
+          "本地调度保存槽位与通知意图，可信主进程领取并投递。显示、失败、未知投递和用户已读分别记录。",
+          "crates/core/src/reminders.rs · apps/desktop/src/reminder-notifications.cjs",
+        ],
+        scope: [
+          "本次资料范围",
+          "Run 保存 Agent、选定项目、工作区和授权引用，按当前权限及成员资格过滤资料。",
+          "crates/core/src/agent/context.rs",
+        ],
+        private: [
+          "Agent 私有记忆",
+          "供对应 Agent 跨任务复用的持久知识。",
+          "crates/core/src/agent/memory.rs",
+        ],
+        shared: [
+          "用户共享记忆",
+          "当前用户明确共享给其 Agent 的持久知识。",
+          "crates/core/src/agent/memory.rs",
+        ],
+        project: [
+          "项目共享记忆",
+          "按项目成员资格和本次范围读取的知识，保留修订与来源。",
+          "crates/core/src/agent/memory.rs",
+        ],
+        resources: [
+          "Skills／Workflows 与历史",
+          "按实际运行接口装配方法和有界历史。压缩视图与原始历史分别保留。",
+          "crates/core/src/agent/skills.rs · context.rs",
+        ],
+        usage: [
+          "上下文使用记录",
+          "记录本次采用的来源、修订与片段，供用户核对模型实际使用的资料。",
+          "crates/core/src/agent/context.rs",
+        ],
+        maintain: [
+          "后台记忆维护",
+          "根 Run 完成后按配置整理资料，使用独立维护模型配置，提交时核对来源版本与当前权限。",
+          "crates/core/src/agent/memory.rs · maintenance_settings.rs",
+        ],
+        protect: [
+          "记忆提交约束",
+          "用户保护、共享范围及遗忘约束在提交时生效，维护模型的提案接受这些约束。",
+          "crates/storage/src/memory*.rs",
+        ],
+        revision: [
+          "不可变修订与冲突",
+          "有充分依据时保存替代关系与历史，依据不足时保留冲突，影响任务时再请求决定。",
+          "crates/storage/src/memory*.rs",
+        ],
+      };
+      function node(id, x, y, w, title, sub, pending = false) {
+        return { id, x, y, w, h: 78, title, sub, pending };
+      }
+      const views = {
+        overview: {
+          title: "Agent Rust Core 整体架构",
+          intro:
+            "从桌面与事件入口，经业务编排进入统一执行控制。模型、工具和上下文在启动处装配，业务状态由 Core 事务提交。",
+          height: 1100,
+          default: "run",
+          principle: [
+            "Core 统一接纳业务状态",
+            "Worker 报告执行事实，客户端展示快照并提交操作。图中连线表示主要交付关系，业务模块通过共享事务与存储协作。",
+          ],
+          groups: [
+            [18, 14, 1124, 150, "ELECTRON / 桌面与通知"],
+            [18, 198, 740, 540, "RUST CORE / 业务编排与能力接口"],
+            [790, 198, 352, 578, "事件接入与受管执行"],
+            [18, 784, 1124, 140, "持久化"],
+            [18, 960, 1124, 122, "后续切片"],
+          ],
+          nodes: [
+            node("ui", 40, 62, 244, "React 页面", "对话 / 看板 / 群聊 / 规则"),
+            node(
+              "client",
+              316,
+              62,
+              244,
+              "Client Models",
+              "快照 / follow / 操作账本",
+            ),
+            node(
+              "main",
+              592,
+              62,
+              244,
+              "Preload + Main",
+              "IPC 校验 / CoreSupervisor",
+            ),
+            node("notice", 868, 62, 248, "通知投递", "系统显示与已读分别记录"),
+            node(
+              "rpc",
+              42,
+              245,
+              320,
+              "JSON-RPC / stdio",
+              "查询 / 命令 / 能力协商",
+            ),
+            node(
+              "ledger",
+              398,
+              245,
+              336,
+              "幂等与事务接纳",
+              "修订检查 / 操作回执 / 派发意图",
+            ),
+            node("work", 42, 370, 156, "工作项", "目标 / 依赖 / 接纳"),
+            node("group", 220, 370, 156, "群聊与话题", "寻址 / 投递 / 回复"),
+            node("rules", 398, 370, 156, "事件规则 F1", "复核 / 等待 / 派发"),
+            node("time", 576, 370, 158, "时间调度", "纯提醒 / 定时 Run"),
+            node(
+              "run",
+              62,
+              500,
+              310,
+              "Run / Task 控制",
+              "生命周期 / 停止 / 核对 / 恢复",
+            ),
+            node(
+              "gate",
+              410,
+              500,
+              324,
+              "权限与交互门禁",
+              "范围 / 审批 / 撤权 / 资源冲突",
+            ),
+            node(
+              "context",
+              42,
+              636,
+              210,
+              "ContextContributor",
+              "记忆 / Skills / 历史",
+            ),
+            node("model", 282, 636, 210, "ModelProvider", "模型协议与历史编码"),
+            node("tools", 522, 636, 212, "ToolProvider", "目录 / 参数 / 结果"),
+            node(
+              "receiver",
+              812,
+              245,
+              308,
+              "认证事件接收器",
+              "GitHub / GitLab / Webhook",
+            ),
+            node(
+              "inbox",
+              812,
+              356,
+              308,
+              "持久 Inbox 与状态复核",
+              "本地 / 独立接收服务",
+            ),
+            node(
+              "worker",
+              812,
+              470,
+              308,
+              "受管 Worker + 环境",
+              "文件 / Shell / Hook / MCP",
+            ),
+            node(
+              "cli",
+              812,
+              580,
+              308,
+              "四个 CLI Adapter",
+              "Claude / Codex / Pi / OpenCode",
+            ),
+            node(
+              "gateway",
+              812,
+              688,
+              308,
+              "模型服务连接",
+              "原生网关 / CLI 自有连接",
+            ),
+            node(
+              "store",
+              42,
+              827,
+              1074,
+              "troop-storage · SQLite",
+              "业务修订 · 操作账本 · Run / Task · 事件 / 投递 · 记忆 · 证据引用",
+            ),
+            node("f2", 42, 994, 326, "F2 持续策略与预约复查", "后续扩展", true),
+            node(
+              "f3",
+              410,
+              994,
+              326,
+              "F3 受控交接与整链恢复",
+              "后续扩展",
+              true,
+            ),
+            node(
+              "deploy",
+              778,
+              994,
+              338,
+              "C4 真实公网部署验收",
+              "后续验收",
+              true,
+            ),
+          ],
+          edges: [
+            ["M284 101H316"],
+            ["M560 101H592"],
+            ["M713 140V179H202V245"],
+            ["M362 284H398"],
+            ["M566 323V346H120V370"],
+            ["M566 346H298V370"],
+            ["M566 346H476V370"],
+            ["M566 346H655V370"],
+            ["M120 448V475H215V500"],
+            ["M298 448V475"],
+            ["M476 448V475H215"],
+            ["M655 448V475H476V500"],
+            ["M372 539H410"],
+            ["M215 578V610H147V636"],
+            ["M215 610H387V636"],
+            ["M252 675H282"],
+            ["M572 578V610H628V636"],
+            ["M966 323V356"],
+            ["M812 395H778V460H476V448"],
+            ["M734 675H773V509H812"],
+            ["M966 548V580"],
+            ["M966 658V688"],
+            ["M387 714V751H784V727H812"],
+            ["M387 714V758H390V827"],
+            ["M734 409H765V179H992V140"],
+          ],
+        },
+        execution: {
+          title: "执行、审核与恢复",
+          intro:
+            "任务接纳、执行事实、结果审核和工作接纳分别记录。执行的运行资源遵循 App → Run → Task 的所有权。",
+          height: 890,
+          default: "ledger",
+          principle: [
+            "先提交业务事务，再激活运行时",
+            "重复操作沿原身份查询结果。暂停规则、停止 Run、审核产物和接纳工作分别使用明确动作。",
+          ],
+          groups: [[18, 18, 1124, 850, "任务生命周期与两条结果路径"]],
+          nodes: [
+            node(
+              "source",
+              65,
+              75,
+              300,
+              "任务与触发入口",
+              "用户 / 群 / 时间 / 外部事件",
+            ),
+            node(
+              "gate",
+              430,
+              75,
+              300,
+              "当前条件与授权复核",
+              "依赖 / 范围 / 权限 / 停止状态",
+            ),
+            node(
+              "ledger",
+              795,
+              75,
+              300,
+              "事务接纳与唯一派发",
+              "操作回执 / 记录 / Run / 工作关联",
+            ),
+            node(
+              "run",
+              795,
+              260,
+              300,
+              "Run / Task 执行控制",
+              "提交后激活原生或 CLI Worker",
+            ),
+            node(
+              "worker",
+              430,
+              260,
+              300,
+              "工具、执行与运行时交互",
+              "问答 / 审批 / 进程事实 / 回执",
+            ),
+            node(
+              "review",
+              65,
+              260,
+              300,
+              "固定证据与明确工作接纳",
+              "产物审核 / 接纳 / 看板 / 依赖释放",
+            ),
+            node(
+              "rules",
+              65,
+              465,
+              300,
+              "有效接纳事件",
+              "规则与授权有效时继续推进",
+            ),
+            node(
+              "reconcile",
+              430,
+              465,
+              300,
+              "中断、停止与效果核对",
+              "结果不明时使用明确恢复决定",
+            ),
+            node(
+              "maintain",
+              795,
+              465,
+              300,
+              "按配置维护记忆",
+              "独立维护模型 / 来源与保护检查",
+            ),
+            node(
+              "time",
+              65,
+              697,
+              300,
+              "纯提醒的时间槽位",
+              "固定时区 / 去重 / 错过记录",
+            ),
+            node(
+              "notice",
+              430,
+              697,
+              300,
+              "持久通知与主进程投递",
+              "显示 / 失败 / 未知 / 已读",
+            ),
+            node(
+              "store",
+              795,
+              697,
+              300,
+              "保存各自事实与证据",
+              "纯提醒零模型调用、零 Run",
+            ),
+          ],
+          edges: [
+            ["M365 114H430"],
+            ["M730 114H795"],
+            ["M945 153V260"],
+            ["M795 299H730"],
+            ["M430 299H365"],
+            ["M215 338V465"],
+            ["M65 504H37V114H65"],
+            ["M580 338V465"],
+            ["M730 504H761V299H795"],
+            ["M365 320H395V418H945V465"],
+            ["M365 736H430"],
+            ["M730 736H795"],
+          ],
+        },
+        memory: {
+          title: "统一记忆与上下文",
+          intro:
+            "按本次 Agent、项目和授权选择资料。维护使用同一套记忆机制与提交约束，检索使用记录和原始来源可以追溯。",
+          height: 1050,
+          default: "context",
+          principle: [
+            "资料使用与知识维护分别处理",
+            "上下文装配记录采用的来源和修订。维护提案在提交时核对权限、来源版本、用户保护及遗忘约束。",
+          ],
+          groups: [
+            [18, 18, 1124, 620, "读取 / 组装 / 使用"],
+            [18, 674, 1124, 350, "维护 / 约束 / 修订"],
+          ],
+          nodes: [
+            node(
+              "scope",
+              330,
+              70,
+              500,
+              "本次 Run 的资料范围",
+              "Agent / 项目成员资格 / 工作区 / 授权",
+            ),
+            node(
+              "private",
+              65,
+              240,
+              300,
+              "Agent 私有记忆",
+              "对应 Agent 的持久知识",
+            ),
+            node(
+              "shared",
+              430,
+              240,
+              300,
+              "用户共享记忆",
+              "当前用户明确共享的知识",
+            ),
+            node(
+              "project",
+              795,
+              240,
+              300,
+              "项目共享记忆",
+              "当前项目范围与成员过滤",
+            ),
+            node(
+              "resources",
+              65,
+              425,
+              300,
+              "Skills / Workflows / 历史",
+              "方法 / 有界历史 / 压缩视图",
+            ),
+            node(
+              "context",
+              430,
+              425,
+              300,
+              "Context Pipeline",
+              "组装版本化片段",
+            ),
+            node(
+              "usage",
+              795,
+              425,
+              300,
+              "使用记录与来源",
+              "片段 / 修订 / 本次采用依据",
+            ),
+            node(
+              "model",
+              430,
+              544,
+              300,
+              "原生模型请求",
+              "模型协议由 ModelProvider 处理",
+            ),
+            node(
+              "maintain",
+              65,
+              735,
+              300,
+              "后台记忆维护",
+              "任务结果 / 来源 / 独立模型配置",
+            ),
+            node(
+              "protect",
+              430,
+              735,
+              300,
+              "提交约束",
+              "范围 / 来源版本 / 用户保护 / 遗忘",
+            ),
+            node(
+              "revision",
+              795,
+              735,
+              300,
+              "不可变修订与冲突",
+              "依据充分时替代，依据不足时保留",
+            ),
+            node(
+              "store",
+              330,
+              922,
+              500,
+              "SQLite 中的同一记忆机制",
+              "Agent / 用户 / 项目作用域，修订与历史保留",
+            ),
+          ],
+          edges: [
+            ["M580 148V196H215V240"],
+            ["M580 196V240"],
+            ["M580 196H945V240"],
+            ["M215 318V370H580V425"],
+            ["M580 318V425"],
+            ["M945 318V370H580"],
+            ["M365 464H430"],
+            ["M730 464H795"],
+            ["M580 503V544"],
+            ["M365 774H430"],
+            ["M730 774H795"],
+            ["M945 813V878H580V922"],
+            ["M330 961H37V279H65"],
+          ],
+        },
+      };
+      let current = "overview",
+        scale = 1;
+      const stage = document.getElementById("stage");
+      const NS = "http://www.w3.org/2000/svg";
+      function element(tag, attrs = {}, text) {
+        const e = document.createElementNS(NS, tag);
+        for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+        if (text !== undefined) e.textContent = text;
+        return e;
+      }
+      function inspect(id) {
+        const detail = descriptions[id];
+        document.getElementById("detail-title").textContent = detail[0];
+        document.getElementById("detail-body").textContent = detail[1];
+        document.getElementById("detail-path").textContent = detail[2];
+        stage
+          .querySelectorAll(".node")
+          .forEach((n) => n.classList.toggle("selected", n.dataset.id === id));
+      }
+      function setScale(value) {
+        scale = Math.min(2, Math.max(0.8, value));
+        const svg = stage.querySelector("svg");
+        svg.style.width = Math.round(1160 * scale) + "px";
+        document.getElementById("zoom-label").textContent =
+          Math.round(scale * 100) + "%";
+      }
+      function fit() {
+        setScale((stage.clientWidth - 2) / 1160);
+      }
+      function draw(key) {
+        current = key;
+        const data = views[key];
+        document.getElementById("page-title").textContent = data.title;
+        document.getElementById("intro").textContent = data.intro;
+        document.getElementById("principle-title").textContent =
+          data.principle[0];
+        document.getElementById("principle-body").textContent =
+          data.principle[1];
+        document
+          .querySelectorAll("[data-view]")
+          .forEach((b) =>
+            b.setAttribute("aria-pressed", String(b.dataset.view === key)),
+          );
+        const svg = element("svg", {
+          viewBox: `0 0 1160 ${data.height}`,
+          role: "group",
+          "aria-label": data.title,
+        });
+        svg.append(element("title", {}, data.title));
+        svg.append(element("desc", {}, data.intro));
+        svg.append(element("style", {}, svgStyle));
+        const defs = element("defs");
+        const marker = element("marker", {
+          id: "arrow",
+          viewBox: "0 0 8 8",
+          refX: 7,
+          refY: 4,
+          markerWidth: 6,
+          markerHeight: 6,
+          orient: "auto-start-reverse",
+        });
+        marker.append(element("path", { d: "M0 0L8 4L0 8Z", fill: "#788d7a" }));
+        defs.append(marker);
+        svg.append(defs);
+        for (const [x, y, w, h, title] of data.groups) {
+          svg.append(
+            element("rect", {
+              x,
+              y,
+              width: w,
+              height: h,
+              rx: 9,
+              class: "group",
+            }),
+          );
+          svg.append(
+            element(
+              "text",
+              { x: x + 18, y: y + 27, class: "group-title" },
+              title,
+            ),
+          );
+        }
+        for (const [d] of data.edges)
+          svg.append(element("path", { d, class: "edge" }));
+        for (const n of data.nodes) {
+          const g = element("g", {
+            class: "node" + (n.pending ? " pending" : ""),
+            transform: `translate(${n.x},${n.y})`,
+            tabindex: 0,
+            role: "button",
+            "aria-label": n.title,
+            "data-id": n.id,
+          });
+          g.append(element("title", {}, descriptions[n.id][1]));
+          g.append(element("rect", { width: n.w, height: n.h }));
+          g.append(element("text", { x: 14, y: 31, class: "name" }, n.title));
+          g.append(element("text", { x: 14, y: 56, class: "sub" }, n.sub));
+          g.addEventListener("click", () => inspect(n.id));
+          g.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              inspect(n.id);
+            }
+          });
+          svg.append(g);
+        }
+        stage.replaceChildren(svg);
+        stage.scrollTop = 0;
+        stage.scrollLeft = 0;
+        fit();
+        inspect(data.default);
+      }
+      document
+        .querySelectorAll("[data-view]")
+        .forEach((button) =>
+          button.addEventListener("click", () => draw(button.dataset.view)),
+        );
+      document
+        .getElementById("zoom-in")
+        .addEventListener("click", () => setScale(scale + 0.15));
+      document
+        .getElementById("zoom-out")
+        .addEventListener("click", () => setScale(scale - 0.15));
+      document.getElementById("fit").addEventListener("click", fit);
+      document
+        .getElementById("print")
+        .addEventListener("click", () => window.print());
+      draw(current);
+    </script>
+  </body>
+</html>

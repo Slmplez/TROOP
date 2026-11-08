@@ -1,0 +1,326 @@
+use serde::Deserialize;
+use serde_json::{json, Value};
+
+pub mod lifecycle;
+pub mod schedule;
+
+pub const VERSION: u32 = 10;
+pub const MAX_FRAME: usize = 65_536;
+pub const METHODS: &[&str] = &[
+    "followups.preview",
+    "followups.list",
+    "followups.get",
+    "followups.history",
+    "followups.save",
+    "followups.request",
+    "followups.run",
+    "followups.set_enabled",
+    "followups.cancel",
+    "schedules.set_enabled",
+    "schedules.preview",
+    "schedules.get",
+    "schedules.history",
+    "schedules.run",
+    "schedules.cancel",
+    "notifications.pending",
+    "reminders.run",
+    "reminders.get",
+    "reminders.history",
+    "reminders.cancel",
+    "notifications.list",
+    "notifications.preferences",
+    "notifications.preferences.save",
+    "notifications.claim",
+    "notifications.complete",
+    "notifications.read",
+    "reminders.preview",
+    "topics.save",
+    "topics.member",
+    "topics.archive",
+    "topics.create",
+    "topics.get",
+    "topics.list",
+    "groups.list",
+    "groups.executor.get",
+    "groups.executor.preview",
+    "groups.executor.save",
+    "groups.chain",
+    "groups.stop_chain",
+    "groups.get",
+    "groups.preview",
+    "groups.save",
+    "groups.archive",
+    "groups.member",
+    "groups.send",
+    "groups.messages",
+    "groups.deliveries",
+    "groups.resolve_delivery",
+    "work_items.list",
+    "work_items.get",
+    "work_items.save",
+    "work_items.archive",
+    "work_items.runs",
+    "work_items.preview",
+    "work_items.start",
+    "work_items.accept",
+    "work_items.cancel",
+    "cli.interactions",
+    "cli.preview",
+    "cli.interaction",
+    "cli.start",
+    "cli.review",
+    "cli.respond",
+    "events.recheck",
+    "events.records",
+    "events.health",
+    "events.sources",
+    "events.inbox",
+    "events.payload",
+    "events.source.save",
+    "memory.maintenance.get",
+    "memory.maintenance.save",
+    "engines.capabilities",
+    "engines.list",
+    "rules.list",
+    "rules.get",
+    "rules.history",
+    "rules.save",
+    "rules.simulate",
+    "authorizations.list",
+    "authorizations.get",
+    "authorizations.history",
+    "authorizations.evaluate",
+    "authorizations.save",
+    "authorizations.revoke",
+    "system.hello",
+    "operations.execute",
+    "operations.get",
+    "mcp.list",
+    "mcp.get",
+    "mcp.save",
+    "mcp.remove",
+    "mcp.revisions",
+    "mcp.preview",
+    "mcp.import",
+    "mcp.oauth.begin",
+    "mcp.oauth.status",
+    "mcp.oauth.cancel",
+    "mcp.oauth.refresh",
+    "mcp.oauth.disconnect",
+    "skills.list",
+    "skills.preview",
+    "skills.import",
+    "skills.get",
+    "skills.versions",
+    "skills.enable",
+    "skills.remove",
+    "skills.edit",
+    "skills.refresh",
+    "hooks.list",
+    "hooks.definition",
+    "hooks.save",
+    "hooks.remove",
+    "hooks.calls",
+    "hooks.call",
+    "hooks.reconcile",
+    "system.ping",
+    "system.shutdown",
+    "workspace.list",
+    "workspace.add",
+    "workspace.rename",
+    "workspace.remove",
+    "provider.list",
+    "provider.save",
+    "provider.remove",
+    "chat.list",
+    "chat.create",
+    "chat.remove",
+    "chat.messages",
+    "chat.send",
+    "chat.cancel",
+    "agent.list",
+    "agent.mcp-catalogue",
+    "agent.mcp-sessions",
+    "agent.mcp-reconcile",
+    "agent.mcp-artifact",
+    "agent.get",
+    "agent.follow",
+    "agent.follow-content",
+    "agent.content",
+    "agent.events",
+    "agent.event",
+    "agent.invocation",
+    "agent.start",
+    "agent.cancel",
+    "agent.approve",
+    "agent.steer",
+    "agent.reconcile",
+    "agent.resume",
+    "memory.agents",
+    "memory.agent.save",
+    "memory.projects",
+    "memory.membership",
+    "memory.conflicts",
+    "memory.resolve",
+    "memory.usage",
+    "memory.history",
+    "memory.list",
+    "memory.restore",
+    "memory.write",
+    "memory.edit",
+    "memory.jobs",
+    "memory.job",
+    "memory.job.cancel",
+    "memory.job.retry",
+    "agent.compact",
+    "agent.checkpoints",
+    "agent.tasks",
+    "agent.task",
+    "agent.stop-task",
+    "agent.reconcile-task",
+];
+
+pub const OPERATION_COMMANDS: &[&str] = &[
+    "followups.save",
+    "followups.request",
+    "followups.run",
+    "followups.set_enabled",
+    "followups.cancel",
+    "schedules.set_enabled",
+    "schedules.run",
+    "schedules.cancel",
+    "reminders.run",
+    "reminders.cancel",
+    "notifications.preferences.save",
+    "notifications.claim",
+    "notifications.complete",
+    "notifications.read",
+    "topics.save",
+    "topics.member",
+    "topics.archive",
+    "topics.create",
+    "groups.executor.save",
+    "groups.stop_chain",
+    "groups.save",
+    "groups.archive",
+    "groups.member",
+    "groups.send",
+    "groups.resolve_delivery",
+    "work_items.start",
+    "work_items.accept",
+    "work_items.cancel",
+    "work_items.save",
+    "work_items.archive",
+    "cli.start",
+    "cli.review",
+    "cli.respond",
+    "events.recheck",
+    "memory.maintenance.save",
+    "rules.save",
+    "authorizations.save",
+    "authorizations.revoke",
+    "memory.membership",
+    "memory.resolve",
+    "memory.restore",
+    "memory.write",
+    "memory.edit",
+    "skills.import",
+    "skills.enable",
+    "skills.remove",
+    "skills.edit",
+    "skills.refresh",
+    "hooks.reconcile",
+    "agent.mcp-reconcile",
+    "workspace.add",
+    "workspace.rename",
+    "workspace.remove",
+    "agent.start",
+    "agent.cancel",
+    "agent.approve",
+    "agent.steer",
+    "agent.reconcile",
+    "agent.resume",
+    "agent.stop-task",
+    "agent.reconcile-task",
+    "agent.compact",
+];
+pub const EXTERNAL_OPERATION_COMMANDS: &[&str] = &[
+    "events.source.save",
+    "memory.agent.save",
+    "memory.job.cancel",
+    "memory.job.retry",
+    "hooks.save",
+    "hooks.remove",
+    "mcp.save",
+    "mcp.import",
+    "mcp.remove",
+    "provider.save",
+    "provider.remove",
+    "mcp.oauth.begin",
+    "mcp.oauth.cancel",
+    "mcp.oauth.refresh",
+    "mcp.oauth.disconnect",
+];
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct OperationRequest {
+    pub operation_id: String,
+    pub instance_id: String,
+    pub method: String,
+    pub input: Value,
+    pub expected_revision: Option<i64>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct OperationQuery {
+    pub operation_id: String,
+    pub instance_id: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Request {
+    pub jsonrpc: String,
+    pub id: String,
+    pub method: String,
+    #[serde(default)]
+    pub params: Value,
+    pub generation: Option<String>,
+}
+impl Request {
+    pub fn validate(&self) -> Result<(), &'static str> {
+        if self.jsonrpc != "2.0" {
+            return Err("JSON-RPC version must be 2.0");
+        }
+        if self.id.is_empty() || self.id.len() > 128 {
+            return Err("Invalid request ID");
+        }
+        Ok(())
+    }
+}
+pub fn result(id: &str, generation: &str, value: Value) -> Value {
+    json!({"jsonrpc":"2.0","id":id,"result":{"generation":generation,"value":value}})
+}
+pub fn error(id: Value, generation: &str, code: i32, kind: &str, message: &str) -> Value {
+    json!({"jsonrpc":"2.0","id":id,"error":{"code":code,"message":message,"data":{"kind":kind,"generation":generation}}})
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn unknown_envelope_fields_are_rejected() {
+        assert!(serde_json::from_value::<Request>(
+            json!({"jsonrpc":"2.0","id":"x","method":"system.ping","command":"unexpected"})
+        )
+        .is_err());
+    }
+    #[test]
+    fn request_ids_are_bounded() {
+        let request: Request = serde_json::from_value(
+            json!({"jsonrpc":"2.0","id":"x".repeat(129),"method":"system.ping"}),
+        )
+        .unwrap();
+        assert!(request.validate().is_err());
+    }
+}

@@ -1,4 +1,7 @@
 node_modules/
+/target/
+/apps/desktop/bin/
+/apps/desktop/dist/
 !offline/vendor/node/win32-x64/node_modules/
 !offline/vendor/node/win32-x64/node_modules/**
 /.cache/
