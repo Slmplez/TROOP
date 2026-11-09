@@ -157,6 +157,14 @@ npm --prefix apps/desktop run smoke:mcp-management
 
 公开验收使用自有 loopback HTTP/SSE 服务、SQLite、Windows 进程和 Electron，覆盖模型网关、任务、记忆、Skills/Workflows 与 Hooks。验证结果分别见 docs/implementation 中的版本记录；其他环境的配置与运行资料不在公开文档范围。MCP 真实服务兼容、调度、签名安装包及长期负载仍待后续开发或验证。Windows 保持单屏基线，Docker 与整体 UI 优化继续暂停。
 
+### Windows 完整回归 CI
+
+GitHub Actions 在 Windows runner 上安装锁定依赖、准备固定 MXC、构建 Core 和协议程序，然后执行 `npm --prefix apps/desktop run test:ci`。所有 `test/*.test.cjs` 文件串行执行，测试失败保留非零退出码并阻断后续打包。
+
+`verification/desktop-ci/` 保存 JUnit 结果、`skips.jsonl` 和运行环境。跳过记录包含名称、源码位置和测试提供的原因。显式跳过但未提供原因的历史案例会单独注明，包含已退出当前四 CLI 范围的旧引擎案例。文件级与全局统计分别保留，最终无 `file` 字段的 summary 为总计。报告随 Windows 包工作流的 artifact 上传，失败时也保留已生成报告。
+
+镜像来源作业独立验证 Public ECR 固定 manifest、config 摘要、大小、平台和入口。重定向仅接纳登记的两个 HTTPS CloudFront 主机，CDN 请求使用无凭据的新请求。来源校验器或固定镜像定义变化会触发同一工作流。
+
 ### MCP 资料库开发接口
 
 0.8.0 已完成 Core 的 MCP 配置资料库、导入预览、修订与系统凭据；OAuth 和 Agent 工具已分别由 0.9/0.10 接入；MCP 管理页已由 0.10.1 接入。资料库管理不会连接远端或启动配置命令。详见[资料库规格与验收](../../docs/implementation/TROOP_MCP_LIBRARY.md)。

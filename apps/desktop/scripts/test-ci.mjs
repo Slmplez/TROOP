@@ -7,6 +7,9 @@ import { fileURLToPath } from "node:url";
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const reportDirectory = path.resolve(app, "../../verification/desktop-ci");
 fs.mkdirSync(reportDirectory, { recursive: true });
+for (const name of ["desktop.junit.xml", "skips.jsonl"]) {
+  fs.rmSync(path.join(reportDirectory, name), { force: true });
+}
 const tests = fs
   .readdirSync(path.join(app, "test"))
   .filter((name) => name.endsWith(".test.cjs"))
