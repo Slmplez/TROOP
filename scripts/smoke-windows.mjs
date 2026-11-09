@@ -989,7 +989,7 @@ export async function startHarnessServers(secretCanary, { gatewayPort = 1340 } =
 }
 
 async function buildStrictFakeDocker(temporary) {
-  const project = path.join(import.meta.dirname, "fixtures", "windows-fake-docker", "FakeDocker.csproj");
+  const project = path.join(import.meta.dirname, "windows-smoke-fixture", "FakeDocker.csproj");
   const output = path.join(temporary, "fake-docker");
   await mkdir(output, { recursive: true });
   try {

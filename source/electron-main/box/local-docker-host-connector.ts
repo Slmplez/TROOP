@@ -390,7 +390,7 @@ async function inspectControlVolume(
     const value = JSON.parse(result.output) as { Driver?: unknown; Labels?: Record<string, unknown> };
     return {
       exists: true,
-      owned: value.Labels?.["com.grok-bot.local-vm.control"] === "1",
+      owned: value.Labels?.["com.grok-bot.local-vm-control"] === "1",
       driver: typeof value.Driver === "string" ? value.Driver : "",
     };
   } catch { throw new Error("Docker returned malformed control-volume inspection data."); }
