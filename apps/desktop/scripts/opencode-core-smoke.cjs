@@ -9,6 +9,8 @@ async function main() {
   const native = !process.argv.includes("--text");
   const real = process.argv.includes("--real");
   const manual = process.argv.includes("--manual");
+  const capabilityCheck = process.argv.includes("--capability-check");
+  assert.ok(!capabilityCheck || (real && manual && native));
   const lifecycle = process.argv.includes("--lifecycle");
   assert.ok(!real || process.env.DEEPSEEK_API_KEY);
   assert.ok(!real || !lifecycle);
@@ -186,6 +188,8 @@ try {[IO.File]::WriteAllText(${quote(readonlyFile)},'bad');$scope.readonly_write
             request_sha256: request.request_sha256,
             answer: { kind: "permission", option_id: option.optionId },
           });
+          if (capabilityCheck && !request.allowed_actions.approve.allowed)
+            return { blockedApproval: true };
         }
       }
       const current = await h.get(run.run.id);
@@ -194,6 +198,19 @@ try {[IO.File]::WriteAllText(${quote(readonlyFile)},'bad');$scope.readonly_write
         ? current
         : false;
     }, 110000);
+    if (value.blockedApproval) {
+      assert.equal(fs.existsSync(path.join(h.workspace, "result.txt")), false);
+      await h.core.stop();
+      await h.core.start();
+      const restored = await h.get(run.run.id);
+      assert.equal(restored.allowed_actions.resume.allowed, false);
+      assert.equal(fs.existsSync(path.join(h.workspace, "result.txt")), false);
+      report.checks = [
+        "Real ACP request without complete parameters keeps approval blocked; explicit rejection, shutdown and restart preserve the execution fence",
+      ];
+      report.passed = true;
+      return;
+    }
     report.run = value;
     const task = await h.core.request("agent.task", { id: run.task_id });
     report.task = task;
@@ -351,9 +368,11 @@ try {[IO.File]::WriteAllText(${quote(readonlyFile)},'bad');$scope.readonly_write
     fs.writeFileSync(
       path.join(
         destination,
-        lifecycle
-          ? "mock-lifecycle.json"
-          : `${real ? "real" : "mock"}-${manual ? "manual" : native ? "native" : "text"}.json`,
+        capabilityCheck
+          ? "real-approval-capability.json"
+          : lifecycle
+            ? "mock-lifecycle.json"
+            : `${real ? "real" : "mock"}-${manual ? "manual" : native ? "native" : "text"}.json`,
       ),
       JSON.stringify(report, null, 2),
     );

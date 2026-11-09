@@ -18,7 +18,11 @@ const folder = fs.mkdtempSync(path.join(root, ".tmp-troop-followups/host-"));
 const healthFile = path.join(folder, "health.json"),
   configFile = path.join(folder, "host.json"),
   executable = path.join(folder, coreBinary);
-fs.copyFileSync(path.join(root, "apps/desktop/bin", coreBinary), executable);
+fs.copyFileSync(
+  process.env.TROOP_SOAK_CORE ??
+    path.join(root, "apps/desktop/bin", coreBinary),
+  executable,
+);
 let supervisor;
 const hosts = new Set(),
   report = { passed: false, duration_target_ms: duration, checks: [] };
@@ -57,6 +61,7 @@ async function main() {
     health_file: healthFile,
     health_interval_ms: 1000,
   };
+  report.core_sha256 = config.core_sha256;
   fs.writeFileSync(configFile, JSON.stringify(config));
   const started = Date.now();
   let buffer = "";
