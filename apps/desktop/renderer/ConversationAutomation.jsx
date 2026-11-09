@@ -101,19 +101,42 @@ export default function ConversationAutomation({
       {draft?.rule && (
         <>
           <p>
-            {draft.rule.kind === "reminder" ? "纯提醒" : "定时执行"} ·{" "}
-            {draft.rule.name}
+            {draft.rule.kind === "reminder" ? "纯提醒" : "原生 Agent 定时执行"}{" "}
+            · {draft.rule.name}
           </p>
           <p>
             Agent {draft.rule.agent_id} · 项目{" "}
             {draft.rule.project_id ?? "个人范围"} ·{" "}
-            {draft.rule.schedule.timezone} · {draft.rule.schedule.kind}
+            {draft.rule.schedule.timezone} ·{" "}
+            {
+              { once: "一次性", daily: "每天", weekly: "每周" }[
+                draft.rule.schedule.kind
+              ]
+            }
           </p>
           <p>{draft.rule.body ?? draft.rule.start.goal}</p>
+          {draft.preview.plan && (
+            <details>
+              <summary>执行权限与资料范围</summary>
+              <pre>{JSON.stringify(draft.preview.plan, null, 2)}</pre>
+              {(grants.data?.items ?? []).find((item) => item.id === grant)
+                ?.expires_at && (
+                <p>
+                  授权有效期{" "}
+                  {new Date(
+                    grants.data.items.find((item) => item.id === grant)
+                      .expires_at * 1000,
+                  ).toISOString()}
+                </p>
+              )}
+            </details>
+          )}
+          <p>重复时刻触发一次，夏令时缺失或错过的触发跳过并保留记录。</p>
           <ul>
             {draft.preview.slots.map((slot) => (
               <li key={slot.slot_key}>
                 {slot.local_date} {slot.local_time} · {slot.timezone}
+                {slot.state === "dst_gap" && " · 该时刻不存在，将跳过"}
               </li>
             ))}
           </ul>
@@ -141,7 +164,14 @@ export default function ConversationAutomation({
           <ul>
             {(history.data?.items ?? []).map((item) => (
               <li key={item.id}>
-                {item.state ?? item.reason}{" "}
+                {{
+                  dispatched: "已派发",
+                  triggered: "已触发",
+                  skipped: "已跳过",
+                  blocked: "已阻断",
+                }[item.state] ??
+                  item.reason ??
+                  item.state}{" "}
                 {item.run_id && (
                   <>
                     <button onClick={() => onOpenRun(item.run_id)}>

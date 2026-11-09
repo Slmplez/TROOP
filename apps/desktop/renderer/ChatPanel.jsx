@@ -86,24 +86,15 @@ export default function ChatPanel({
     setProvider(sessions.find((s) => s.id === id)?.provider_id ?? "");
     pendingSend.current = null;
   }
-  async function create() {
-    setBusy(true);
-    setError("");
-    try {
-      const chat = await clientModels.command("chat.create", {
-        title: "新对话",
-        workspace_id: workspace ? Number(workspace) : null,
-        agent_id: agentId,
-        project_id: projectId || null,
-      });
-      await loadSessions();
-      setSelected(chat.id);
-      pendingSend.current = null;
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
+  function create() {
+    if (current) {
+      setAgentId(current.agent_id ?? 1);
+      setProjectId(current.project_id ?? "");
+      setWorkspace(current.workspace_id ? String(current.workspace_id) : "");
     }
+    setSelected(null);
+    pendingSend.current = null;
+    setError("");
   }
   async function send(event) {
     event?.preventDefault();
@@ -383,7 +374,7 @@ export default function ChatPanel({
                           if (view.current.selected !== selected) return;
                           setDrafts((old) => ({
                             ...old,
-                            [selected]: `${old[selected] ?? ""}\n\n请基于自动化 ${result.rule_id} 执行 #${result.run_id} 的${result.truncated ? "结果节选" : "结果"}继续处理。来源摘要 ${result.sha256}\n${result.content}\n后续要求：`,
+                            [selected]: `${old[selected] ?? ""}\n\n请基于自动化 ${result.rule_id} 执行 #${result.run_id} 的${result.truncated ? "结果节选" : "结果"}继续处理。来源摘要 ${result.sha256}\n${result.content}\n请补充后续要求。`,
                           }));
                           setAutomation(false);
                         }}

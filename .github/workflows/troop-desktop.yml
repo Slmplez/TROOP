@@ -60,6 +60,7 @@ jobs:
           cargo build --offline --locked -p troop-core --examples
           npm --prefix apps/desktop run build
           npm --prefix apps/desktop run test:ci
+          node apps/desktop/scripts/conversation-automations-smoke.mjs
           npm --prefix apps/desktop run package:windows
           node apps/desktop/scripts/portable-smoke.mjs
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
