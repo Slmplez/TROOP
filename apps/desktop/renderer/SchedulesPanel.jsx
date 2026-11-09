@@ -81,7 +81,15 @@ const phaseLabel = {
 };
 const slotLabel = (slot) =>
   `${slot.local_date} ${slot.local_time} · ${slot.timezone}${slot.state === "dst_gap" ? " · 缺失时刻，跳过" : ""}`;
-export default function SchedulesPanel({ ready, workspaces = [], onOpenRun }) {
+export default function SchedulesPanel({
+  ready,
+  workspaces = [],
+  onOpenRun,
+  openAutomation,
+}) {
+  useEffect(() => {
+    if (openAutomation?.kind === "scheduled") edit(openAutomation);
+  }, [openAutomation]);
   const [draft, setDraft] = useState(() => restore(workspaces)),
     [offset, setOffset] = useState(0),
     [preview, setPreview] = useState(null),

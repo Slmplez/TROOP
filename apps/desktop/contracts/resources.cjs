@@ -2052,5 +2052,41 @@ module.exports = ({ object: o, array: a, oneOf: e, method: m }) => {
     o({ accepted: "boolean" }),
     true,
   );
+  add(
+    "automations.preview",
+    "automationPreview",
+    o({ turn_id: "id", "authorization_id?": "string|null" }),
+    o({
+      id: "string",
+      source_sha256: "string",
+      rule: "json",
+      preview: "json",
+      registered: "json",
+    }),
+  );
+  add(
+    "automations.confirm",
+    "automationConfirm",
+    o({
+      turn_id: "id",
+      "authorization_id?": "string|null",
+      source_sha256: "string",
+      "expected_plan_sha256?": "string|null",
+    }),
+    "json",
+    true,
+  );
+  add(
+    "automations.result",
+    "automationResult",
+    o({ turn_id: "id", run_id: "id" }),
+    o({
+      run_id: "id",
+      rule_id: "string",
+      sha256: "string",
+      content: "string",
+      truncated: "boolean",
+    }),
+  );
   return { types, methods };
 };

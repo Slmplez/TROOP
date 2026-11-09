@@ -240,10 +240,10 @@ try {
   assert.equal(retained.goal, work.goal);
   await quit(running.evaluate, running.status.pid);
   const upgraded = new DatabaseSync(database, { readOnly: true });
-  assert.equal(upgraded.prepare("PRAGMA user_version").get().user_version, 30);
+  assert.equal(upgraded.prepare("PRAGMA user_version").get().user_version, 31);
   upgraded.close();
   report.checks.push(
-    "Production entry migrates a schema-29 fixture to schema 30 while retaining its work item and workspace; application quit leaves no Core process",
+    "Production entry migrates a schema-29 fixture to schema 31 while retaining its work item and workspace; application quit leaves no Core process",
   );
   if (process.env.TROOP_PREVIOUS_CORE) {
     upstream = await require("../test/fixtures/model-server.cjs").modelServer();
@@ -316,7 +316,7 @@ try {
       version: previous.version,
       sha256: previous.sha256,
       schema_before: schema,
-      schema_after: 30,
+      schema_after: 31,
       retained_messages: previous.messages.length,
       retained_credentials_used: true,
     };

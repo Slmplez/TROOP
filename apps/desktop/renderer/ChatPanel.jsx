@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { clientModels, useClientModel } from "./client/react";
+import ConversationAutomation from "./ConversationAutomation";
 const statuses = {
   streaming: "正在生成",
   completed: "已完成",
@@ -15,7 +16,14 @@ export default function ChatPanel({
   workspaces,
   onOpenModels,
   visible,
+  onManageAutomation,
+  onOpenRun,
+  onOpenAuthorizations,
 }) {
+  const [automation, setAutomation] = useState(false);
+  const [agentId, setAgentId] = useState(1);
+  const [projectId, setProjectId] = useState("");
+  const agents = useClientModel(clientModels.agents(), ready && visible);
   const [selected, setSelected] = useState(null),
     [provider, setProvider] = useState(""),
     [workspace, setWorkspace] = useState(""),
@@ -42,6 +50,12 @@ export default function ChatPanel({
     actionError || messageState.error?.message || sessionState.error?.message;
   const current = sessions.find((s) => s.id === selected),
     draft = drafts[selected ?? "new"] ?? "";
+  const projects = useClientModel(
+    clientModels.resource("memory.projects", {
+      agent_id: current?.agent_id ?? agentId,
+    }),
+    ready && visible,
+  );
   const active = messages.find(
     (m) => m.role === "assistant" && m.status === "streaming",
   );
@@ -79,6 +93,8 @@ export default function ChatPanel({
       const chat = await clientModels.command("chat.create", {
         title: "新对话",
         workspace_id: workspace ? Number(workspace) : null,
+        agent_id: agentId,
+        project_id: projectId || null,
       });
       await loadSessions();
       setSelected(chat.id);
@@ -104,6 +120,8 @@ export default function ChatPanel({
         const chat = await clientModels.command("chat.create", {
           title: "新对话",
           workspace_id: workspace ? Number(workspace) : null,
+          agent_id: agentId,
+          project_id: projectId || null,
         });
         id = chat.id;
         setDrafts((old) => ({ ...old, [id]: text }));
@@ -114,15 +132,17 @@ export default function ChatPanel({
         last &&
         last.id === id &&
         last.text === text &&
+        last.automation === automation &&
         last.provider === provider
           ? last.client
           : crypto.randomUUID();
-      pendingSend.current = { id, text, provider, client };
+      pendingSend.current = { id, text, provider, client, automation };
       await clientModels.command("chat.send", {
         conversation_id: id,
         provider_id: provider,
         client_turn_id: client,
         text,
+        automation,
       });
       if (view.current.generation !== expected) return;
       setDrafts((old) => ({ ...old, [selected ?? "new"]: "", [id]: "" }));
@@ -349,6 +369,26 @@ export default function ChatPanel({
                   {message.error_message && (
                     <p className="message-problem">{message.error_message}</p>
                   )}
+                  {message.role === "assistant" &&
+                    message.status === "completed" &&
+                    message.content.includes('"troop_automation"') && (
+                      <ConversationAutomation
+                        key={message.turn_id}
+                        turnId={message.turn_id}
+                        ready={ready && visible}
+                        onManage={onManageAutomation}
+                        onOpenRun={onOpenRun}
+                        onOpenAuthorizations={onOpenAuthorizations}
+                        onContinue={(result) => {
+                          if (view.current.selected !== selected) return;
+                          setDrafts((old) => ({
+                            ...old,
+                            [selected]: `${old[selected] ?? ""}\n\n请基于自动化 ${result.rule_id} 执行 #${result.run_id} 的${result.truncated ? "结果节选" : "结果"}继续处理。来源摘要 ${result.sha256}\n${result.content}\n后续要求：`,
+                          }));
+                          setAutomation(false);
+                        }}
+                      />
+                    )}
                   {message.role === "assistant" && message.usage && (
                     <p className="message-usage">
                       输入 {message.usage.input_tokens ?? "—"} / 输出{" "}
@@ -376,6 +416,54 @@ export default function ChatPanel({
           </div>
           <form className="composer" onSubmit={send}>
             <div className="composer-options">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={automation}
+                  disabled={busy || Boolean(active)}
+                  onChange={(e) => setAutomation(e.target.checked)}
+                />
+                创建自动化草稿
+              </label>
+              {selected === null ? (
+                <>
+                  <select
+                    aria-label="负责 Agent"
+                    value={agentId}
+                    disabled={busy}
+                    onChange={(e) => {
+                      setAgentId(Number(e.target.value));
+                      setProjectId("");
+                    }}
+                  >
+                    {(agents.data ?? []).map((agent) => (
+                      <option key={agent.id} value={agent.id}>
+                        {agent.name}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    aria-label="对话项目"
+                    value={projectId}
+                    disabled={busy}
+                    onChange={(e) => setProjectId(e.target.value)}
+                  >
+                    <option value="">个人范围</option>
+                    {(projects.data ?? [])
+                      .filter((project) => project.joined)
+                      .map((project) => (
+                        <option key={project.slug} value={project.slug}>
+                          {project.name ?? project.slug}
+                        </option>
+                      ))}
+                  </select>
+                </>
+              ) : (
+                <span>
+                  Agent {current?.agent_id ?? 1} ·{" "}
+                  {current?.project_id ?? "个人范围"}
+                </span>
+              )}
               <label className="sr-only" htmlFor="chat-provider">
                 模型服务
               </label>

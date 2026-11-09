@@ -7,6 +7,8 @@ pub mod schedule;
 pub const VERSION: u32 = 10;
 pub const MAX_FRAME: usize = 65_536;
 pub const METHODS: &[&str] = &[
+    "automations.result",
+    "automations.confirm",
     "followups.preview",
     "followups.chain",
     "followups.list",
@@ -36,6 +38,7 @@ pub const METHODS: &[&str] = &[
     "notifications.claim",
     "notifications.complete",
     "notifications.read",
+    "automations.preview",
     "reminders.preview",
     "topics.save",
     "topics.member",
@@ -184,6 +187,7 @@ pub const METHODS: &[&str] = &[
 ];
 
 pub const OPERATION_COMMANDS: &[&str] = &[
+    "automations.confirm",
     "followups.save",
     "followups.request",
     "followups.run",

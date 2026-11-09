@@ -59,7 +59,7 @@ async function seedPreviousCore(executable, directory, origin) {
       protocol: 10,
       client: "troop-desktop",
     });
-    assert.notEqual(hello.core_version, "0.10.2");
+    assert.notEqual(hello.core_version, require("../../package.json").version);
     const workspace = path.join(path.dirname(directory), "legacy-workspace");
     fs.mkdirSync(workspace, { recursive: true });
     const wid = (await request("workspace.add", { path: workspace })).items[0]

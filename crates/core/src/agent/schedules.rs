@@ -292,6 +292,15 @@ impl Manager {
         input: Value,
         now: i64,
     ) -> Result<Value, OperationFailure> {
+        self.save_schedule_authored(store, input, now, json!({"kind":"desktop"}))
+    }
+    pub(super) fn save_schedule_authored(
+        &mut self,
+        store: &mut Store,
+        input: Value,
+        now: i64,
+        author: Value,
+    ) -> Result<Value, OperationFailure> {
         let request = params::<Save>(input)?;
         let id = request.id.unwrap_or_else(|| Uuid::new_v4().to_string());
         Uuid::parse_str(&id).map_err(|_| "定时规则身份无效。".to_owned())?;
@@ -332,12 +341,7 @@ impl Manager {
                 .work_item(id)
                 .map(|item| work::definition_revision(&item)))
             .transpose()?);
-        let saved = store.rule_save(
-            &id,
-            request.expected_revision,
-            rule,
-            json!({"kind":"desktop"}),
-        )?;
+        let saved = store.rule_save(&id, request.expected_revision, rule, author)?;
         state["next_slot"] = json!(next);
         state["watermark_ms"] = json!(anchor);
         state["rule_revision"] = saved["revision"].clone();

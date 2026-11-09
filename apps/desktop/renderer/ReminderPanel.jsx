@@ -71,7 +71,10 @@ function normalizedSchedule(schedule) {
     weekdays: schedule.kind === "weekly" ? schedule.weekdays : [],
   };
 }
-export default function ReminderPanel({ ready }) {
+export default function ReminderPanel({ ready, openAutomation }) {
+  useEffect(() => {
+    if (openAutomation?.kind === "reminder") edit(openAutomation);
+  }, [openAutomation]);
   const [draft, setDraft] = useState(restoreDraft),
     [offset, setOffset] = useState(0),
     [preview, setPreview] = useState(null),

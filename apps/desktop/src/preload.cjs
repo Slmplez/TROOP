@@ -278,6 +278,12 @@ contextBridge.exposeInMainWorld(
       call("troop:resource-events.payload", input),
     resourceeventRecheck: (input) =>
       call("troop:resource-events.recheck", input),
+    resourceautomationPreview: (input) =>
+      call("troop:resource-automations.preview", input),
+    resourceautomationConfirm: (input) =>
+      call("troop:resource-automations.confirm", input),
+    resourceautomationResult: (input) =>
+      call("troop:resource-automations.result", input),
     // END EXECUTION CONTRACT
     saveMemoryAgent: (input) => call("troop:memory-agent.save", input),
     listMemoryProjects: (agent_id) =>

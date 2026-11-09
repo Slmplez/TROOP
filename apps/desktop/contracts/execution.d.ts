@@ -171,6 +171,9 @@ export type Started = { run: Run; duplicate: boolean };
 export type Text = { text: string };
 export type Session = {
   id: number;
+  agent_id?: number;
+  project_id?: string | null;
+  workspace_id?: number | null;
   title: string;
   updated_at: string;
   provider_id: string | null;
@@ -190,12 +193,18 @@ export type Message = {
 };
 export type MessagePage = { items: Array<Message>; next_before: number | null };
 export type Messages = { conversation_id: number; before?: number | null };
-export type CreateSession = { title: string; workspace_id?: number | null };
+export type CreateSession = {
+  title: string;
+  workspace_id?: number | null;
+  agent_id?: number;
+  project_id?: string | null;
+};
 export type Send = {
   conversation_id: number;
   provider_id: string;
   client_turn_id: string;
   text: string;
+  automation?: boolean;
 };
 export type Turn = { turn_id: number };
 export type Removed = { removed: boolean };
@@ -2120,5 +2129,34 @@ export interface Requests {
   "events.recheck": {
     input: { source_id: string; expected_revision: number };
     output: { accepted: boolean };
+  };
+  "automations.preview": {
+    input: { turn_id: number; authorization_id?: string | null };
+    output: {
+      id: string;
+      source_sha256: string;
+      rule: unknown;
+      preview: unknown;
+      registered: unknown;
+    };
+  };
+  "automations.confirm": {
+    input: {
+      turn_id: number;
+      authorization_id?: string | null;
+      source_sha256: string;
+      expected_plan_sha256?: string | null;
+    };
+    output: unknown;
+  };
+  "automations.result": {
+    input: { turn_id: number; run_id: number };
+    output: {
+      run_id: number;
+      rule_id: string;
+      sha256: string;
+      content: string;
+      truncated: boolean;
+    };
   };
 }

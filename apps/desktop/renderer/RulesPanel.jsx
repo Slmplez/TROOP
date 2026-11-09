@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { clientModels, useClientModel } from "./client/react";
 import { resources } from "./client/resources";
 import { call } from "./api";
@@ -25,6 +25,12 @@ const empty = () => ({
 });
 export default function RulesPanel(props) {
   const [tab, setTab] = useState("events");
+  useEffect(() => {
+    if (props.openAutomation)
+      setTab(
+        props.openAutomation.kind === "scheduled" ? "schedules" : "reminders",
+      );
+  }, [props.openAutomation]);
   return (
     <>
       <div className="title-row" role="group" aria-label="规则类型">
@@ -61,10 +67,14 @@ export default function RulesPanel(props) {
         <EventRulesPanel {...props} />
       </div>
       <div hidden={tab !== "reminders"}>
-        <ReminderPanel ready={props.ready} />
+        <ReminderPanel
+          ready={props.ready}
+          openAutomation={props.openAutomation}
+        />
       </div>
       <div hidden={tab !== "schedules"}>
         <SchedulesPanel
+          openAutomation={props.openAutomation}
           ready={props.ready}
           workspaces={props.workspaces}
           onOpenRun={props.onOpenRun}

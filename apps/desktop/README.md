@@ -1,8 +1,8 @@
 # TROOP
 
-TROOP 0.10.2：Rust Core + Electron 桌面应用。提供模型服务配置、流式对话，以及 Windows 本机 Agent 任务、MCP 工具审批、执行账本、停止与核对恢复；支持工作项、群聊、定时执行和有限期持续跟进，保留工作区管理、托盘和单实例。
+TROOP 0.10.3，Rust Core + Electron 桌面应用。提供模型服务配置、流式对话，以及 Windows 本机 Agent 任务、MCP 工具审批、执行账本、停止与核对恢复。支持工作项、群聊、定时执行、有限期持续跟进和对话自动化草稿，保留工作区管理、托盘和单实例。
 
-开发任务：[本机 Agent 规格 #18](https://github.com/Slmplez/TROOP/issues/18)、[实现 #19](https://github.com/Slmplez/TROOP/issues/19)。网关与真实对话验收见 #13–#15，基础版本见 #11/#12。子代理与所属后台作业见[规格 #20](https://github.com/Slmplez/TROOP/issues/20)、[实现 #21](https://github.com/Slmplez/TROOP/issues/21)。记忆与上下文压缩见[规格 #22](https://github.com/Slmplez/TROOP/issues/22)、[实现 #23](https://github.com/Slmplez/TROOP/issues/23)。Skills 与工作流资料库见[实现 #25](https://github.com/Slmplez/TROOP/issues/25)；Windows Hooks 与模型端配方维护见[#26](https://github.com/Slmplez/TROOP/issues/26)、[#27](https://github.com/Slmplez/TROOP/issues/27)；MCP 接线见 [#46](https://github.com/Slmplez/TROOP/issues/46)，桌面管理见 [#47](https://github.com/Slmplez/TROOP/issues/47)，真实服务验收见 #48；自动化留待后续开发。启动不需要 Docker 或产品账号；发送模型请求需要配置你使用的服务。
+开发任务：[本机 Agent 规格 #18](https://github.com/Slmplez/TROOP/issues/18)、[实现 #19](https://github.com/Slmplez/TROOP/issues/19)。网关与真实对话验收见 #13–#15，基础版本见 #11/#12。子代理与所属后台作业见[规格 #20](https://github.com/Slmplez/TROOP/issues/20)、[实现 #21](https://github.com/Slmplez/TROOP/issues/21)。记忆与上下文压缩见[规格 #22](https://github.com/Slmplez/TROOP/issues/22)、[实现 #23](https://github.com/Slmplez/TROOP/issues/23)。Skills 与工作流资料库见[实现 #25](https://github.com/Slmplez/TROOP/issues/25)；Windows Hooks 与模型端配方维护见[#26](https://github.com/Slmplez/TROOP/issues/26)、[#27](https://github.com/Slmplez/TROOP/issues/27)；MCP 接线见 [#46](https://github.com/Slmplez/TROOP/issues/46)，桌面管理见 [#47](https://github.com/Slmplez/TROOP/issues/47)，真实服务验收见 #48。对话创建自动化复用当前规则与调度入口。启动不需要 Docker 或产品账号；发送模型请求需要配置你使用的服务。
 
 ## 本机启动
 
@@ -164,3 +164,9 @@ npm --prefix apps/desktop run smoke:mcp-management
 ### MCP OAuth 开发接口
 
 0.9.0 已完成 Core 的 OAuth 登录、刷新与撤销：PKCE/loopback、系统凭据、取消和中断恢复。当前通过自有授权服务验收；0.10 已接入 MCP Agent 工具；浏览器入口已由 0.10.1 接入，第三方真实服务与默认浏览器兼容仍待 #48。详见[OAuth 规格与验收](../../docs/implementation/TROOP_MCP_OAUTH.md)。
+
+## 对话创建自动化
+
+新建对话时选择负责 Agent、可选项目和工作区。勾选“创建自动化草稿”后交办提醒或定时目标，信息不足时继续补充。模型生成的草稿只作为提议。点击“预览时间与范围”，核对固定时区、重复规则和未来槽位，再明确确认登记。定时执行还需选择已有范围授权并确认当前权限计划。
+
+同一回复使用固定规则身份，重复确认和重启重提保留一份规则。原聊天可查看登记状态和近期运行历史，跳转管理页修改、暂停或取消，并选择已完成结果引用到后续对话。较长结果明确标为节选，保留完整内容摘要和执行入口。对话的 Agent、项目和工作区持久保存，项目成员撤销后阻断登记与结果引用。
