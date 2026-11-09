@@ -6,6 +6,7 @@
   "main": "src/entry.cjs",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "package:windows": "node scripts/package-windows.mjs",
     "contracts:generate": "node scripts/generate-client-contract.mjs",
     "contracts:check": "node scripts/generate-client-contract.mjs --check",
     "start": "node scripts/start.mjs",
