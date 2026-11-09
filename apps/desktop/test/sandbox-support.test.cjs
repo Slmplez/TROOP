@@ -1,8 +1,99 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
+const path = require("node:path");
+const { spawnSync } = require("node:child_process");
 const { support } = require("./fixtures/sandbox-support.cjs");
 const { setup } = require("./fixtures/hooks-fixture.cjs");
+
+test(
+  "only documented successful MXC probe outcomes can describe capability availability",
+  {
+    skip:
+      process.platform !== "win32" || process.arch !== "x64"
+        ? "Windows x64 probe validation"
+        : false,
+  },
+  () => {
+    const fixture = path.resolve(__dirname, "fixtures/sandbox-support.cjs");
+    for (const capabilities of [
+      { tier: "base-container" },
+      { tier: "appcontainer-bfs" },
+      { tier: "appcontainer-dacl" },
+      {
+        probes: { baseContainerApiPresent: false },
+        error: "DACL fallback required but fallback.allowDaclMutation is false",
+      },
+    ]) {
+      const child = spawnSync(
+        process.execPath,
+        [
+          "-e",
+          `
+const assert = require('node:assert/strict');
+require('node:child_process').spawnSync = () => ({status:0, stdout:${JSON.stringify(JSON.stringify(capabilities))}});
+const support = require(${JSON.stringify(fixture)}).support;
+assert.equal(support.available, ${capabilities.tier === "base-container"});
+assert.equal(Boolean(support.reason), ${capabilities.tier !== "base-container"});
+`,
+        ],
+        { encoding: "utf8", windowsHide: true, timeout: 10000 },
+      );
+      assert.equal(child.status, 0, child.stderr);
+    }
+  },
+);
+
+test(
+  "failed and unknown MXC probe results cannot become normal capability skips",
+  {
+    skip:
+      process.platform !== "win32" || process.arch !== "x64"
+        ? "Windows x64 probe validation"
+        : false,
+  },
+  () => {
+    const fixture = path.resolve(__dirname, "fixtures/sandbox-support.cjs");
+    for (const result of [
+      { status: 1, stdout: '{"tier":"base-container"}' },
+      { status: 1, stdout: '{"tier":"appcontainer-dacl"}' },
+      { status: null, stdout: '{"tier":"base-container"}' },
+      { status: 0, stdout: '{"tier":"unknown"}' },
+      {
+        status: 0,
+        stdout:
+          '{"error":"unexpected failure","probes":{"baseContainerApiPresent":false}}',
+      },
+      {
+        status: 0,
+        stdout: '{"tier":"base-container","error":"unexpected failure"}',
+      },
+      {
+        status: 0,
+        stdout:
+          '{"error":"DACL fallback required but fallback.allowDaclMutation is false","probes":{"baseContainerApiPresent":true}}',
+      },
+    ]) {
+      const child = spawnSync(
+        process.execPath,
+        [
+          "-e",
+          `
+require('node:child_process').spawnSync = () => (${JSON.stringify(result)});
+try { require(${JSON.stringify(fixture)}); process.exitCode = 2; }
+catch (error) { process.exitCode = /probe/i.test(error.message) ? 0 : 3; }
+`,
+        ],
+        { encoding: "utf8", windowsHide: true, timeout: 10000 },
+      );
+      assert.equal(
+        child.status,
+        0,
+        JSON.stringify({ result, stderr: child.stderr }),
+      );
+    }
+  },
+);
 
 test(
   "Core refuses a scoped Shell grant on a host without verified BaseContainer support",

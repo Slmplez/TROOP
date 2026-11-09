@@ -37,11 +37,28 @@ function probe() {
     maxBuffer: 65536,
   });
   if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(
+      `MXC capability probe exited abnormally (${result.status})`,
+    );
+  }
   const capabilities = JSON.parse(result.stdout);
-  if (typeof capabilities.tier !== "string")
-    throw new Error("MXC capability probe has no tier");
-  const available =
-    result.status === 0 && capabilities.tier === "base-container";
+  const knownTier =
+    ["base-container", "appcontainer-bfs", "appcontainer-dacl"].includes(
+      capabilities.tier,
+    ) && capabilities.error === undefined;
+  // The fixed SDK omits tier when this policy cannot use a fallback backend.
+  const unavailableWithoutFallback =
+    capabilities.tier === undefined &&
+    capabilities.probes?.baseContainerApiPresent === false &&
+    capabilities.error ===
+      "DACL fallback required but fallback.allowDaclMutation is false";
+  if (!knownTier && !unavailableWithoutFallback) {
+    throw new Error(
+      "MXC capability probe returned an unknown tier or detector error",
+    );
+  }
+  const available = capabilities.tier === "base-container";
   return {
     available,
     runtime_present: true,
@@ -50,7 +67,7 @@ function probe() {
     capabilities,
     reason: available
       ? null
-      : `Host MXC probe reports tier ${capabilities.tier}, exit ${result.status}; verified BaseContainer is required`,
+      : `Host MXC probe reports ${capabilities.tier ?? "BaseContainer unavailable and DACL fallback disabled"}; verified BaseContainer is required`,
   };
 }
 
