@@ -287,7 +287,7 @@ async function launchPortable(verified, environment, userDataDir, logs, onLaunch
 async function openRouterSettings(cdp) {
   return await waitForRendererState(
     cdp,
-    `(() => { const visible = node => node.isConnected && node.getClientRects().length > 0 && !node.disabled; const candidates = [...document.querySelectorAll('button,[role="button"]')]; const configure = candidates.find(node => visible(node) && (/^configure proxy-gateway$/i.test((node.textContent ?? '').trim()) || /^configure proxy-gateway$/i.test(node.getAttribute('aria-label') ?? ''))); configure?.click(); return { clicked: configure != null, controls: candidates.filter(visible).map(node => [node.textContent?.trim(), node.getAttribute('aria-label')].filter(Boolean).join(' | ')).filter(Boolean).slice(0, 60) }; })()`,
+    `(() => { const visible = node => node.isConnected && node.getClientRects().length > 0 && !node.disabled; const candidates = [...document.querySelectorAll('button,[role="button"]')]; const configure = candidates.find(node => visible(node) && (/^configure proxy[- ]gateway$/i.test((node.textContent ?? '').trim()) || /^configure proxy[- ]gateway$/i.test(node.getAttribute('aria-label') ?? ''))); configure?.click(); return { clicked: configure != null, controls: candidates.filter(visible).map(node => [node.textContent?.trim(), node.getAttribute('aria-label')].filter(Boolean).join(' | ')).filter(Boolean).slice(0, 60) }; })()`,
     value => value?.clicked === true,
     "Fresh isolated profile did not expose the credential-independent Proxy Gateway setup",
   );

@@ -267,6 +267,7 @@ test("consistent online backup restores Inbox and source credential identities i
       secrets: {
         webhook_secret: "owned-deployment-webhook-secret",
         consumer_token: "owned-deployment-consumer-token",
+        api_token: "owned-deployment-api-token",
       },
     },
   });
@@ -346,7 +347,7 @@ test("consistent online backup restores Inbox and source credential identities i
       ).status,
       503,
     );
-    const rebound = await recovered.control("operations.execute", {
+    const rebind = {
       operation_id: crypto.randomUUID(),
       instance_id: first.instance_id,
       method: "events.source.save",
@@ -366,9 +367,18 @@ test("consistent online backup restores Inbox and source credential identities i
         secrets: {
           webhook_secret: "owned-rebound-webhook-secret",
           consumer_token: "owned-rebound-consumer-token",
+          api_token: "owned-rebound-api-token",
         },
       },
-    });
+    };
+    const partial = structuredClone(rebind);
+    delete partial.input.secrets.api_token;
+    assert.notEqual(
+      (await recovered.control("operations.execute", partial)).state,
+      "committed",
+    );
+    rebind.operation_id = crypto.randomUUID();
+    const rebound = await recovered.control("operations.execute", rebind);
     assert.equal(rebound.state, "committed", JSON.stringify(rebound.error));
     assert.equal(rebound.result.id, source);
     assert.equal(

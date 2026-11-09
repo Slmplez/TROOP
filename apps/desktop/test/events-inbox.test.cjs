@@ -143,14 +143,19 @@ const command = (h, method, input) =>
   });
 
 for (const independent of [false, true]) {
-  test(`GitLab simulation ${independent ? "independent" : "local"} survives rate limiting, redelivery, restart and token rotation`, async (t) => {
+  test(`GitLab simulation ${independent ? "independent" : "local"} survives network loss, rate limiting, redelivery, restart and token rotation`, async (t) => {
     const http = require("node:http");
     let version = new Date().toISOString();
     let limited = true,
+      unreachable = true,
       apiCalls = 0,
       lostAck = 0;
     const api = http.createServer((req, res) => {
       apiCalls++;
+      if (unreachable) {
+        req.socket.destroy();
+        return;
+      }
       res.setHeader("content-type", "application/json");
       if (limited) {
         res.writeHead(429, { "retry-after": "1" });
@@ -309,6 +314,25 @@ for (const independent of [false, true]) {
     });
     assert.equal((await h.core.request("agent.list", {})).items.length, 0);
     assert.equal((await post()).status, 202);
+    assert.equal(h.core.state, "ready");
+    unreachable = false;
+    const beforeLimited = apiCalls;
+    assert.equal(
+      (
+        await command(h, "events.recheck", {
+          source_id: id,
+          expected_revision: 1,
+        })
+      ).state,
+      "committed",
+    );
+    await until(() => apiCalls > beforeLimited);
+    await until(
+      async () =>
+        (await h.core.request("events.records", { source_id: id })).items[0]
+          ?.review_state === "waiting_recheck",
+    );
+    assert.equal((await h.core.request("agent.list", {})).items.length, 0);
     limited = false;
     assert.equal(
       (

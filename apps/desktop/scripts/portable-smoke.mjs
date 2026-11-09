@@ -360,6 +360,13 @@ try {
     report.passed = false;
     process.exitCode = 1;
   }
+  if (report.passed && report.processes_stopped) {
+    const owned = fs.realpathSync(folder);
+    assert.equal(path.dirname(owned), fs.realpathSync(os.tmpdir()));
+    assert.ok(path.basename(owned).startsWith("troop-portable-"));
+    fs.rmSync(owned, { recursive: true });
+    report.temporary_directory_removed = true;
+  }
   fs.writeFileSync(
     path.join(evidence, "portable-smoke.json"),
     JSON.stringify(report, null, 2),
