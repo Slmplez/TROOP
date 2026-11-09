@@ -248,6 +248,8 @@ async function launchPortable(verified, environment, userDataDir, logs, onLaunch
     `--user-data-dir=${userDataDir}`,
     "--remote-debugging-address=127.0.0.1",
     "--remote-debugging-port=0",
+    "--lang=en-US",
+    "--accept-lang=en-US",
     "--disable-gpu",
     "--no-first-run",
   ], {

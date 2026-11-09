@@ -117,10 +117,10 @@ internal static class Program
         if (args.Length > 1 && args[0] == "run" && args[1] == "--detach")
         {
             var options = new[] { "--name", "--label", "--platform", "--restart", "--network", "--security-opt", "--cap-drop", "--env", "--publish", "--volume", "--mount" };
-            for (var index = 2; index < args.Length - 2; index += 2)
-                Require(options.Contains(args[index]) && index + 1 < args.Length - 2, "Unexpected container option");
+            for (var index = 2; index < args.Length - 1; index += 2)
+                Require(options.Contains(args[index]) && index + 1 < args.Length - 1, "Unexpected container option");
             Require(!state.ContainerExists && state.NetworkExists && state.VolumeExists && state.TokenHash.Length == 64, "Resources were not provisioned");
-            Require(Value(args, "--name") == Container && Value(args, "--network") == Network && args[^2] == Image && args[^1] == "/sbin/init", "Invalid container identity");
+            Require(Value(args, "--name") == Container && Value(args, "--network") == Network && args[^1] == Image, "Invalid container identity");
             Require(Value(args, "--security-opt") == "no-new-privileges:true" && Value(args, "--cap-drop") == "NET_RAW" && Value(args, "--platform") == "linux/amd64", "Invalid container isolation options");
             var labels = Labels(args);
             Require(labels.Count == 9 && labels["com.grok-bot.local-vm"] == "1" && labels["com.grok-bot.local-vm.gateway-token-sha256"] == state.TokenHash && labels["com.grok-bot.local-vm.inference-credential"] == "0" && labels["com.grok-bot.local-vm.local-auth-provider"] == "none" && labels["com.grok-bot.local-vm.model-shell"] == "box" && labels["com.grok-bot.local-vm.schema-version"] == "11", "Invalid container labels");

@@ -731,7 +731,8 @@ async function stageCurrentHostBundle(settingsPath: string): Promise<LocalHostBu
     boxExecDaemonSha256,
     execDaemonWrapperSha256,
   } = await readCurrentHostBundleContent();
-  const directory = join(dirname(settingsPath), "local-docker-runtime", `${sha256}-${boxExecDaemonSha256}-${execDaemonWrapperSha256}`);
+  const runtimeKey = createHash("sha256").update([sha256, boxExecDaemonSha256, execDaemonWrapperSha256].join(":")).digest("hex");
+  const directory = join(dirname(settingsPath), "local-docker-runtime", runtimeKey);
   const persistRuntime = async (name: string, bytes: Buffer, mode: number): Promise<string> => {
     const target = join(directory, name);
     await mkdir(dirname(target), { recursive: true });
