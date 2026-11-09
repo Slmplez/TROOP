@@ -170,7 +170,6 @@ test(
 
 test(
   "MXC requires explicit binding and rejects forged or obsolete program identity",
-  native,
   async (t) => {
     const h = await setup(t);
     const unbound = await grant(h, { shell: null });

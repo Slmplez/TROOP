@@ -1,4 +1,4 @@
-const { before } = require("node:test");
+const { test: hostTest, before } = require("node:test");
 const { sandboxTest: test } = require("./fixtures/sandbox-support.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
@@ -109,7 +109,7 @@ test("OpenCode binds only the selected existing model settings and seals its own
   });
   assert.equal((await h.get(started.run.id)).run.state, "completed");
 });
-test("OpenCode blocks an ancestor configuration outside the read grant before dispatch", async (t) => {
+hostTest("OpenCode blocks an ancestor configuration outside the read grant before dispatch", async (t) => {
   const h = await setup(t);
   const file = path.join(h.directory, "opencode.json");
   fs.writeFileSync(
