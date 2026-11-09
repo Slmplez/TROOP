@@ -3,10 +3,10 @@ name: TROOP Windows portable
 on:
   pull_request:
     branches: [main]
-    paths: ['apps/desktop/**', 'crates/**', 'Cargo.*', 'scripts/verify-local-docker-image.mjs', 'source/electron-main/box/local-docker-host-connector.ts', '.github/workflows/troop-desktop.yml']
+    paths: ['apps/desktop/**', 'crates/**', 'Cargo.*', 'scripts/verify-local-docker-image.mjs', 'scripts/lib/debug-port.mjs', 'source/electron-main/box/local-docker-host-connector.ts', '.github/workflows/troop-desktop.yml']
   push:
     branches: [main]
-    paths: ['apps/desktop/**', 'crates/**', 'Cargo.*', 'scripts/verify-local-docker-image.mjs', 'source/electron-main/box/local-docker-host-connector.ts', '.github/workflows/troop-desktop.yml']
+    paths: ['apps/desktop/**', 'crates/**', 'Cargo.*', 'scripts/verify-local-docker-image.mjs', 'scripts/lib/debug-port.mjs', 'source/electron-main/box/local-docker-host-connector.ts', '.github/workflows/troop-desktop.yml']
   workflow_dispatch:
 
 permissions:

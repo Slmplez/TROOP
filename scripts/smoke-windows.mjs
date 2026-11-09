@@ -11,6 +11,7 @@ import WebSocket from "ws";
 
 import { outputWindowsPortable } from "./lib/config.mjs";
 import { pathExists } from "./lib/windows-runtime.mjs";
+import { readDebugPort } from "./lib/debug-port.mjs";
 import { verifyWindowsPortable } from "./lib/windows-package.mjs";
 import {
   inspectRelatedWindowsProcesses,
@@ -73,20 +74,17 @@ async function waitForDebugEndpoint(userDataDir, child, timeoutMs = 30_000) {
     const launchError = childLaunchErrors.get(child);
     if (launchError != null) throw new Error(`Portable process failed to launch: ${launchError.message}`, { cause: launchError });
     if (child.exitCode != null) throw new Error(`Portable process exited before renderer startup (${child.exitCode})`);
-    if (await pathExists(activePort)) {
-      const [line] = (await readFile(activePort, "utf8")).trim().split(/\r?\n/);
-      const port = Number(line);
-      if (Number.isInteger(port) && port > 0 && port <= 65535) {
-        try {
-          const remainingMs = Math.max(1, deadline - Date.now());
-          const pages = await (await fetch(`http://127.0.0.1:${port}/json/list`, {
-            signal: AbortSignal.timeout(Math.min(1_000, remainingMs)),
-          })).json();
-          const page = pages.find(candidate => candidate.type === "page" && typeof candidate.webSocketDebuggerUrl === "string");
-          if (page != null) return page.webSocketDebuggerUrl;
-        } catch {
-          // Chromium may write the port before its loopback debugger is ready.
-        }
+    const port = await readDebugPort(activePort);
+    if (port != null) {
+      try {
+        const remainingMs = Math.max(1, deadline - Date.now());
+        const pages = await (await fetch(`http://127.0.0.1:${port}/json/list`, {
+          signal: AbortSignal.timeout(Math.min(1_000, remainingMs)),
+        })).json();
+        const page = pages.find(candidate => candidate.type === "page" && typeof candidate.webSocketDebuggerUrl === "string");
+        if (page != null) return page.webSocketDebuggerUrl;
+      } catch {
+        // Chromium may write the port before its loopback debugger is ready.
       }
     }
     await delay(250);
