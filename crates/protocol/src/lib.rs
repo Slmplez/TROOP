@@ -8,6 +8,7 @@ pub const VERSION: u32 = 10;
 pub const MAX_FRAME: usize = 65_536;
 pub const METHODS: &[&str] = &[
     "followups.preview",
+    "followups.chain",
     "followups.list",
     "followups.get",
     "followups.history",
@@ -16,6 +17,8 @@ pub const METHODS: &[&str] = &[
     "followups.run",
     "followups.set_enabled",
     "followups.cancel",
+    "followups.stop_chain",
+    "followups.handoff",
     "schedules.set_enabled",
     "schedules.preview",
     "schedules.get",
@@ -186,6 +189,8 @@ pub const OPERATION_COMMANDS: &[&str] = &[
     "followups.run",
     "followups.set_enabled",
     "followups.cancel",
+    "followups.stop_chain",
+    "followups.handoff",
     "schedules.set_enabled",
     "schedules.run",
     "schedules.cancel",

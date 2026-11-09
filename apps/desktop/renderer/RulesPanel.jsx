@@ -4,6 +4,7 @@ import { resources } from "./client/resources";
 import { call } from "./api";
 import ReminderPanel from "./ReminderPanel";
 import SchedulesPanel from "./SchedulesPanel";
+import FollowupsPanel from "./FollowupsPanel";
 import WorkItemExecution from "./WorkItemExecution";
 
 const empty = () => ({
@@ -48,6 +49,13 @@ export default function RulesPanel(props) {
         >
           定时执行
         </button>
+        <button
+          id="rules-followups-tab"
+          aria-pressed={tab === "followups"}
+          onClick={() => setTab("followups")}
+        >
+          持续跟进
+        </button>
       </div>
       <div hidden={tab !== "events"}>
         <EventRulesPanel {...props} />
@@ -61,6 +69,9 @@ export default function RulesPanel(props) {
           workspaces={props.workspaces}
           onOpenRun={props.onOpenRun}
         />
+      </div>
+      <div hidden={tab !== "followups"}>
+        <FollowupsPanel ready={props.ready} onOpenRun={props.onOpenRun} />
       </div>
     </>
   );
@@ -158,7 +169,10 @@ function EventRulesPanel({ ready, onOpenRun }) {
       <div className="models-layout">
         <section className="provider-library" aria-label="规则列表">
           {list.data?.items
-            .filter((rule) => !["reminder", "scheduled"].includes(rule.kind))
+            .filter(
+              (rule) =>
+                !["reminder", "scheduled", "followup"].includes(rule.kind),
+            )
             .map((rule) => (
               <button
                 key={rule.id}

@@ -60,20 +60,18 @@ pub(crate) fn run_blocker(store: &Store, run: &Value) -> Option<String> {
                 .ok_or("跟进执行缺少工作项。")?,
         )?;
         if item["cancelled"] == true
-            || item["generation"] != root["followup_work_generation"]
+            || item["generation"].as_i64().unwrap_or(0)
+                != root["followup_work_generation"].as_i64().unwrap_or(0)
             || crate::work_items::definition_revision(&item)
                 != root["work_definition_revision"].as_i64().unwrap_or(0)
         {
             return Err("跟进工作已取消或定义已变化。".into());
         }
-        let policy = policy(
-            store,
-            root["followup_policy_id"]
-                .as_str()
-                .ok_or("跟进执行缺少策略。")?,
-        )?;
-        if policy["cancelled"] == true {
-            return Err("跟进策略已取消。".into());
+        if root["followup_expires_at_ms"]
+            .as_i64()
+            .is_some_and(|expiry| expiry <= now_ms())
+        {
+            return Err("本次跟进执行的冻结期限已到。".into());
         }
         if let Some(origin) = chain["upstream_group_run_id"].as_i64() {
             if let Some(reason) =
@@ -100,8 +98,12 @@ pub(crate) fn definition(value: &Value) -> Value {
         "expires_at_ms",
         "min_interval_ms",
         "max_runs",
+        "handoff_policy_ids",
     ] {
         result[key] = value[key].clone();
+    }
+    if result["handoff_policy_ids"].is_null() {
+        result["handoff_policy_ids"] = json!([]);
     }
     result
 }

@@ -1,0 +1,3 @@
+
+{"checks":["work scope and explicit permission preview save one policy despite double click; changing the draft clears confirmation; a manual check creates one unaccepted work Run","reload restores the draft; a second window fences stale edits without losing text; policy pause and resume preserve the completed Run","1440/768/660 desktop widths avoid horizontal overflow; stopping the chain cancels its active Run, survives restart and creates no replacement execution"],"passed":true,"coreStopped":true}
+Follow-up desktop acceptance passed: E:\Repo\ASCET\grok-bot-0.18\.tmp-troop-followups\ui-9GScpl

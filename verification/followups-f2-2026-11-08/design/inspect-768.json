@@ -1,0 +1,313 @@
+{
+  "metrics": {
+    "viewport": {
+      "w": 752,
+      "h": 861
+    },
+    "page": {
+      "height": 3153,
+      "screens": 3.7,
+      "words": 160,
+      "img": 0,
+      "video": 0,
+      "canvas": 0,
+      "svg": 1,
+      "sections": 14,
+      "horizontalOverflow": 0,
+      "overflowCulprits": [],
+      "uiFragments": 1,
+      "uiAbuse": false,
+      "realPictures": 0,
+      "videoCount": 0,
+      "uiPictures": 0,
+      "pictureSamples": [],
+      "blendText": 0,
+      "sideScrollers": 0,
+      "brokenImages": [],
+      "emoji": [],
+      "videosNoPoster": 0
+    },
+    "hero": {
+      "text": "持续跟进",
+      "words": 1,
+      "chars": 4,
+      "lines": 1,
+      "size": 24,
+      "vw": 3.2,
+      "font": "Plex",
+      "weight": 600,
+      "tracking": 0,
+      "leading": 1.35,
+      "top": 109,
+      "tag": "h1",
+      "kind": "heading",
+      "align": "left",
+      "position": "left"
+    },
+    "h1": null,
+    "headings": [],
+    "headingSummary": {
+      "count": 0,
+      "maxLines": 0,
+      "over2Lines": 0,
+      "statements": 0,
+      "centered": 0,
+      "medianWords": null,
+      "mixedFontHeadings": 0
+    },
+    "type": {
+      "families": [
+        {
+          "family": "Plex",
+          "share": 0.99,
+          "mono": false
+        },
+        {
+          "family": "monospace",
+          "share": 0.01,
+          "mono": false
+        }
+      ],
+      "familyCount": 2,
+      "sizes": [
+        11,
+        12,
+        13,
+        14,
+        16,
+        19,
+        24
+      ],
+      "sizeCount": 7,
+      "notLoaded": [],
+      "body": {
+        "font": "Plex",
+        "size": 14,
+        "leading": 1.7,
+        "weight": 400,
+        "tracking": 0,
+        "contrast": 16.5
+      },
+      "measureChars": 69,
+      "max": {
+        "size": 24,
+        "vw": 3.2,
+        "font": "Plex",
+        "text": "持续跟进"
+      },
+      "monoShare": 0.01,
+      "monoProseShare": 0,
+      "monoFamilies": [
+        "monospace"
+      ],
+      "monoSamples": [],
+      "microLabels": 0,
+      "microLabelShare": 0,
+      "microSamples": [],
+      "upperShare": 0.08,
+      "centerShare": 0.17,
+      "smallText": 2
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+      "bodyBg": "#f2f4f3",
+      "bodyBgHsl": {
+        "h": 150,
+        "s": 0.08,
+        "l": 0.95
+      },
+      "dark": false,
+      "sectionBgs": [
+        {
+          "color": "#ffffff",
+          "top": 48,
+          "hsl": {
+            "h": 0,
+            "s": 0,
+            "l": 1
+          }
+        }
+      ],
+      "textColors": [
+        {
+          "color": "#17211f",
+          "share": 0.75
+        },
+        {
+          "color": "#62716a",
+          "share": 0.24
+        },
+        {
+          "color": "#ffffff",
+          "share": 0.01
+        }
+      ],
+      "button": {
+        "bg": "#ffffff",
+        "hsl": {
+          "h": 0,
+          "s": 0,
+          "l": 1
+        },
+        "fg": "#17211f"
+      },
+      "lowContrast": []
+    },
+    "buttons": {
+      "count": 26,
+      "inHero": 9,
+      "radius": 6,
+      "height": 34,
+      "withShadow": 0,
+      "withGradient": 0,
+      "mono": 0,
+      "upper": 0,
+      "heroLabels": [
+        "规则",
+        "事件规则",
+        "时间提醒",
+        "定时执行",
+        "持续跟进"
+      ]
+    },
+    "surfaces": {
+      "shadowStatic": 0,
+      "shadowOverlay": 0,
+      "shadowSamples": [],
+      "gradients": 0,
+      "scrims": 0,
+      "gradientSamples": [],
+      "gradientText": 0,
+      "hairlines": 3,
+      "hairlineSamples": [
+        "section.followup-reservation 480px",
+        "article.followup-entry 480px",
+        "article.work-result 480px"
+      ],
+      "outlinedBoxes": 1,
+      "dashed": 0,
+      "blurred": 0,
+      "roundedBoxes": 4,
+      "boxRadius": 6,
+      "squareMedia": 0,
+      "roundedMedia": 0,
+      "mediaRadius": 0,
+      "textShadow": 0,
+      "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+      "links": 0,
+      "fixed": false,
+      "height": 623,
+      "floatingPill": false,
+      "blur": false
+    },
+    "fontsLoaded": [
+      "plex"
+    ]
+  },
+  "app": {
+    "viewport": {
+      "w": 752,
+      "h": 861
+    },
+    "dark": false,
+    "ground": "#f2f4f3",
+    "sidebar": {
+      "w": 174,
+      "tag": "aside",
+      "links": 16,
+      "share": 0.23
+    },
+    "topbar": {
+      "h": 48
+    },
+    "canvas": {
+      "left": 23,
+      "right": 46
+    },
+    "hero": {
+      "text": "持续跟进",
+      "words": 1,
+      "chars": 4,
+      "lines": 1,
+      "size": 24,
+      "vw": 3.2,
+      "font": "Plex",
+      "weight": 600,
+      "tracking": 0,
+      "leading": 1.35,
+      "top": 109,
+      "tag": "h1",
+      "kind": "heading",
+      "align": "left",
+      "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+      "panels": 1,
+      "firstScreen": 1,
+      "ragged": [],
+      "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+      "count": 3,
+      "radii": [
+        [
+          0,
+          2
+        ],
+        [
+          16,
+          1
+        ]
+      ],
+      "heavyBorders": 0,
+      "borderSamples": [],
+      "heavyShadows": 0,
+      "softShadows": 0,
+      "shadowSamples": [],
+      "glass": 0
+    },
+    "chips": {
+      "count": 0,
+      "hues": 0,
+      "samples": []
+    },
+    "numbers": {
+      "cells": 0,
+      "leftAligned": 0,
+      "figures": 1,
+      "tabularShare": 0,
+      "kpiMax": 12
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+      "under13": 0.03,
+      "tiny": 0,
+      "tinySamples": [],
+      "sizes": [
+        11,
+        12,
+        13,
+        14,
+        16,
+        19,
+        20,
+        24
+      ]
+    },
+    "title": {
+      "text": "持续跟进",
+      "size": 24,
+      "top": 109
+    }
+  },
+  "probe_adjustment": "The title lookup selects the first visible h1 because inactive desktop panels remain mounted.",
+  "findings": []
+}

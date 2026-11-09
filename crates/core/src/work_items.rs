@@ -141,7 +141,7 @@ fn start_blocker_with_policy(store: &Store, item: &Value, continuing: bool) -> O
     }
     dependency_blocker(store, item)
 }
-fn dependency_blocker(store: &Store, item: &Value) -> Option<String> {
+pub(crate) fn dependency_blocker(store: &Store, item: &Value) -> Option<String> {
     for id in item["dependency_ids"].as_array().into_iter().flatten() {
         let dependency = id.as_i64().and_then(|id| store.work_item(id).ok());
         if !dependency.as_ref().is_some_and(completed) {

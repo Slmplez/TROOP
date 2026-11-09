@@ -43,6 +43,27 @@ contextBridge.exposeInMainWorld(
     sendMessage: (input) => call("troop:send-message", input),
     cancelTurn: (id) => call("troop:cancel-turn", id),
     removeConversation: (id) => call("troop:remove-conversation", id),
+    resourcefollowupPreview: (input) =>
+      call("troop:resource-followups.preview", input),
+    resourcefollowups: (input) => call("troop:resource-followups.list", input),
+    resourcefollowup: (input) => call("troop:resource-followups.get", input),
+    resourcefollowupChain: (input) =>
+      call("troop:resource-followups.chain", input),
+    resourcefollowupStopChain: (input) =>
+      call("troop:resource-followups.stop_chain", input),
+    resourcefollowupHandoff: (input) =>
+      call("troop:resource-followups.handoff", input),
+    resourcefollowupHistory: (input) =>
+      call("troop:resource-followups.history", input),
+    resourcefollowupSave: (input) =>
+      call("troop:resource-followups.save", input),
+    resourcefollowupRequest: (input) =>
+      call("troop:resource-followups.request", input),
+    resourcefollowupRun: (input) => call("troop:resource-followups.run", input),
+    resourcefollowupSetEnabled: (input) =>
+      call("troop:resource-followups.set_enabled", input),
+    resourcefollowupCancel: (input) =>
+      call("troop:resource-followups.cancel", input),
     resourceauthorizationList: (input) =>
       call("troop:resource-authorizations.list", input),
     resourceauthorizationGet: (input) =>

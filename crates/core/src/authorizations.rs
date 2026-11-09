@@ -480,6 +480,8 @@ fn validate(store: &Store, g: &mut Grant) -> Result<(), String> {
         return Err("授权名称、类别、范围或有效期无效。".into());
     }
     let known = [
+        "propose_followup",
+        "request_handoff",
         "group_reply",
         "read_file",
         "list_directory",
@@ -760,6 +762,12 @@ fn evaluate(store: &Store, a: Evaluation) -> Result<Value, String> {
                 Ok(_) => reason = "MCP 服务操作与网络范围不匹配。".into(),
                 Err(error) => reason = error,
             }
+        } else if grant.engine_id == "native"
+            && grant.purpose == "tool_call"
+            && matches!(a.operation.as_str(), "propose_followup" | "request_handoff")
+        {
+            decision = "allow";
+            reason = "预约提议由 Core 绑定当前工作、策略及来源执行，并在提交时重查。".into();
         } else if grant.engine_id == "native"
             && grant.purpose == "tool_call"
             && matches!(a.operation.as_str(), "run_command" | "start_background")

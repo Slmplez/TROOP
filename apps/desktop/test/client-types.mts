@@ -155,3 +155,17 @@ models.command("schedules.set_enabled", {
   id: "time-rule",
   expected_revision: 1,
 });
+const followup = await models.read("followups.get", { id: "followup" });
+const chainStopped: boolean = followup.chain.stopped;
+void chainStopped;
+await models.command("followups.stop_chain", {
+  id: followup.chain.id,
+  expected_revision: followup.chain.revision,
+});
+// @ts-expect-error A handoff requires a trusted source Run identity.
+models.command("followups.handoff", {
+  route_id: "receiver",
+  client_request_id: "request",
+  reason: "review",
+  expected_change: "new result",
+});

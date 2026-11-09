@@ -206,6 +206,123 @@ export type TurnReceipt = {
 };
 export type CancelledTurn = { cancelled: boolean };
 export type Empty = {};
+export type FollowupDefinition = {
+  name: string;
+  enabled: boolean;
+  work_item_id: number;
+  agent_id: number;
+  workspace_id: number;
+  project_id?: string | null;
+  start: Start | CliStart;
+  expected_plan_sha256?: string | null;
+  expires_at_ms: number;
+  min_interval_ms: number;
+  max_runs: number;
+  handoff_policy_ids?: Array<string>;
+};
+export type FollowupRule = {
+  name: string;
+  enabled: boolean;
+  work_item_id: number;
+  agent_id: number;
+  workspace_id: number;
+  project_id?: string | null;
+  start: Start | CliStart;
+  expected_plan_sha256?: string | null;
+  expires_at_ms: number;
+  min_interval_ms: number;
+  max_runs: number;
+  handoff_policy_ids?: Array<string>;
+  kind: "followup";
+  id: string;
+  revision: number;
+  cancelled: boolean;
+  work_definition_revision: number;
+  work_generation: number;
+};
+export type FollowupChain = {
+  id: string;
+  revision: number;
+  root_policy_id: string;
+  generation: number;
+  stopped: boolean;
+  wake_count: number;
+  wake_limit: number;
+  expires_at_ms: number;
+  upstream_group_run_id: number | null;
+  stop_reason?: string;
+};
+export type FollowupState = {
+  generation: number;
+  wake_count: number;
+  last_started_at_ms: number | null;
+  current_run_id: number | null;
+  current_chain_id?: string;
+};
+export type FollowupAppointment = {
+  id: number;
+  revision: number;
+  policy_id: string;
+  policy_revision: number;
+  policy_generation: number;
+  chain_id: string;
+  chain_generation: number;
+  client_key: string;
+  request: unknown;
+  source_run_id: number | null;
+  at_ms: number;
+  reason: string;
+  expected_change: string;
+  manual: boolean;
+  kind?: "handoff";
+  state: "pending" | "waiting" | "blocked" | "cancelled" | "dispatched";
+  run_id: number | null;
+  created_at_ms: number;
+  status_reason?: string | null;
+  dispatched_at_ms?: number;
+  frozen_definition?: unknown;
+  run?: Run | null;
+};
+export type FollowupPolicy = {
+  name: string;
+  enabled: boolean;
+  work_item_id: number;
+  agent_id: number;
+  workspace_id: number;
+  project_id?: string | null;
+  start: Start | CliStart;
+  expected_plan_sha256?: string | null;
+  expires_at_ms: number;
+  min_interval_ms: number;
+  max_runs: number;
+  handoff_policy_ids?: Array<string>;
+  kind: "followup";
+  id: string;
+  revision: number;
+  cancelled: boolean;
+  work_definition_revision: number;
+  work_generation: number;
+  state: FollowupState;
+  chain: FollowupChain;
+  appointments: Array<FollowupAppointment>;
+  current_blocker: string | null;
+  allowed_actions: {
+    save: ActionAvailability;
+    set_enabled: ActionAvailability;
+    request: ActionAvailability;
+    cancel: ActionAvailability;
+    stop_chain: ActionAvailability;
+  };
+};
+export type FollowupRequest = {
+  id: string;
+  expected_revision: number;
+  client_request_id: string;
+  at_ms: number;
+  reason: string;
+  expected_change: string;
+  source_run_id?: number | null;
+};
 export type ScheduledDefinition = {
   kind: "scheduled";
   event: "time.due";
@@ -315,7 +432,11 @@ export type RuleDefinition =
   | EventRuleDefinition
   | ReminderDefinition
   | ScheduledDefinition;
-export type AutomationRule = EventRule | ReminderRule | ScheduledRule;
+export type AutomationRule =
+  | EventRule
+  | ReminderRule
+  | ScheduledRule
+  | FollowupRule;
 export type ReminderOccurrence = {
   id: number;
   rule_id: string;
@@ -1649,6 +1770,52 @@ export interface Requests {
   "chat.send": { input: Send; output: TurnReceipt };
   "chat.cancel": { input: Turn; output: CancelledTurn };
   "chat.remove": { input: Id; output: Removed };
+  "followups.preview": {
+    input: { id?: string; policy: FollowupDefinition };
+    output: { plan_sha256: string; plan: unknown };
+  };
+  "followups.list": {
+    input: { before?: string };
+    output: { items: Array<FollowupPolicy>; next_before: string | null };
+  };
+  "followups.get": { input: { id: string }; output: FollowupPolicy };
+  "followups.chain": { input: { id: string }; output: FollowupChain };
+  "followups.stop_chain": {
+    input: { id: string; expected_revision: number };
+    output: FollowupChain;
+  };
+  "followups.handoff": {
+    input: {
+      source_run_id: number;
+      route_id: string;
+      client_request_id: string;
+      reason: string;
+      expected_change: string;
+    };
+    output: FollowupAppointment;
+  };
+  "followups.history": {
+    input: { id: string; before?: number };
+    output: { items: Array<FollowupAppointment>; next_before: number | null };
+  };
+  "followups.save": {
+    input: {
+      id?: string;
+      expected_revision: number;
+      policy: FollowupDefinition;
+    };
+    output: FollowupPolicy;
+  };
+  "followups.request": { input: FollowupRequest; output: FollowupAppointment };
+  "followups.run": { input: FollowupRequest; output: FollowupAppointment };
+  "followups.set_enabled": {
+    input: { id: string; expected_revision: number; enabled: boolean };
+    output: FollowupPolicy;
+  };
+  "followups.cancel": {
+    input: { id: string; expected_revision: number };
+    output: FollowupPolicy;
+  };
   "authorizations.list": { input: Page; output: AuthorizationPage };
   "authorizations.get": { input: ResourceId; output: Authorization };
   "authorizations.history": {
