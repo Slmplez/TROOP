@@ -5,12 +5,8 @@ const path = require("node:path");
 const http = require("node:http");
 const crypto = require("node:crypto");
 const { setup, until } = require("./fixtures/hooks-fixture.cjs");
-const runtime = path.resolve(__dirname, "../bin/mxc/wxc-exec.exe");
-const native = {
-  skip:
-    !fs.existsSync(runtime) &&
-    "prepare-sandbox.mjs is required for native MXC acceptance",
-};
+const { baseContainerSkip } = require("./fixtures/sandbox-support.cjs");
+const native = { skip: baseContainerSkip };
 const quote = (value) => `'${value.replaceAll("'", "''")}'`;
 const command = async (h, method, input, operation = crypto.randomUUID()) => {
   const receipt = await h.core.request("operations.execute", {

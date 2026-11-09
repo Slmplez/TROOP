@@ -3,6 +3,11 @@ import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+
+const { support } = createRequire(import.meta.url)(
+  "../test/fixtures/sandbox-support.cjs",
+);
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const reportDirectory = path.resolve(app, "../../verification/desktop-ci");
@@ -25,6 +30,7 @@ fs.writeFileSync(
       platform: process.platform,
       architecture: process.arch,
       os_release: os.release(),
+      sandbox: support,
       test_files: tests.length,
       commit: process.env.GITHUB_SHA ?? null,
     },
@@ -32,6 +38,11 @@ fs.writeFileSync(
     2,
   ),
 );
+if (process.platform === "win32" && !support.runtime_present) {
+  throw new Error(
+    "CI requires prepare-sandbox.mjs before running desktop regressions",
+  );
+}
 const result = spawnSync(
   process.execPath,
   [

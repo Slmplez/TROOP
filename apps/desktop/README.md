@@ -165,6 +165,8 @@ GitHub Actions 在 Windows runner 上安装锁定依赖、准备固定 MXC、构
 
 镜像来源作业独立验证 Public ECR 固定 manifest、config 摘要、大小、平台和入口。重定向仅接纳登记的两个 HTTPS CloudFront 主机，CDN 请求使用无凭据的新请求。来源校验器或固定镜像定义变化会触发同一工作流。
 
+BaseContainer 相关用例先核验固定 MXC 摘要并实际执行 `--probe`。可用主机执行原测试，不可用主机逐项记录能力原因，同时验证 Core 拒绝受限 Shell 授权且未创建 Run。探测异常或摘要不匹配使测试失败。环境报告保留探测结果。CI 要求先安装固定运行时。
+
 ### MCP 资料库开发接口
 
 0.8.0 已完成 Core 的 MCP 配置资料库、导入预览、修订与系统凭据；OAuth 和 Agent 工具已分别由 0.9/0.10 接入；MCP 管理页已由 0.10.1 接入。资料库管理不会连接远端或启动配置命令。详见[资料库规格与验收](../../docs/implementation/TROOP_MCP_LIBRARY.md)。
