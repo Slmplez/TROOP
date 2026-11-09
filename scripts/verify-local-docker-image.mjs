@@ -161,7 +161,7 @@ function validatedBlobRedirect(location) {
     || redirect.username !== ""
     || redirect.password !== ""
     || redirect.hash !== "") {
-    throw new SafeVerificationError("Pinned image config redirect is outside the approved HTTPS CloudFront host.");
+    throw new SafeVerificationError(`Pinned image config redirect is outside the approved HTTPS CloudFront host (received origin ${redirect.origin}).`);
   }
   return redirect.href;
 }
