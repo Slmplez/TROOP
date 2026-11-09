@@ -141,6 +141,243 @@ const command = (h, method, input) =>
     method,
     input,
   });
+
+for (const independent of [false, true]) {
+  test(`GitLab simulation ${independent ? "independent" : "local"} survives network loss, rate limiting, redelivery, restart and token rotation`, async (t) => {
+    const http = require("node:http");
+    let version = new Date().toISOString();
+    let limited = true,
+      unreachable = true,
+      apiCalls = 0,
+      lostAck = 0;
+    const api = http.createServer((req, res) => {
+      apiCalls++;
+      if (unreachable) {
+        req.socket.destroy();
+        return;
+      }
+      res.setHeader("content-type", "application/json");
+      if (limited) {
+        res.writeHead(429, { "retry-after": "1" });
+        res.end("{}");
+        return;
+      }
+      assert.match(req.url, /\/projects\/7\/pipelines\/66/);
+      res.end(
+        JSON.stringify({ id: 66, status: "failed", finished_at: version }),
+      );
+    });
+    await new Promise((resolve) => api.listen(0, "127.0.0.1", resolve));
+    t.after(() => {
+      api.closeAllConnections();
+      return new Promise((resolve) => api.close(resolve));
+    });
+    const h = await setup(t),
+      receiver = independent ? await receiverFor(t, h) : h.core;
+    const health = await receiver.request("events.health", {});
+    let proxy;
+    if (independent) {
+      proxy = http.createServer((req, res) => {
+        const upstream = http.request(
+          health.address + req.url,
+          { method: req.method, headers: req.headers, agent: false },
+          (reply) => {
+            if (req.url.endsWith("/ack") && lostAck === 0) {
+              lostAck++;
+              reply.resume();
+              reply.on("end", () => res.destroy());
+            } else {
+              res.writeHead(reply.statusCode, reply.headers);
+              reply.pipe(res);
+            }
+          },
+        );
+        upstream.on("error", () => res.destroy());
+        req.pipe(upstream);
+      });
+      await new Promise((resolve) => proxy.listen(0, "127.0.0.1", resolve));
+      t.after(() => {
+        proxy.closeAllConnections();
+        return new Promise((resolve) => proxy.close(resolve));
+      });
+    }
+    const id = crypto.randomUUID(),
+      secret = crypto.randomBytes(32).toString("hex"),
+      consumer = crypto.randomBytes(32).toString("hex");
+    const definition = {
+      name: "GitLab fault simulation",
+      kind: "gitlab",
+      project: "7",
+      workspace_id: h.wid,
+      mode: "local",
+      enabled: true,
+      auth_mode: "token",
+      api_base_url: `http://127.0.0.1:${api.address().port}`,
+      consumer_id: h.core.snapshot().storage_instance,
+    };
+    const source = await command({ core: receiver }, "events.source.save", {
+      id,
+      expected_revision: 0,
+      definition,
+      secrets: { webhook_secret: secret, consumer_token: consumer },
+    });
+    assert.equal(source.state, "committed", JSON.stringify(source.error));
+    if (independent) {
+      const saved = await command(h, "events.source.save", {
+        id,
+        expected_revision: 0,
+        definition: {
+          ...definition,
+          mode: "remote",
+          receiver_url: `http://127.0.0.1:${proxy.address().port}`,
+          receiver_instance: health.instance_id,
+        },
+        secrets: { consumer_token: consumer },
+      });
+      assert.equal(saved.state, "committed", JSON.stringify(saved.error));
+    }
+    const grant = await command(h, "authorizations.save", {
+      expected_revision: 0,
+      grant: {
+        name: "GitLab simulation write",
+        purpose: "tool_call",
+        agent_id: 1,
+        engine_id: "native",
+        workspace_id: h.wid,
+        project_ids: [],
+        read_roots: [h.workspace],
+        write_roots: [h.workspace],
+        operations: ["write_file"],
+        network: "none",
+        expires_at: Math.floor(Date.now() / 1000) + 600,
+      },
+    });
+    assert.equal(grant.state, "committed");
+    const rule = await command(h, "rules.save", {
+      expected_revision: 0,
+      rule: {
+        name: "GitLab verified failure",
+        enabled: true,
+        event: "gitlab.pipeline.changed",
+        event_state: "failed",
+        source_id: id,
+        source_run_id: null,
+        workspace_id: h.wid,
+        expires_at: grant.result.expires_at,
+        start: {
+          client_run_id: crypto.randomUUID(),
+          agent_id: 1,
+          workspace_id: h.wid,
+          authorization_id: grant.result.id,
+          goal: "Write simulated GitLab result",
+          action: {
+            name: "write_file",
+            arguments: {
+              path: "gitlab-simulation.txt",
+              content: "verified pipeline failure",
+              expected_hash: "missing",
+            },
+          },
+        },
+      },
+    });
+    assert.equal(rule.state, "committed", JSON.stringify(rule.error));
+    version = new Date().toISOString();
+    const body = JSON.stringify({
+        object_kind: "pipeline",
+        project: { id: 7 },
+        object_attributes: { id: 66, status: "failed", finished_at: version },
+      }),
+      delivery = crypto.randomUUID();
+    const post = async (token = secret) => {
+      const current = await receiver.request("events.health", {});
+      return fetch(current.address + "/webhooks/" + id, {
+        method: "POST",
+        headers: {
+          "x-gitlab-token": token,
+          "x-gitlab-event": "Pipeline Hook",
+          "x-gitlab-event-uuid": delivery,
+        },
+        body,
+      });
+    };
+    assert.equal((await post("invalid")).status, 401);
+    assert.equal((await post()).status, 202);
+    await until(
+      async () =>
+        (await h.core.request("events.records", { source_id: id })).items[0]
+          ?.review_state === "waiting_recheck",
+    ).catch(async (error) => {
+      throw Error(
+        `${error.message} ${JSON.stringify({ apiCalls, records: await h.core.request("events.records", { source_id: id }), health: await h.core.request("events.health", {}) })}`,
+      );
+    });
+    assert.equal((await h.core.request("agent.list", {})).items.length, 0);
+    assert.equal((await post()).status, 202);
+    assert.equal(h.core.state, "ready");
+    unreachable = false;
+    const beforeLimited = apiCalls;
+    assert.equal(
+      (
+        await command(h, "events.recheck", {
+          source_id: id,
+          expected_revision: 1,
+        })
+      ).state,
+      "committed",
+    );
+    await until(() => apiCalls > beforeLimited);
+    await until(
+      async () =>
+        (await h.core.request("events.records", { source_id: id })).items[0]
+          ?.review_state === "waiting_recheck",
+    );
+    assert.equal((await h.core.request("agent.list", {})).items.length, 0);
+    limited = false;
+    assert.equal(
+      (
+        await command(h, "events.recheck", {
+          source_id: id,
+          expected_revision: 1,
+        })
+      ).state,
+      "committed",
+    );
+    const run = await until(
+      async () => (await h.core.request("agent.list", {})).items[0],
+    ).catch(async (error) => {
+      throw Error(
+        `${error.message} ${JSON.stringify({ apiCalls, records: await h.core.request("events.records", { source_id: id }) })}`,
+      );
+    });
+    assert.equal((await h.done(run.id)).run.state, "completed");
+    assert.equal(
+      fs.readFileSync(path.join(h.workspace, "gitlab-simulation.txt"), "utf8"),
+      "verified pipeline failure",
+    );
+    if (independent) await until(() => lostAck === 1);
+    await h.core.stop();
+    await h.core.start();
+    assert.equal((await post()).status, 202);
+    const rotated = crypto.randomBytes(32).toString("hex");
+    const updated = await command({ core: receiver }, "events.source.save", {
+      id,
+      expected_revision: 1,
+      definition,
+      secrets: { webhook_secret: rotated },
+    });
+    assert.equal(updated.state, "committed", JSON.stringify(updated.error));
+    assert.equal((await post()).status, 401);
+    assert.equal((await post(rotated)).status, 202);
+    assert.equal((await h.core.request("agent.list", {})).items.length, 1);
+    assert.equal(
+      (await h.core.request("events.records", { source_id: id })).items.length,
+      1,
+    );
+    assert.equal(h.server.requests.length, 0);
+    assert.ok(apiCalls >= 2);
+  });
+}
 test("mock GitHub state -> durable acceptance -> authorized file Run, repaired events are skipped", async (t) => {
   const http = require("node:http");
   let state = "failure",

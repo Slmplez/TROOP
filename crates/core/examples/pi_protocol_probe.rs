@@ -91,7 +91,14 @@ fn main() {
                 emit(json!({"type":"agent_settled","aborted":false}));
                 std::thread::sleep(std::time::Duration::from_millis(200));
             }
-            let text = if message.contains("troop_group_reply") {
+            let text = if message.contains("owned followup fixture") {
+                let encoded = message.split("Task input as JSON:\n").last().unwrap();
+                let goal: String = serde_json::from_str(encoded).unwrap();
+                goal.lines()
+                    .find_map(|line| line.strip_prefix("owned followup fixture result "))
+                    .unwrap()
+                    .to_owned()
+            } else if message.contains("troop_group_reply") {
                 json!({"troop_group_reply":{"body":"Owned Pi group reply","mention_agent_ids":[],"broadcast":false}}).to_string()
             } else if message.contains("check delegated memory") {
                 if message.contains("TROOP_PRIVATE_CLI_CONTEXT")

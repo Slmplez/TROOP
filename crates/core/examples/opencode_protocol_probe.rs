@@ -121,7 +121,9 @@ fn main() {
                     std::fs::write("group-started.txt", "received").unwrap();
                     std::thread::sleep(std::time::Duration::from_secs(5));
                 }
-                let text = if valid && request.to_string().contains("troop_group_reply") {
+                let text = if valid && request.to_string().contains("owned followup fixture") {
+                    std::fs::read_to_string("followup-result.json").unwrap()
+                } else if valid && request.to_string().contains("troop_group_reply") {
                     json!({"troop_group_reply":{"body":"Owned OpenCode group reply","mention_agent_ids":[],"broadcast":false}}).to_string()
                 } else if valid {
                     "Owned OpenCode text result".into()

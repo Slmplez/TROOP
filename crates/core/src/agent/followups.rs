@@ -60,6 +60,127 @@ fn current_work(store: &Store, policy: &Value) -> Result<Value, String> {
     Ok(item)
 }
 impl Manager {
+    fn pump_reviewed_followups(&self, store: &mut Store, now: i64) -> Result<(), String> {
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Proposal {
+            at_ms: i64,
+            reason: String,
+            expected_change: String,
+        }
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Transfer {
+            route_id: String,
+            reason: String,
+            expected_change: String,
+        }
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Envelope {
+            troop_followup: Option<Proposal>,
+            troop_handoff: Option<Transfer>,
+        }
+        for candidate in store.followup_review_candidates()? {
+            let id = candidate["id"].as_i64().ok_or("审核来源身份无效。")?;
+            let key = format!(
+                "cli-followup-{id}-{}",
+                candidate["followup_bridge"]["evidence_sha256"]
+                    .as_str()
+                    .unwrap_or("")
+            );
+            let (receipt, _) = store.execute_operation(
+                "followups",
+                &key,
+                "followups.reviewed_result",
+                &candidate["followup_bridge"],
+                None,
+                |store| {
+                    let run = store.agent_run(id)?;
+                    let task = follow::reviewed_cli_result(store, &run)?;
+                    if task["evidence"]["sha256"] != run["followup_bridge"]["evidence_sha256"]
+                        || task["id"] != run["followup_bridge"]["task_id"]
+                    {
+                        return Err("审核证据关联已变化。".to_owned().into());
+                    }
+                    Self::external_authorized(store, &run)?;
+                    let envelope = params::<Envelope>(
+                        serde_json::from_str(
+                            task["evidence"]["result"]["text"].as_str().unwrap_or(""),
+                        )
+                        .map_err(|_| "结构化提议无效。".to_owned())?,
+                    )?;
+                    let appointment = match (envelope.troop_followup, envelope.troop_handoff) {
+                        (Some(proposal), None) => {
+                            let policy = store.rules_all()?["items"]
+                                .as_array()
+                                .into_iter()
+                                .flatten()
+                                .find(|policy| {
+                                    policy["kind"] == "followup"
+                                        && policy["work_item_id"] == run["work_item_id"]
+                                        && policy["cancelled"] != true
+                                })
+                                .cloned()
+                                .ok_or_else(|| "工作没有有效跟进策略。".to_owned())?;
+                            self.request_followup(
+                                store,
+                                Request {
+                                    id: policy["id"].as_str().unwrap().to_owned(),
+                                    expected_revision: policy["revision"].as_i64().unwrap(),
+                                    client_request_id: Uuid::new_v4().to_string(),
+                                    at_ms: proposal.at_ms,
+                                    reason: proposal.reason,
+                                    expected_change: proposal.expected_change,
+                                    source_run_id: Some(id),
+                                },
+                                now,
+                                false,
+                            )?
+                        }
+                        (None, Some(transfer)) => self.handoff_appointment(
+                            store,
+                            &Handoff {
+                                source_run_id: id,
+                                route_id: transfer.route_id,
+                                client_request_id: Uuid::new_v4().to_string(),
+                                reason: transfer.reason,
+                                expected_change: transfer.expected_change,
+                            },
+                            now,
+                        )?,
+                        _ => {
+                            return Err("每份固定结果只能提出一次预约或一次交接。"
+                                .to_owned()
+                                .into())
+                        }
+                    };
+                    let mut run = store.agent_run(id)?;
+                    run["followup_bridge"]["state"] = json!("applied");
+                    run["followup_bridge"]["appointment_id"] = appointment["id"].clone();
+                    store.agent_save(&mut run, &mut [], "cli_followup_applied")?;
+                    Ok((appointment, ()))
+                },
+            )?;
+            if receipt["state"] == "rejected" {
+                store.execute_operation(
+                    "followups",
+                    &format!("{key}-blocked"),
+                    "followups.reviewed_blocked",
+                    &receipt["error"],
+                    None,
+                    |store| {
+                        let mut run = store.agent_run(id)?;
+                        run["followup_bridge"]["state"] = json!("blocked");
+                        run["followup_bridge"]["error"] = receipt["error"].clone();
+                        store.agent_save(&mut run, &mut [], "cli_followup_blocked")?;
+                        Ok((json!({"blocked":true}), ()))
+                    },
+                )?;
+            }
+        }
+        Ok(())
+    }
     fn followup_material(
         &self,
         store: &Store,
@@ -412,10 +533,12 @@ impl Manager {
         let mut source = store.agent_run(id)?;
         let item = current_work(store, policy)?;
         if source["work_item_id"] != item["id"]
+            || item["current_run_id"] != source["id"]
             || source["work_definition_revision"] != policy["work_definition_revision"]
             || source["agent_id"] != policy["agent_id"]
             || source["intent"].is_string()
-            || lifecycle::run_terminal(&source)
+            || (lifecycle::run_terminal(&source)
+                && follow::reviewed_cli_result(store, &source).is_err())
             || source["root_run_id"].is_number()
             || (source["followup_policy_generation"].is_number()
                 && source["followup_policy_generation"] != state["generation"])
@@ -429,6 +552,14 @@ impl Manager {
         )?;
         let target_grant =
             store.authorization_get(policy["start"]["authorization_id"].as_str().unwrap())?;
+        if source["kind"] == "external_cli" {
+            let task = follow::reviewed_cli_result(store, &source)?;
+            if task["permission_plan"]["tool_mode"] != policy["start"]["tool_mode"]
+                || task["permission_plan"]["approval_mode"] != policy["start"]["approval_mode"]
+            {
+                return Err("CLI 跟进不能改变来源工具或审批模式。".into());
+            }
+        }
         if crate::group_runtime::scope(&origin_grant) != crate::group_runtime::scope(&target_grant)
             || origin_grant["engine_id"] != target_grant["engine_id"]
         {
@@ -522,9 +653,10 @@ impl Manager {
                 .as_str()
                 .ok_or("接收方缺少授权。")?,
         )?;
-        if !origin_grant["operations"]
+        if (!origin_grant["operations"]
             .as_array()
             .is_some_and(|operations| operations.contains(&json!("request_handoff")))
+            && follow::reviewed_cli_result(store, &source).is_err())
             || crate::group_runtime::scope(&origin_grant)
                 != crate::group_runtime::scope(&target_grant)
             || origin_grant["engine_id"] != target_grant["engine_id"]
@@ -532,6 +664,14 @@ impl Manager {
             return Err("交接超出来源授权能力上限。".into());
         }
         let item = current_work(store, &target)?;
+        if source["kind"] == "external_cli" {
+            let task = follow::reviewed_cli_result(store, &source)?;
+            if task["permission_plan"]["tool_mode"] != target["start"]["tool_mode"]
+                || task["permission_plan"]["approval_mode"] != target["start"]["approval_mode"]
+            {
+                return Err("CLI 交接不能扩大工具或审批模式。".into());
+            }
+        }
         if let Some(reason) = work::dependency_blocker(store, &item) {
             return Err(reason);
         }
@@ -799,6 +939,7 @@ impl Manager {
             Some("协作链期限或启动次数已达到上限。".to_owned())
         } else if appointment["state"] == "pending"
             && appointment["manual"] != true
+            && appointment["kind"] != "handoff"
             && now
                 > appointment["at_ms"]
                     .as_i64()
@@ -903,6 +1044,9 @@ impl Manager {
             start["goal"].as_str().unwrap_or(""),
             context
         ));
+        if start.get("engine_id").is_some() {
+            start["goal"]=json!(format!("{}\n需要后续检查时，只输出 JSON {{\"troop_followup\":{{\"at_ms\":毫秒时间戳,\"reason\":\"理由\",\"expected_change\":\"预期变化\"}}}}；交接使用 {{\"troop_handoff\":{{\"route_id\":\"已配置策略ID\",\"reason\":\"理由\",\"expected_change\":\"预期变化\"}}}}。每次仅选一种，固定证据经用户审核接纳后由 Core 校验。",start["goal"].as_str().unwrap_or("")));
+        }
         start["client_run_id"] = json!(Uuid::new_v4().to_string());
         if start.get("engine_id").is_some() {
             start["expected_plan_sha256"] = plan["plan_sha256"].clone();
@@ -955,6 +1099,7 @@ impl Manager {
         store: &mut Store,
         clock: &crate::reminders::Clock,
     ) -> Result<(), String> {
+        self.pump_reviewed_followups(store, clock.now()?)?;
         for chain in store.followup_chains()? {
             if chain["stopped"] == true {
                 continue;

@@ -121,6 +121,401 @@ const request = (h, policy, extra = {}) => ({
 async function history(h, policy) {
   return (await read(h, "followups.history", { id: policy.id })).items;
 }
+async function cliPolicy(h, engine, extra = {}, goal) {
+  const program = {
+    codex: "cli_protocol_probe",
+    claude: "claude_protocol_probe",
+    pi: "pi_protocol_probe",
+    opencode: "opencode_protocol_probe",
+  }[engine];
+  let model_settings;
+  if (["claude", "opencode"].includes(engine)) {
+    const file = path.join(h.directory, `${engine}-followup-settings.json`);
+    fs.writeFileSync(
+      file,
+      JSON.stringify(
+        engine === "claude"
+          ? {
+              env: {
+                ANTHROPIC_BASE_URL: "http://127.0.0.1:9",
+                ANTHROPIC_MODEL: "owned-claude-model",
+                ANTHROPIC_AUTH_TOKEN: "TROOP_CLAUDE_TEST_CREDENTIAL",
+              },
+            }
+          : {
+              model: "owned/fixture",
+              provider: {
+                owned: {
+                  npm: "@ai-sdk/openai-compatible",
+                  options: {
+                    baseURL: "http://127.0.0.1:9/v1",
+                    apiKey: "TROOP_OPENCODE_TEST_CREDENTIAL",
+                  },
+                  models: {
+                    fixture: { limit: { context: 32768, output: 4096 } },
+                  },
+                },
+              },
+            },
+      ),
+    );
+    model_settings = { file };
+  }
+  const grant = await command(h, "authorizations.save", {
+    expected_revision: 0,
+    grant: {
+      name: `${engine} followup`,
+      purpose: "cli_start",
+      agent_id: 1,
+      engine_id: engine,
+      workspace_id: h.wid,
+      project_ids: [],
+      read_roots: [h.workspace],
+      write_roots: [h.workspace],
+      operations: ["start"],
+      network: "any",
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+      program: path.resolve(
+        __dirname,
+        `../../../target/debug/examples/${program}${process.platform === "win32" ? ".exe" : ""}`,
+      ),
+      ...(model_settings ? { model_settings } : {}),
+    },
+  });
+  const value = definition(h, {
+    ...extra,
+    start: {
+      client_run_id: crypto.randomUUID(),
+      agent_id: 1,
+      workspace_id: h.wid,
+      project_ids: [],
+      authorization_id: grant.id,
+      engine_id: engine,
+      tool_mode: engine === "codex" ? "native" : "disabled",
+      approval_mode: "preauthorized",
+      goal:
+        goal ??
+        `owned followup fixture\nowned followup fixture result ${fs.readFileSync(path.join(h.workspace, "followup-result.json"), "utf8")}`,
+    },
+  });
+  return { policy: await save(h, value), grant };
+}
+test("followup deadline fences native CLI answers in both orderings", async (t) => {
+  for (const expireFirst of [true, false]) {
+    const h = await controlled(t);
+    const { policy } = await cliPolicy(
+      h,
+      "codex",
+      { expires_at_ms: h.time() + 90_000 },
+      "followup owned question",
+    );
+    const source = await dispatch(h, policy);
+    const snapshot = await until(async () => {
+      const value = await h.get(source.run_id);
+      return value.tasks[0] && value;
+    });
+    const question = await until(
+      async () =>
+        (
+          await h.core.request("cli.interactions", {
+            task_id: snapshot.tasks[0].id,
+          })
+        ).items[0],
+    );
+    const answer = {
+      interaction_id: question.interaction_id,
+      expected_revision: question.revision,
+      task_epoch: question.task_epoch,
+      request_sha256: question.request_sha256,
+      answer: { kind: "question", answers: { target: ["alpha"] } },
+    };
+    if (!expireFirst) {
+      await command(h, "cli.respond", answer);
+      await cliSnapshot(h, source.run_id);
+    }
+    await h.advance(policy.expires_at_ms);
+    await until(
+      async () => (await read(h, "followups.chain", { id: policy.id })).stopped,
+    );
+    if (expireFirst) {
+      assert.equal(
+        (await operation(h, "cli.respond", answer)).state,
+        "rejected",
+      );
+      assert.equal(fs.existsSync(path.join(h.workspace, "answer.txt")), false);
+    }
+    const stopped = await h.done(source.run_id);
+    assert.ok(
+      ["cancelled", "interrupted"].includes(stopped.run.state),
+      JSON.stringify(stopped.run),
+    );
+    assert.equal(stopped.run.intent, "cancel");
+    await h.core.stop();
+    await h.core.start();
+    assert.equal((await read(h, "agent.list")).items.length, 1);
+  }
+});
+async function cliSnapshot(h, id) {
+  return until(async () => {
+    const value = await h.get(id);
+    if (value.run.waiting.includes("review")) return value;
+    if (["failed", "cancelled", "interrupted"].includes(value.run.state))
+      throw Error(JSON.stringify(value));
+    return false;
+  });
+}
+async function cliReview(h, runId, accepted = true, key) {
+  const snapshot = await cliSnapshot(h, runId);
+  const task = await h.core.request("agent.task", { id: snapshot.tasks[0].id });
+  const input = {
+    id: task.id,
+    epoch: task.epoch,
+    expected_task_revision: task.revision,
+    evidence_sha256: task.evidence.sha256,
+    accepted,
+    note: "检查固定提议证据",
+  };
+  return { input, result: await command(h, "cli.review", input, key) };
+}
+for (const engine of ["claude", "codex", "pi", "opencode"]) {
+  test(`${engine} fixed review registers one durable check and reuses the original chain`, async (t) => {
+    const h = await controlled(t),
+      at = h.time() + 90_000;
+    fs.writeFileSync(
+      path.join(h.workspace, "followup-result.json"),
+      JSON.stringify({
+        troop_followup: {
+          at_ms: at,
+          reason: "固定证据后复查",
+          expected_change: "资料变化",
+        },
+      }),
+    );
+    const { policy } = await cliPolicy(h, engine),
+      first = await dispatch(h, policy);
+    await cliSnapshot(h, first.run_id);
+    assert.equal((await history(h, policy)).length, 1);
+    const key = crypto.randomUUID();
+    const reviewed = await cliReview(h, first.run_id, true, key);
+    const pending = await until(async () =>
+      (await history(h, policy)).find((row) => row.state === "pending"),
+    );
+    assert.equal(pending.source_run_id, first.run_id);
+    assert.equal(pending.chain_id, first.chain_id);
+    assert.equal(
+      (await h.get(first.run_id)).run.followup_bridge.state,
+      "applied",
+    );
+    assert.deepEqual(
+      await command(h, "cli.review", reviewed.input, key),
+      reviewed.result,
+    );
+    await h.core.stop();
+    await h.core.start();
+    assert.equal((await history(h, policy)).length, 2);
+    await h.advance(at);
+    const second = await until(async () =>
+      (await history(h, policy)).find(
+        (row) => row.id === pending.id && row.state === "dispatched",
+      ),
+    );
+    assert.equal((await h.get(second.run_id)).run.engine_id, engine);
+    await cliReview(h, second.run_id, false);
+    assert.equal(
+      (await read(h, "followups.get", { id: policy.id })).chain.wake_count,
+      2,
+    );
+    assert.equal(
+      (await read(h, "engines.list")).find((row) => row.id === engine).followups
+        .contract_version,
+      1,
+    );
+  });
+}
+for (const engine of ["claude", "codex", "pi", "opencode"]) {
+  test(`${engine} reviewed handoff retains the source chain and receiver permission`, async (t) => {
+    const h = await controlled(t);
+    const item = await command(h, "work_items.save", {
+      expected_revision: 0,
+      item: {
+        title: "CLI 接收工作",
+        goal: "复核资料",
+        acceptance: "人工确认",
+        owner_agent_id: 1,
+        workspace_id: h.wid,
+        dependency_ids: [],
+      },
+    });
+    fs.writeFileSync(path.join(h.workspace, "followup-result.json"), "{}");
+    const receiving = await cliPolicy(h, engine, {
+      work_item_id: item.id,
+      max_runs: 4,
+    });
+    fs.writeFileSync(
+      path.join(h.workspace, "followup-result.json"),
+      JSON.stringify({
+        troop_handoff: {
+          route_id: receiving.policy.id,
+          reason: "复核交接",
+          expected_change: "接收结论",
+        },
+      }),
+    );
+    const { policy } = await cliPolicy(h, engine, {
+      max_runs: 4,
+      handoff_policy_ids: [receiving.policy.id],
+    });
+    const source = await dispatch(h, policy);
+    await cliSnapshot(h, source.run_id);
+    assert.equal((await history(h, receiving.policy)).length, 0);
+    await cliReview(h, source.run_id);
+    const transfer = await handoff(h, receiving.policy, "dispatched");
+    assert.equal(transfer.source_run_id, source.run_id);
+    assert.equal(transfer.chain_id, source.chain_id);
+    await cliSnapshot(h, transfer.run_id);
+    await command(h, "followups.stop_chain", {
+      id: policy.id,
+      expected_revision: (await read(h, "followups.chain", { id: policy.id }))
+        .revision,
+    });
+    assert.equal((await h.done(transfer.run_id)).run.state, "cancelled");
+  });
+}
+test("an immediate reviewed handoff survives validation delay within the original chain deadline", async (t) => {
+  const h = await controlled(t);
+  const item = await command(h, "work_items.save", {
+    expected_revision: 0,
+    item: {
+      title: "Delayed handoff receiver",
+      goal: "Check the result",
+      acceptance: "User confirms",
+      owner_agent_id: 1,
+      workspace_id: h.wid,
+    },
+  });
+  fs.writeFileSync(path.join(h.workspace, "followup-result.json"), "{}");
+  const receiving = await cliPolicy(h, "codex", {
+    work_item_id: item.id,
+    max_runs: 4,
+  });
+  fs.writeFileSync(
+    path.join(h.workspace, "followup-result.json"),
+    JSON.stringify({
+      troop_handoff: {
+        route_id: receiving.policy.id,
+        reason: "Slow permission validation",
+        expected_change: "Receiver checks",
+      },
+    }),
+  );
+  const { policy } = await cliPolicy(h, "codex", {
+    max_runs: 4,
+    handoff_policy_ids: [receiving.policy.id],
+  });
+  const source = await dispatch(h, policy);
+  await cliSnapshot(h, source.run_id);
+  const { DatabaseSync } = require("node:sqlite");
+  const db = new DatabaseSync(path.join(h.data, "troop.sqlite3"));
+  db.exec(`CREATE TRIGGER delay_handoff AFTER UPDATE ON followup_appointments
+    WHEN json_extract(NEW.document,'$.kind')='handoff' AND json_extract(OLD.document,'$.kind') IS NULL
+    BEGIN UPDATE followup_appointments SET document=json_set(document,'$.at_ms',json_extract(document,'$.at_ms')-10000) WHERE id=NEW.id; END`);
+  t.after(() => db.close());
+  await cliReview(h, source.run_id);
+  const transfer = await handoff(h, receiving.policy, "dispatched");
+  assert.equal(transfer.chain_id, source.chain_id);
+  assert.ok(transfer.at_ms + 5000 < h.time());
+  await cliSnapshot(h, transfer.run_id);
+  await command(h, "followups.stop_chain", {
+    id: policy.id,
+    expected_revision: (await read(h, "followups.chain", { id: policy.id }))
+      .revision,
+  });
+  assert.equal((await h.done(transfer.run_id)).run.state, "cancelled");
+});
+
+test("review intent survives a bridge receipt crash and restart registers exactly one appointment", async (t) => {
+  const h = await controlled(t),
+    at = h.time() + 90_000;
+  fs.writeFileSync(
+    path.join(h.workspace, "followup-result.json"),
+    JSON.stringify({
+      troop_followup: {
+        at_ms: at,
+        reason: "恢复后检查",
+        expected_change: "新资料",
+      },
+    }),
+  );
+  const { policy } = await cliPolicy(h, "pi"),
+    first = await dispatch(h, policy);
+  await cliSnapshot(h, first.run_id);
+  const { DatabaseSync } = require("node:sqlite"),
+    db = new DatabaseSync(path.join(h.data, "troop.sqlite3"));
+  db.exec(
+    "PRAGMA busy_timeout=5000; CREATE TRIGGER bridge_fault BEFORE UPDATE ON operations WHEN NEW.method='followups.reviewed_result' BEGIN SELECT RAISE(ABORT,'bridge receipt fixture'); END",
+  );
+  await cliReview(h, first.run_id);
+  await until(() => h.core.state !== "ready");
+  assert.equal(
+    db.prepare("SELECT count(*) n FROM followup_appointments").get().n,
+    1,
+  );
+  const pending = JSON.parse(
+    db.prepare("SELECT document FROM agent_runs WHERE id=?").get(first.run_id)
+      .document,
+  );
+  assert.equal(pending.followup_bridge.state, "pending");
+  db.exec("DROP TRIGGER bridge_fault");
+  db.close();
+  await h.core.start();
+  await until(
+    async () =>
+      (await h.get(first.run_id)).run.followup_bridge?.state === "applied",
+  );
+  assert.equal((await history(h, policy)).length, 2);
+  await h.core.stop();
+  await h.core.start();
+  assert.equal((await history(h, policy)).length, 2);
+  assert.equal((await read(h, "agent.list")).items.length, 1);
+});
+test("reviewed CLI rejection and stale authority cannot create a followup", async (t) => {
+  for (const mode of ["reject", "revoke", "pause", "extra"]) {
+    const h = await controlled(t),
+      proposal = {
+        troop_followup: {
+          at_ms: h.time() + 90_000,
+          reason: "复查",
+          expected_change: "变化",
+        },
+      };
+    if (mode === "extra") proposal.extra = "untrusted";
+    fs.writeFileSync(
+      path.join(h.workspace, "followup-result.json"),
+      JSON.stringify(proposal),
+    );
+    const { policy, grant } = await cliPolicy(h, "pi"),
+      first = await dispatch(h, policy);
+    await cliSnapshot(h, first.run_id);
+    if (mode === "revoke")
+      await command(h, "authorizations.revoke", {
+        id: grant.id,
+        expected_revision: grant.revision,
+      });
+    if (mode === "pause")
+      await command(h, "followups.set_enabled", {
+        id: policy.id,
+        expected_revision: policy.revision,
+        enabled: false,
+      });
+    await cliReview(h, first.run_id, mode !== "reject");
+    if (mode !== "reject")
+      await until(
+        async () =>
+          (await h.get(first.run_id)).run.followup_bridge?.state === "blocked",
+      );
+    assert.equal((await history(h, policy)).length, 1);
+  }
+});
 
 test("follow-up policy and appointment persist once and dispatch one work-linked Run", async (t) => {
   const h = await controlled(t),

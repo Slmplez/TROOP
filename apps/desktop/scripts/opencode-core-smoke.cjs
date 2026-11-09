@@ -11,7 +11,6 @@ async function main() {
   const manual = process.argv.includes("--manual");
   const lifecycle = process.argv.includes("--lifecycle");
   assert.ok(!real || process.env.DEEPSEEK_API_KEY);
-  assert.ok(!real || !lifecycle);
   const model = real ? "deepseek-flash" : "fixture";
   const cleanup = [];
   const report = {
@@ -240,7 +239,9 @@ try {[IO.File]::WriteAllText(${quote(readonlyFile)},'bad');$scope.readonly_write
     if (lifecycle) {
       assert.ok(native);
       report.lifecycle = [];
-      for (const mode of ["stop", "crash", "revoke", "settings"]) {
+      for (const mode of real
+        ? ["stop", "revoke"]
+        : ["stop", "crash", "revoke", "settings"]) {
         const authority = await command("authorizations.save", {
           expected_revision: 0,
           grant: { ...grantDefinition, name: `Owned OpenCode ${mode}` },
@@ -251,8 +252,10 @@ try {[IO.File]::WriteAllText(${quote(readonlyFile)},'bad');$scope.readonly_write
           engine_id: "opencode",
           tool_mode: "native",
           authorization_id: authority.id,
-          goal: `TROOP_OPENCODE_LIFECYCLE_${mode}`,
-          timeout_seconds: 90,
+          goal: real
+            ? `Use the bash command tool with the configured PowerShell shell to execute this exact script once and wait synchronously. [IO.File]::WriteAllText(${quote(path.join(h.workspace, `started-${mode}.txt`))},$PID.ToString()); Start-Sleep -Seconds 120; [IO.File]::WriteAllText(${quote(path.join(h.workspace, `late-${mode}.txt`))},'late'). This is an owned process-stop acceptance. Do not use other tools or access other files.`
+            : `TROOP_OPENCODE_LIFECYCLE_${mode}`,
+          timeout_seconds: real ? 150 : 90,
         });
         await until(async () => {
           if (fs.existsSync(path.join(h.workspace, `started-${mode}.txt`)))
@@ -352,7 +355,7 @@ try {[IO.File]::WriteAllText(${quote(readonlyFile)},'bad');$scope.readonly_write
       path.join(
         destination,
         lifecycle
-          ? "mock-lifecycle.json"
+          ? `${real ? "real" : "mock"}-lifecycle.json`
           : `${real ? "real" : "mock"}-${manual ? "manual" : native ? "native" : "text"}.json`,
       ),
       JSON.stringify(report, null, 2),

@@ -138,7 +138,18 @@ pub fn save_source(
         {
             return Err("来源身份与资源归属固定，变更时请新建来源。".into());
         }
-        let old = secrets(old)?;
+        let old = match secrets(old) {
+            Ok(value) => value,
+            Err(_) => {
+                if a.secrets.consumer_token.is_none()
+                    || (old["has_webhook_secret"] == true && a.secrets.webhook_secret.is_none())
+                    || (old["has_api_token"] == true && a.secrets.api_token.is_none())
+                {
+                    return Err("来源凭据不可用，请重新提供此前配置的完整凭据。".into());
+                }
+                Secrets::default()
+            }
+        };
         if a.secrets.webhook_secret.is_none() {
             a.secrets.webhook_secret = old.webhook_secret.clone();
         }

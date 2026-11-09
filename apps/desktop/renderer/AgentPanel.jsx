@@ -469,6 +469,20 @@ export default function AgentPanel({
                 choose={choose}
               />
               <h2>模型输出</h2>
+              {run.followup_bridge && (
+                <p role="status">
+                  审核后提议 ·{" "}
+                  {
+                    {
+                      pending: "等待校验",
+                      applied: "已登记预约或交接",
+                      blocked: "已阻断",
+                    }[run.followup_bridge.state]
+                  }
+                  {run.followup_bridge.error?.message &&
+                    ` · ${run.followup_bridge.error.message}`}
+                </p>
+              )}
               <pre className="agent-output">
                 {run.output ||
                   (active ? "等待模型与工具结果…" : "没有文本输出。")}

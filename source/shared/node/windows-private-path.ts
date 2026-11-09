@@ -60,15 +60,15 @@ if (-not ($Item.PSIsContainer -or ($Item -is [IO.FileInfo]))) { throw 'Target mu
 $Current = [Security.Principal.WindowsIdentity]::GetCurrent().User
 $System = [Security.Principal.SecurityIdentifier]::new('S-1-5-18')
 $Administrators = [Security.Principal.SecurityIdentifier]::new('S-1-5-32-544')
-$Acl = Get-Acl -LiteralPath $Target
+# A fresh descriptor persists only DACL changes, preserving owner and audit data.
+$Acl = if ($Item.PSIsContainer) { [Security.AccessControl.DirectorySecurity]::new() } else { [Security.AccessControl.FileSecurity]::new() }
 $Acl.SetAccessRuleProtection($true, $false)
-foreach ($Rule in @($Acl.Access)) { [void]$Acl.RemoveAccessRuleSpecific($Rule) }
 $Inheritance = if ($Item.PSIsContainer) { [Security.AccessControl.InheritanceFlags]'ContainerInherit, ObjectInherit' } else { [Security.AccessControl.InheritanceFlags]::None }
 foreach ($Sid in @($Current, $System, $Administrators)) {
   $Rule = [Security.AccessControl.FileSystemAccessRule]::new($Sid, [Security.AccessControl.FileSystemRights]::FullControl, $Inheritance, [Security.AccessControl.PropagationFlags]::None, [Security.AccessControl.AccessControlType]::Allow)
   [void]$Acl.AddAccessRule($Rule)
 }
-Set-Acl -LiteralPath $Target -AclObject $Acl
+$Item.SetAccessControl($Acl)
 $Verified = Get-Acl -LiteralPath $Target
 $Rules = @($Verified.Access)
 if (-not $Verified.AreAccessRulesProtected) { throw 'ACL inheritance is still enabled.' }

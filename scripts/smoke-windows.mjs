@@ -248,6 +248,8 @@ async function launchPortable(verified, environment, userDataDir, logs, onLaunch
     `--user-data-dir=${userDataDir}`,
     "--remote-debugging-address=127.0.0.1",
     "--remote-debugging-port=0",
+    "--lang=en-US",
+    "--accept-lang=en-US",
     "--disable-gpu",
     "--no-first-run",
   ], {
@@ -287,7 +289,7 @@ async function launchPortable(verified, environment, userDataDir, logs, onLaunch
 async function openRouterSettings(cdp) {
   return await waitForRendererState(
     cdp,
-    `(() => { const visible = node => node.isConnected && node.getClientRects().length > 0 && !node.disabled; const candidates = [...document.querySelectorAll('button,[role="button"]')]; const configure = candidates.find(node => visible(node) && (/^configure proxy-gateway$/i.test((node.textContent ?? '').trim()) || /^configure proxy-gateway$/i.test(node.getAttribute('aria-label') ?? ''))); configure?.click(); return { clicked: configure != null, controls: candidates.filter(visible).map(node => [node.textContent?.trim(), node.getAttribute('aria-label')].filter(Boolean).join(' | ')).filter(Boolean).slice(0, 60) }; })()`,
+    `(() => { const visible = node => node.isConnected && node.getClientRects().length > 0 && !node.disabled; const candidates = [...document.querySelectorAll('button,[role="button"]')]; const configure = candidates.find(node => visible(node) && (/^configure proxy[- ]gateway$/i.test((node.textContent ?? '').trim()) || /^configure proxy[- ]gateway$/i.test(node.getAttribute('aria-label') ?? ''))); configure?.click(); return { clicked: configure != null, controls: candidates.filter(visible).map(node => [node.textContent?.trim(), node.getAttribute('aria-label')].filter(Boolean).join(' | ')).filter(Boolean).slice(0, 60) }; })()`,
     value => value?.clicked === true,
     "Fresh isolated profile did not expose the credential-independent Proxy Gateway setup",
   );
@@ -302,7 +304,7 @@ async function selectProxyGatewayProvider(cdp) {
   );
   await waitForRendererState(
     cdp,
-    `(() => { const visible = node => node.isConnected && node.getClientRects().length > 0 && !node.disabled; const candidates = [...document.querySelectorAll('button,[role="option"],[role="menuitem"],[role="radio"]')]; const option = candidates.find(node => visible(node) && (node.textContent ?? '').trim().toLowerCase() === 'openai-compatible / proxy-gateway'); option?.click(); return { clicked: option != null, controls: candidates.filter(visible).map(node => [node.textContent?.trim(), node.getAttribute('aria-label')].filter(Boolean).join(' | ')).filter(Boolean).slice(0, 60) }; })()`,
+    `(() => { const visible = node => node.isConnected && node.getClientRects().length > 0 && !node.disabled; const candidates = [...document.querySelectorAll('button,[role="option"],[role="menuitem"],[role="radio"]')]; const option = candidates.find(node => visible(node) && ['openai-compatible / proxy gateway', 'openai-compatible / proxy-gateway'].includes((node.textContent ?? '').trim().toLowerCase())); option?.click(); return { clicked: option != null, controls: candidates.filter(visible).map(node => [node.textContent?.trim(), node.getAttribute('aria-label')].filter(Boolean).join(' | ')).filter(Boolean).slice(0, 60) }; })()`,
     value => value?.clicked === true,
     "Router provider selector did not expose the Proxy Gateway option",
   );
@@ -989,7 +991,7 @@ export async function startHarnessServers(secretCanary, { gatewayPort = 1340 } =
 }
 
 async function buildStrictFakeDocker(temporary) {
-  const project = path.join(import.meta.dirname, "fixtures", "windows-fake-docker", "FakeDocker.csproj");
+  const project = path.join(import.meta.dirname, "windows-smoke-fixture", "FakeDocker.csproj");
   const output = path.join(temporary, "fake-docker");
   await mkdir(output, { recursive: true });
   try {

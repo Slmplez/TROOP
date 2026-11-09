@@ -100,6 +100,7 @@ export type Run = {
   authorization_id?: string | null;
   authorization_revision?: number | null;
   trigger?: unknown;
+  followup_bridge?: unknown;
   rule_id?: string | null;
   chain_id?: string | null;
   chain_depth?: number | null;
@@ -930,6 +931,7 @@ export type CliReview = {
   note: string;
 };
 export type CliEngine = {
+  followups?: unknown;
   id: string;
   name: string;
   installed: boolean;

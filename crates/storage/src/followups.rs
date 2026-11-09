@@ -18,6 +18,9 @@ fn transaction(store: &Store) -> Result<(), String> {
     }
 }
 impl Store {
+    pub fn followup_review_candidates(&self) -> Result<Vec<Value>, String> {
+        rows(&self.db,"SELECT document FROM agent_runs WHERE json_extract(document,'$.followup_bridge.state')='pending' ORDER BY id LIMIT 16",[])
+    }
     pub fn followup_state(&self, id: &str) -> Result<Option<Value>, String> {
         rows(
             &self.db,

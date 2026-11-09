@@ -532,6 +532,7 @@ test(
     const sub = path.join(h.workspace, "approved");
     fs.mkdirSync(sub);
     const hook = await h.save({
+      timeout: 15,
       command:
         '\'{"updated_input":{"path":"forbidden.txt","content":"bad","expected_hash":"missing"}}\'',
     });

@@ -1,6 +1,6 @@
 # TROOP
 
-TROOP 0.10.1：Rust Core + Electron 桌面应用。提供模型服务配置、流式对话，以及 Windows 本机 Agent 任务、MCP 工具审批、执行账本、停止与核对恢复；保留工作区管理、托盘和单实例。
+TROOP 0.10.2：Rust Core + Electron 桌面应用。提供模型服务配置、流式对话，以及 Windows 本机 Agent 任务、MCP 工具审批、执行账本、停止与核对恢复；支持工作项、群聊、定时执行和有限期持续跟进，保留工作区管理、托盘和单实例。
 
 开发任务：[本机 Agent 规格 #18](https://github.com/Slmplez/TROOP/issues/18)、[实现 #19](https://github.com/Slmplez/TROOP/issues/19)。网关与真实对话验收见 #13–#15，基础版本见 #11/#12。子代理与所属后台作业见[规格 #20](https://github.com/Slmplez/TROOP/issues/20)、[实现 #21](https://github.com/Slmplez/TROOP/issues/21)。记忆与上下文压缩见[规格 #22](https://github.com/Slmplez/TROOP/issues/22)、[实现 #23](https://github.com/Slmplez/TROOP/issues/23)。Skills 与工作流资料库见[实现 #25](https://github.com/Slmplez/TROOP/issues/25)；Windows Hooks 与模型端配方维护见[#26](https://github.com/Slmplez/TROOP/issues/26)、[#27](https://github.com/Slmplez/TROOP/issues/27)；MCP 接线见 [#46](https://github.com/Slmplez/TROOP/issues/46)，桌面管理见 [#47](https://github.com/Slmplez/TROOP/issues/47)，真实服务验收见 #48；自动化留待后续开发。启动不需要 Docker 或产品账号；发送模型请求需要配置你使用的服务。
 
@@ -118,7 +118,20 @@ npm --prefix apps/desktop start -- --user-data-dir=E:\TroopData\Development
 
 内部协议为逐行 JSON-RPC，每帧最多 64 KiB，握手版本为 10。非握手调用必须匹配 Core generation，流通知带代际和递增序号；界面读取 Core 持久化快照。最多 64 个未决控制请求。Core 不开放通用网络控制监听，OAuth 授权期间使用临时 loopback 回调；Agent 工具只能经固定任务接口派发，Renderer 没有通用 Shell、文件或 invoke 入口。
 
-SQLite schema 为 10，自动迁移本机 v1/v2/v3/v4/v5/v6/v7/v8/v9 并保留工作区、服务配置和会话；更高版本数据库拒绝打开；不同来源的 Herdr schema 8/9/10 与缺失必要 MCP 表的部分布局在更改数据库前拒绝，统一迁移属于后续版本 11。升级前备份应用数据，升级后不要用旧 Core 写入同一数据目录。开发构建使用带版本号的 Core 文件；运行中的旧窗口保持旧版本，需从托盘明确退出后再启动新版。
+当前 SQLite schema 为 30，沿 TROOP 既有迁移逐版本升级并保留工作区、服务配置、会话和工作记录；更高版本数据库拒绝打开。来源不同或布局不兼容的数据库先经过身份与结构检查。升级前备份应用数据，升级后不要用旧 Core 写入同一数据目录。开发构建使用带版本号的 Core 文件；运行中的旧窗口保持旧版本，需从托盘明确退出后再启动新版。
+
+## Windows 便携包
+
+准备好锁定依赖与 Electron 后，在仓库根目录执行。
+
+```powershell
+npm --prefix apps/desktop run package:windows
+node apps/desktop/scripts/portable-smoke.mjs
+```
+
+独立 TROOP ZIP 输出到 `.build/troop-desktop/`，包含 Electron、release Core 和固定 MXC 运行时。解压后运行 `TROOP.exe`，无需另装 Node 或 Rust。CLI 引擎与模型配置分别准备。默认资料目录为 `%APPDATA%\TROOP`，也可传入 `--user-data-dir=<绝对路径>`。升级时明确退出应用，替换程序目录并继续使用原资料目录。Windows 凭据引用仍绑定原 Windows 账户，凭据缺失时需重新登记此前配置的完整凭据。
+
+`troop-portable.json` 保存完整文件清单与摘要。验收脚本在仓库外解压 ZIP，移除 Node/Rust PATH，验证真实生产入口、重启、schema 29 迁移和退出后的 Core 停止。CI 的 `TROOP Windows portable` 工作流保存候选 ZIP 与报告，当前候选为未签名构建。
 
 ## 检查
 

@@ -1091,6 +1091,17 @@ impl Manager {
             "failed"
         });
         run["waiting"] = json!([]);
+        let structured = serde_json::from_str::<Value>(
+            task["evidence"]["result"]["text"].as_str().unwrap_or(""),
+        )
+        .ok();
+        if request.accepted
+            && structured.as_ref().is_some_and(|value| {
+                value.get("troop_followup").is_some() || value.get("troop_handoff").is_some()
+            })
+        {
+            run["followup_bridge"] = json!({"state":"pending","evidence_sha256":task["evidence"]["sha256"],"task_id":task["id"]});
+        }
         store.agent_commit(
             &mut run,
             &mut [],

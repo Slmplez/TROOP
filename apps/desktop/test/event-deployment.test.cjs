@@ -8,6 +8,33 @@ const { spawn, spawnSync } = require("node:child_process");
 const { setup } = require("./fixtures/hooks-fixture.cjs");
 const { until } = require("./fixtures/hooks-fixture.cjs");
 const { coreBinary } = require("../src/core-path.cjs");
+test(
+  "host heartbeat preserves UTC dates parsed by PowerShell JSON",
+  { skip: process.platform !== "win32" },
+  () => {
+    const script = `
+$h = '{"checked_at":"2026-11-09T00:00:00Z"}' | ConvertFrom-Json
+$checkedAt = [datetimeoffset]$h.checked_at
+$age = ([datetimeoffset]'2026-11-09T00:00:01Z' - $checkedAt.ToUniversalTime()).TotalSeconds
+if ($age -ne 1) { throw "UTC heartbeat changed timezone" }
+Write-Output $age
+`;
+    const result = spawnSync("pwsh.exe", ["-NoProfile", "-Command", script], {
+      encoding: "utf8",
+      windowsHide: true,
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout.trim(), "1");
+    assert.ok(
+      fs
+        .readFileSync(
+          path.join(__dirname, "../scripts/host-events.ps1"),
+          "utf8",
+        )
+        .includes("[datetimeoffset]$health.checked_at"),
+    );
+  },
+);
 const {
   configuration,
   preflight,
@@ -240,6 +267,7 @@ test("consistent online backup restores Inbox and source credential identities i
       secrets: {
         webhook_secret: "owned-deployment-webhook-secret",
         consumer_token: "owned-deployment-consumer-token",
+        api_token: "owned-deployment-api-token",
       },
     },
   });
@@ -299,6 +327,92 @@ test("consistent online backup restores Inbox and source credential identities i
   const inbox = await recovered.control("events.inbox", { source_id: source });
   assert.equal(inbox.items.length, 1);
   assert.equal(inbox.items[0].acked, false);
+  if (process.platform === "win32") {
+    const reference = manifest.sources[0].secret_ref;
+    assert.ok(
+      reference.startsWith(`TROOP/events/${first.instance_id}/${source}/`),
+    );
+    const removed = spawnSync("cmdkey.exe", [`/delete:${reference}`], {
+      windowsHide: true,
+      stdio: "ignore",
+    });
+    assert.equal(removed.status, 0);
+    assert.equal(
+      (
+        await fetch(first.address + "/webhooks/" + source, {
+          method: "POST",
+          headers,
+          body,
+        })
+      ).status,
+      503,
+    );
+    const rebind = {
+      operation_id: crypto.randomUUID(),
+      instance_id: first.instance_id,
+      method: "events.source.save",
+      input: {
+        id: source,
+        expected_revision: saved.result.revision,
+        definition: {
+          name: "Rebound deployment",
+          kind: "webhook",
+          project: "deployment",
+          workspace_id: h.wid,
+          enabled: true,
+          mode: "local",
+          api_base_url: h.server.origin,
+          consumer_id: h.core.snapshot().storage_instance,
+        },
+        secrets: {
+          webhook_secret: "owned-rebound-webhook-secret",
+          consumer_token: "owned-rebound-consumer-token",
+          api_token: "owned-rebound-api-token",
+        },
+      },
+    };
+    const partial = structuredClone(rebind);
+    delete partial.input.secrets.api_token;
+    assert.notEqual(
+      (await recovered.control("operations.execute", partial)).state,
+      "committed",
+    );
+    rebind.operation_id = crypto.randomUUID();
+    const rebound = await recovered.control("operations.execute", rebind);
+    assert.equal(rebound.state, "committed", JSON.stringify(rebound.error));
+    assert.equal(rebound.result.id, source);
+    assert.equal(
+      (
+        await fetch(first.address + "/webhooks/" + source, {
+          method: "POST",
+          headers,
+          body,
+        })
+      ).status,
+      401,
+    );
+    const reboundHeaders = {
+      ...headers,
+      "x-troop-signature":
+        "sha256=" +
+        crypto
+          .createHmac("sha256", "owned-rebound-webhook-secret")
+          .update(body)
+          .digest("hex"),
+    };
+    const delivered = await fetch(first.address + "/webhooks/" + source, {
+      method: "POST",
+      headers: reboundHeaders,
+      body,
+    });
+    assert.equal(delivered.status, 202);
+    assert.equal((await delivered.json()).duplicate, true);
+    assert.equal(
+      (await recovered.control("events.inbox", { source_id: source })).items
+        .length,
+      1,
+    );
+  }
   await recovered.stop();
   assert.throws(() => restoreBackup(destination, restored), /exist/i);
   const broken = JSON.parse(

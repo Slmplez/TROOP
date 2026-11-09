@@ -692,6 +692,20 @@ function FollowupsForm({ ready, onOpenRun }) {
                       {entry.reason} · 预期 {entry.expected_change}
                     </p>
                     {entry.status_reason && <p>{entry.status_reason}</p>}
+                    {entry.run?.followup_bridge && (
+                      <p role="status">
+                        审核后提议 ·{" "}
+                        {
+                          {
+                            pending: "等待校验",
+                            applied: "已登记",
+                            blocked: "已阻断",
+                          }[entry.run.followup_bridge.state]
+                        }
+                        {entry.run.followup_bridge.error?.message &&
+                          ` · ${entry.run.followup_bridge.error.message}`}
+                      </p>
+                    )}
                     {entry.run_id && (
                       <button onClick={() => onOpenRun?.(entry.run_id)}>
                         查看执行 #{entry.run_id}
