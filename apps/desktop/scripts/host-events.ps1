@@ -49,7 +49,8 @@ try {
             $healthy = $false
             try {
                 $health = Get-Content -LiteralPath $settings.health_file -Raw | ConvertFrom-Json
-                $age = ([datetime]::UtcNow - [datetime]::Parse($health.checked_at).ToUniversalTime()).TotalSeconds
+                $checkedAt = [datetimeoffset]$health.checked_at
+                $age = ([datetimeoffset]::UtcNow - $checkedAt.ToUniversalTime()).TotalSeconds
                 $healthy = $health.host_pid -eq $ownedProcess.Id -and $health.ready -and $age -ge 0 -and $age -lt $heartbeatAgeLimit
             } catch { $healthy = $false }
             if ($healthy) { $started = [datetime]::UtcNow }
