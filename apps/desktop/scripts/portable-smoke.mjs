@@ -167,7 +167,12 @@ async function start(profile) {
 }
 
 async function quit(evaluate, pid) {
-  await evaluate("window.troop.quit()");
+  try {
+    await evaluate("window.troop.quit()");
+  } catch (error) {
+    if (!error.message.includes("Execution context was destroyed")) throw error;
+  }
+  await until(() => child.exitCode !== null, 20000);
   assert.equal(await exit, 0);
   socket.close();
   await until(() => !alive(pid), 10000);
@@ -364,7 +369,12 @@ try {
     const owned = fs.realpathSync(folder);
     assert.equal(path.dirname(owned), fs.realpathSync(os.tmpdir()));
     assert.ok(path.basename(owned).startsWith("troop-portable-"));
-    fs.rmSync(owned, { recursive: true });
+    fs.rmSync(owned, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 100,
+    });
     report.temporary_directory_removed = true;
   }
   fs.writeFileSync(
