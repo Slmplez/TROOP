@@ -354,6 +354,158 @@ async function main() {
   report.checks.push(
     "1440/768/660 desktop widths avoid horizontal overflow; stopping the chain cancels its active Run, survives restart and creates no replacement execution",
   );
+  slow = false;
+  const cliWork = await command("work_items.save", {
+    expected_revision: 0,
+    item: {
+      title: "CLI 审核后预约",
+      goal: "固定证据提议",
+      acceptance: "人工接纳",
+      owner_agent_id: 1,
+      workspace_id: wid,
+    },
+  });
+  const cliGrant = await command("authorizations.save", {
+    expected_revision: 0,
+    grant: {
+      name: "Pi 跟进范围",
+      purpose: "cli_start",
+      agent_id: 1,
+      engine_id: "pi",
+      workspace_id: wid,
+      project_ids: [],
+      read_roots: [workspace],
+      write_roots: [workspace],
+      operations: ["start"],
+      network: "any",
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+      program: path.resolve(
+        __dirname,
+        `../../../target/debug/examples/pi_protocol_probe${process.platform === "win32" ? ".exe" : ""}`,
+      ),
+    },
+  });
+  const proposedAt = current + 90_000;
+  const cliDefinition = {
+    name: "Pi 审核后复查",
+    enabled: true,
+    work_item_id: cliWork.id,
+    agent_id: 1,
+    workspace_id: wid,
+    project_id: null,
+    start: {
+      client_run_id: crypto.randomUUID(),
+      agent_id: 1,
+      workspace_id: wid,
+      project_ids: [],
+      engine_id: "pi",
+      authorization_id: cliGrant.id,
+      tool_mode: "disabled",
+      approval_mode: "preauthorized",
+      goal: `owned followup fixture\nowned followup fixture result ${JSON.stringify({ troop_followup: { at_ms: proposedAt, reason: "审核后复查", expected_change: "资料更新" } })}`,
+    },
+    expected_plan_sha256: null,
+    expires_at_ms: current + 600_000,
+    min_interval_ms: 60_000,
+    max_runs: 2,
+    handoff_policy_ids: [],
+  };
+  const cliPlan = await core.request("followups.preview", {
+    policy: cliDefinition,
+  });
+  cliDefinition.expected_plan_sha256 = cliPlan.plan_sha256;
+  const cliPolicy = await command("followups.save", {
+    expected_revision: 0,
+    policy: cliDefinition,
+  });
+  await command("followups.run", {
+    id: cliPolicy.id,
+    expected_revision: cliPolicy.revision,
+    client_request_id: crypto.randomUUID(),
+    at_ms: current,
+    reason: "桌面审核验证",
+    expected_change: "固定提议",
+  });
+  const cliEntry = await until(async () =>
+    (await core.request("followups.history", { id: cliPolicy.id })).items.find(
+      (row) => row.run?.waiting.includes("review"),
+    ),
+  );
+  w.webContents.reload();
+  await open(w);
+  await until(() =>
+    js(
+      w,
+      "[...document.querySelectorAll('.followups-page .provider-choice')].some(el=>el.textContent.includes('Pi 审核后复查'))",
+    ),
+  );
+  await js(
+    w,
+    "[...document.querySelectorAll('.followups-page .provider-choice')].find(el=>el.textContent.includes('Pi 审核后复查')).click()",
+  );
+  await until(() =>
+    js(w, "Boolean(document.querySelector('.followup-entry button'))"),
+  );
+  await click(w, ".followup-entry button");
+  await until(() =>
+    js(w, "Boolean(document.querySelector('.owned-task-list button'))"),
+  );
+  await click(w, ".owned-task-list button");
+  await until(() =>
+    js(w, "Boolean(document.querySelector('#cli-review-note'))"),
+  );
+  await field(w, "cli-review-note", "核对固定预约提议", "HTMLTextAreaElement");
+  await click(w, "#cli-review-confirm");
+  await until(() =>
+    js(w, "!document.querySelector('#cli-review-accept').disabled"),
+  );
+  await click(w, "#cli-review-accept");
+  await until(
+    async () =>
+      (await core.request("agent.get", { id: cliEntry.run_id })).run
+        .followup_bridge?.state === "applied",
+  );
+  await until(() =>
+    js(w, "document.body.innerText.includes('已登记预约或交接')"),
+  );
+  await until(() =>
+    js(
+      w,
+      "document.querySelector('.agent-page')?.getBoundingClientRect().width>0",
+    ),
+  );
+  await js(
+    w,
+    "[...document.querySelectorAll('.agent-page p[role=status]')].find(el=>el.innerText.includes('审核后提议')).scrollIntoView({block:'center'})",
+  );
+  await sleep(250);
+  w.setSize(1440, 900);
+  await js(
+    w,
+    "[...document.querySelectorAll('.agent-page p[role=status]')].find(el=>el.innerText.includes('审核后提议')).scrollIntoView({block:'center'})",
+  );
+  w.webContents.invalidate();
+  await sleep(250);
+  fs.writeFileSync(
+    path.join(profile, "cli-followup-reviewed.png"),
+    (
+      await w.webContents.capturePage(undefined, {
+        stayHidden: true,
+        stayAwake: true,
+      })
+    ).toPNG(),
+  );
+  const registered = await core.request("followups.history", {
+    id: cliPolicy.id,
+  });
+  assert.equal(registered.items.length, 2);
+  assert.equal(
+    registered.items.find((row) => row.state === "pending").source_run_id,
+    cliEntry.run_id,
+  );
+  report.checks.push(
+    "Pi real Worker seals a proposal; the desktop fixed-evidence review registers one durable check and displays the bridge result",
+  );
   report.passed = true;
 }
 main()

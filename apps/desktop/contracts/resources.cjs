@@ -681,6 +681,7 @@ module.exports = ({ object: o, array: a, oneOf: e, method: m }) => {
       note: "string",
     }),
     CliEngine: o({
+      "followups?": "json",
       id: "string",
       name: "string",
       installed: "boolean",

@@ -44,7 +44,9 @@ fn main() {
                     json!({"type":"system","subtype":"task_started","session_id":"owned-claude-session","task_id":"unplanned-task"}),
                 );
             }
-            let text = if valid && request.to_string().contains("troop_group_reply") {
+            let text = if valid && request.to_string().contains("owned followup fixture") {
+                std::fs::read_to_string("followup-result.json").unwrap()
+            } else if valid && request.to_string().contains("troop_group_reply") {
                 json!({"troop_group_reply":{"body":"Owned Claude group reply","mention_agent_ids":[],"broadcast":false}}).to_string()
             } else if valid {
                 "Owned Claude text result".into()

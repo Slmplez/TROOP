@@ -117,6 +117,7 @@ pub fn list(input: Value) -> Result<Value, String> {
             "version":version,"version_evidence":if version.is_some(){"package_metadata"}else{"unverified"},
             "execution_available":path.is_some(),"permissions":"unverified","model_access":"unverified",
             "interactions":interactions(id),
+            "followups":{"contract_version":1,"proposal":"reviewed_complete_evidence_json","envelopes":["troop_followup","troop_handoff"],"scope":"configured_policy_and_route","deduplication":"run_and_fixed_evidence","restart":"durable_review_intent_without_execution_replay","usage":"chain_start_deadline_and_concurrency_caps"},
             "group_delivery":{"contract_version":1,"required_version":interactions(id)["required_version"],"initial_context":"new_run_bounded_group_envelope","busy":"ordered_queue","adoption":if *id=="codex"{"completed_turn_with_thread_and_turn_ids"}else{"completed_settled_session"},"reply":"reviewed_complete_evidence_structured_result","stop":"owned_process_stop_and_reconcile","restart":"reconcile_without_automatic_replay","internal_usage":"unobservable_chain_start_and_deadline_caps"},
             "required_action":if path.is_some(){"validate_managed_execution_and_permissions"}else{"install_engine"}})
     }).collect::<Vec<_>>()))

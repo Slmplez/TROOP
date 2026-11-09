@@ -100,7 +100,9 @@ fn main() {
                     stdout.flush().unwrap();
                     continue;
                 }
-                if matches!(prompt, "ask owned question" | "many owned questions") {
+                if matches!(prompt, "ask owned question" | "many owned questions")
+                    || prompt.contains("followup owned question")
+                {
                     if prompt == "many owned questions" {
                         remaining_questions = 35;
                     }
@@ -130,7 +132,9 @@ fn main() {
                 } else if !prompt.contains("troop_group_reply") {
                     std::fs::write("result.txt", "owned CLI output").unwrap();
                 }
-                let text = if prompt.contains("troop_group_reply") {
+                let text = if prompt.contains("owned followup fixture") {
+                    std::fs::read_to_string("followup-result.json").unwrap()
+                } else if prompt.contains("troop_group_reply") {
                     json!({"troop_group_reply":{"body":"Owned Codex group reply","mention_agent_ids":[],"broadcast":false}}).to_string()
                 } else {
                     "Owned CLI task finished".into()

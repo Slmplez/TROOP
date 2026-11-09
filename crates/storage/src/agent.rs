@@ -41,6 +41,7 @@ pub fn public_run(doc: &Value, brief: bool) -> Value {
         "rule_id",
         "kind",
         "trigger",
+        "followup_bridge",
         "chain_id",
         "chain_depth",
         "compaction_epoch",

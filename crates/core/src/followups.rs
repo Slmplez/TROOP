@@ -5,6 +5,24 @@ use troop_storage::Store;
 pub(crate) fn now_ms() -> i64 {
     crate::group_runtime::now().saturating_mul(1000)
 }
+pub(crate) fn reviewed_cli_result(store: &Store, run: &Value) -> Result<Value, String> {
+    if run["kind"] != "external_cli" || run["state"] != "completed" || !run["intent"].is_null() {
+        return Err("CLI 提议需要当前执行的已接纳固定结果。".into());
+    }
+    store
+        .owned_tasks(run["id"].as_i64().ok_or("执行身份缺失。")?)?
+        .into_iter()
+        .find(|task| {
+            task["owner_run_id"] == run["id"]
+                && task["kind"] == "external_cli"
+                && task["stopped"] == true
+                && task["reviewed"] == true
+                && task["review"]["accepted"] == true
+                && task["evidence"]["coverage_complete"] == true
+                && task["review"]["evidence_sha256"] == task["evidence"]["sha256"]
+        })
+        .ok_or("CLI 提议缺少完整固定证据及其人工接纳。".into())
+}
 pub(crate) fn policy(store: &Store, id: &str) -> Result<Value, String> {
     let value = store.rule_get(id)?;
     if value["kind"] != "followup" {

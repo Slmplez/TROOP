@@ -103,6 +103,7 @@ const types = {
     "authorization_id?": "string|null",
     "authorization_revision?": "count|null",
     "trigger?": "json",
+    "followup_bridge?": "json",
     "rule_id?": "string|null",
     "chain_id?": "string|null",
     "chain_depth?": "count|null",
