@@ -120,6 +120,10 @@ pub const METHODS: &[&str] = &[
     "system.hello",
     "operations.execute",
     "operations.get",
+    "operations.archive.settings",
+    "operations.archive.configure",
+    "operations.archive.run",
+    "operations.archive.query",
     "mcp.list",
     "mcp.get",
     "mcp.save",
@@ -206,6 +210,8 @@ pub const METHODS: &[&str] = &[
 ];
 
 pub const OPERATION_COMMANDS: &[&str] = &[
+    "operations.archive.configure",
+    "operations.archive.run",
     "office.draft.save",
     "office.draft.discard",
     "office.reference.create",

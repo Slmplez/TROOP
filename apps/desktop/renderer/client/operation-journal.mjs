@@ -151,7 +151,25 @@ export class OperationJournal {
       operation_id: entry.request.operation_id,
       instance_id: entry.request.instance_id,
     });
-    return this.accept(entry, receipt);
+    return this.receive(client, entry, receipt);
+  }
+  async receive(client, entry, receipt) {
+    const accepted = this.accept(entry, receipt);
+    if (accepted.state !== "archived") return accepted;
+    const reference = accepted.archive_ref;
+    if (
+      !reference ||
+      reference.operation_id !== entry.request.operation_id ||
+      reference.instance_id !== entry.request.instance_id
+    )
+      throw new ClientError("归档回执身份不匹配。", "invalid_response");
+    const original = await client.request(
+      "operations.archive.query",
+      reference,
+    );
+    if (!["committed", "rejected", "dismissed"].includes(original.state))
+      throw new ClientError("归档回执缺少终态。", "invalid_response");
+    return this.accept(entry, original);
   }
   async resolve(client, entry, sensitiveInput) {
     if (entry.attempted) {
@@ -165,7 +183,8 @@ export class OperationJournal {
       );
     entry.attempted = true;
     this.save(entry);
-    return this.accept(
+    return this.receive(
+      client,
       entry,
       await client.request(
         "operations.execute",

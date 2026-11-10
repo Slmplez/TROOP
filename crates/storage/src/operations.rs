@@ -84,6 +84,9 @@ impl Store {
         result: Result<Value, String>,
     ) -> Result<Value, String> {
         let mut receipt = self.operation_get(subject, id)?;
+        if receipt["state"] == "archived" {
+            return Ok(receipt);
+        }
         match result {
             Ok(value) => {
                 receipt["state"] = json!("committed");

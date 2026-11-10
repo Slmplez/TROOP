@@ -104,6 +104,8 @@ const ALLOWED = new Set([
 
   "operations.execute",
   "operations.get",
+  "operations.archive.settings",
+  "operations.archive.query",
   "mcp.list",
   "mcp.get",
   "mcp.save",

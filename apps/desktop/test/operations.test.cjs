@@ -19,6 +19,74 @@ const startInput = (h) => ({
   goal: "Operation ledger acceptance",
 });
 const execute = (h, request) => h.core.request("operations.execute", request);
+
+test("archived command receipts remain queryable and never replay after restart", async (t) => {
+  const h = await setup(t);
+  const request = operation(h, "workspace.rename", {
+    id: h.wid,
+    name: "Archived name",
+  });
+  const original = await execute(h, request);
+  assert.equal(original.state, "committed");
+  const settings = await h.core.request("operations.archive.settings", {});
+  assert.equal(settings.enabled, false);
+  const configured = await execute(
+    h,
+    operation(h, "operations.archive.configure", {
+      expected_revision: settings.revision,
+      enabled: true,
+      retention_seconds: 60,
+    }),
+  );
+  assert.equal(configured.state, "committed");
+  const db = new DatabaseSync(path.join(h.data, "troop.sqlite3"));
+  t.after(() => db.close());
+  db.prepare(
+    "UPDATE operation_receipt_times SET updated_at=0 WHERE subject='desktop' AND operation_id=?",
+  ).run(request.operation_id);
+  const compacted = await execute(
+    h,
+    operation(h, "operations.archive.run", {}),
+  );
+  assert.equal(compacted.result.archived, 1);
+  const stub = await query(h, request);
+  assert.equal(stub.state, "archived");
+  assert.equal(stub.terminal_state, "committed");
+  assert.deepEqual(
+    await h.core.request("operations.archive.query", stub.archive_ref),
+    original,
+  );
+  await assert.rejects(
+    h.core.request("operations.archive.query", {
+      ...stub.archive_ref,
+      instance_id: "foreign",
+    }),
+  );
+  await assert.rejects(
+    h.core.request("operations.archive.query", {
+      ...stub.archive_ref,
+      archive_id: "foreign",
+    }),
+  );
+  await h.core.stop();
+  await h.core.start();
+  assert.deepEqual(await execute(h, request), stub);
+  const conflict = await execute(h, {
+    ...request,
+    input: { ...request.input, name: "Changed" },
+  });
+  assert.equal(conflict.error.kind, "operation_conflict");
+  assert.deepEqual(
+    await h.core.request("operations.archive.query", stub.archive_ref),
+    original,
+  );
+  assert.equal(
+    (await h.core.request("workspace.list", {})).items.find(
+      (w) => w.id === h.wid,
+    ).name,
+    "Archived name",
+  );
+});
 const query = (h, request) =>
   h.core.request("operations.get", {
     operation_id: request.operation_id,

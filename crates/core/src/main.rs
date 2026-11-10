@@ -410,6 +410,35 @@ impl Core {
             }
             return Ok((receipt, false));
         }
+        if method == "operations.archive.settings" {
+            if p != json!({}) {
+                return Err("归档配置查询参数无效。".into());
+            }
+            return Ok((self.store.operation_archive_settings()?, false));
+        }
+        if method == "operations.archive.query" {
+            #[derive(serde::Deserialize)]
+            #[serde(deny_unknown_fields)]
+            struct ArchiveQuery {
+                instance_id: String,
+                operation_id: String,
+                archive_id: String,
+            }
+            let query = params::<ArchiveQuery>(p)?;
+            if query.instance_id != self.store.instance_id()?
+                || Uuid::parse_str(&query.operation_id).is_err()
+            {
+                return Err("Invalid operation identity or storage instance".into());
+            }
+            return Ok((
+                self.store.operation_archive_get(
+                    "desktop",
+                    &query.operation_id,
+                    &query.archive_id,
+                )?,
+                false,
+            ));
+        }
         if method == "operations.get" {
             let query = params::<troop_protocol::OperationQuery>(p)?;
             if query.instance_id != self.store.instance_id()?
@@ -806,7 +835,7 @@ async fn run() -> Result<(), String> {
             Some(message)=update.recv()=>core.accept(message)?,
             Some(message)=core.agents.receiver.recv()=>core.agents.accept(&mut core.store,message)?,
             Some(message)=core.oauth.receiver.recv()=>core.oauth.accept(&mut core.store,message)?,
-            _=event_retention.tick()=>{if let Err(error)=core.store.event_prune_payloads(){eprintln!("Event payload retention deferred: {error}");}},
+            _=event_retention.tick()=>{if let Err(error)=core.store.event_prune_payloads(){eprintln!("Event payload retention deferred: {error}");}if let Err(error)=core.store.archive_operations(){eprintln!("Operation receipt archive deferred: {error}");}},
             _=schedule.tick()=>{ if !core.receiver_only {reminders::pump(&mut core.store,&mut core.reminder_clock)?;core.agents.pump_schedules(&mut core.store,&core.reminder_clock)?;core.agents.pump_followups(&mut core.store,&core.reminder_clock)?;core.event_consumer.pump(&mut core.store,&core.generation)?;core.agents.pump_rules(&mut core.store)?;} },
         }
         if !core.receiver_only {

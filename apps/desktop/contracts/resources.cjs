@@ -1699,6 +1699,32 @@ module.exports = ({ object: o, array: a, oneOf: e, method: m }) => {
     "string|null",
   );
   add("rules.list", "rulesList", "Page", "RulePage");
+  add(
+    "operations.archive.settings",
+    "operationArchiveSettings",
+    "Empty",
+    o({ revision: "id", enabled: "boolean", retention_seconds: "id" }),
+  );
+  add(
+    "operations.archive.configure",
+    "operationArchiveConfigure",
+    o({ expected_revision: "id", enabled: "boolean", retention_seconds: "id" }),
+    o({ revision: "id", enabled: "boolean", retention_seconds: "id" }),
+    true,
+  );
+  add(
+    "operations.archive.run",
+    "operationArchiveRun",
+    "Empty",
+    o({ archived: "count", settings_revision: "id" }),
+    true,
+  );
+  add(
+    "operations.archive.query",
+    "operationArchiveQuery",
+    o({ operation_id: "string", instance_id: "string", archive_id: "string" }),
+    "OperationReceipt",
+  );
   add("rules.get", "rulesGet", "ResourceId", "AutomationRule");
   add("rules.history", "rulesHistory", "ResourceHistory", "RuleHistory");
   add("rules.save", "rulesSave", "RuleSave", "AutomationRule", true);

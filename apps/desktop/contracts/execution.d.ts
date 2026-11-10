@@ -58,11 +58,19 @@ export type OperationReceipt = {
     | "rejected"
     | "conflict"
     | "needs_reconciliation"
-    | "dismissed";
+    | "dismissed"
+    | "archived";
   method?: string;
   result?: unknown;
   error?: unknown;
   execution_ref?: number | null;
+  terminal_state?: string;
+  fingerprint?: string;
+  archive_ref?: {
+    archive_id: string;
+    operation_id: string;
+    instance_id: string;
+  };
 };
 export type Id = { id: number };
 export type Page = { offset?: number };
@@ -1907,6 +1915,26 @@ export interface Requests {
   "workspace.remove": { input: Id; output: WorkspacePage };
   "desktop.choose-directory": { input: Empty; output: string | null };
   "rules.list": { input: Page; output: RulePage };
+  "operations.archive.settings": {
+    input: Empty;
+    output: { revision: number; enabled: boolean; retention_seconds: number };
+  };
+  "operations.archive.configure": {
+    input: {
+      expected_revision: number;
+      enabled: boolean;
+      retention_seconds: number;
+    };
+    output: { revision: number; enabled: boolean; retention_seconds: number };
+  };
+  "operations.archive.run": {
+    input: Empty;
+    output: { archived: number; settings_revision: number };
+  };
+  "operations.archive.query": {
+    input: { operation_id: string; instance_id: string; archive_id: string };
+    output: OperationReceipt;
+  };
   "rules.get": { input: ResourceId; output: AutomationRule };
   "rules.history": { input: ResourceHistory; output: RuleHistory };
   "rules.save": { input: RuleSave; output: AutomationRule };

@@ -38,6 +38,70 @@ const receipt = (request, state = "committed") => ({
   state,
   result: { accepted: true },
 });
+
+test("journal resolves an archived receipt through its fixed reference without executing again", async () => {
+  const { journal, storage, OperationJournal } = await fixture();
+  const entry = journal.prepare("store", "agent.approve", {
+    id: 1,
+    epoch: 1,
+    approved: true,
+  });
+  entry.attempted = true;
+  journal.save(entry);
+  const reopened = new OperationJournal(storage);
+  reopened.select("store");
+  const reference = {
+    instance_id: "store",
+    operation_id: entry.request.operation_id,
+    archive_id: "fixed",
+  };
+  const calls = [];
+  const client = {
+    request: async (method, input) => {
+      calls.push(method);
+      if (method === "operations.get")
+        return {
+          ...receipt(entry.request, "archived"),
+          archive_ref: reference,
+        };
+      assert.equal(method, "operations.archive.query");
+      assert.deepEqual(input, reference);
+      return receipt(entry.request);
+    },
+  };
+  assert.equal(
+    (await reopened.resolve(client, reopened.entries("store")[0])).state,
+    "committed",
+  );
+  assert.deepEqual(calls, ["operations.get", "operations.archive.query"]);
+});
+
+test("journal rejects an archive reference pointing at another operation", async () => {
+  const { journal } = await fixture();
+  const entry = journal.prepare("store", "agent.approve", {
+    id: 1,
+    epoch: 1,
+    approved: true,
+  });
+  entry.attempted = true;
+  journal.save(entry);
+  await assert.rejects(
+    journal.resolve(
+      {
+        request: async () => ({
+          ...receipt(entry.request, "archived"),
+          archive_ref: {
+            instance_id: "store",
+            operation_id: "other",
+            archive_id: "wrong",
+          },
+        }),
+      },
+      entry,
+    ),
+    /归档回执身份/,
+  );
+});
 test("sensitive commands persist only a digest; lost response recovery never stores or replays the credential", async () => {
   const { journal, storage, OperationJournal } = await fixture();
   const input = {
