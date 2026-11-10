@@ -6,7 +6,7 @@ import ReminderPanel from "./ReminderPanel";
 import SchedulesPanel from "./SchedulesPanel";
 import FollowupsPanel from "./FollowupsPanel";
 import WorkItemExecution from "./WorkItemExecution";
-import SchemaForm from "./SchemaForm";
+import SchemaForm, { validateSchemaFields } from "./SchemaForm";
 import CorePoliciesPanel from "./CorePoliciesPanel";
 import { ruleFormSchema, schemaDefault } from "./schema-values.mjs";
 
@@ -132,7 +132,7 @@ function EventRulesPanel({ ready, onOpenRun }) {
       if (action)
         value.start.action.arguments = schemaDefault(
           action.parameters,
-          definition.start?.action?.arguments,
+          value.start.action.arguments,
         );
     }
     setText(JSON.stringify(value));
@@ -185,6 +185,8 @@ function EventRulesPanel({ ready, onOpenRun }) {
     }
   }
   async function save(toggle) {
+    if (!validateSchemaFields("rule-definition"))
+      throw Error("配置参数尚未通过校验，未保存的文本已保留。");
     const rule = JSON.parse(text);
     if (toggle !== undefined) rule.enabled = toggle;
     const saved = await clientModels.command("rules.save", {

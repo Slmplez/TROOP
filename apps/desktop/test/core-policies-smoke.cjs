@@ -9,7 +9,7 @@ const fs = require("node:fs"),
   assert = require("node:assert/strict");
 const profile = process.argv[2],
   report = { passed: false, checks: [] };
-let runtime;
+let runtime, mcp;
 async function main() {
   fs.mkdirSync(path.join(profile, "workspace"), { recursive: true });
   runtime = await bootstrap({ userData: profile, show: false });
@@ -155,6 +155,120 @@ async function main() {
   report.checks.push(
     "Renderer reload keeps saved scope limits and archive configuration",
   );
+  mcp = await require("./fixtures/mcp-agent-server.cjs").mcpServer();
+  const service = await core.request("mcp.save", {
+    expected_revision: 0,
+    definition: {
+      name: "Schema form MCP",
+      transport: "http",
+      location: "remote",
+      url: mcp.url,
+      enabled: true,
+      agent_ids: [1],
+      auth_mode: "none",
+    },
+  });
+  const call = {
+    server_id: service.id,
+    tool: "echo",
+    arguments: { text: "001✓", count: 2 },
+  };
+  const permission = await core.request("operations.execute", {
+    operation_id: crypto.randomUUID(),
+    instance_id: core.snapshot().storage_instance,
+    method: "authorizations.save",
+    input: {
+      expected_revision: 0,
+      grant: {
+        name: "Exact MCP schema form",
+        purpose: "mcp_call",
+        agent_id: 1,
+        engine_id: "native",
+        workspace_id: workspace.id,
+        project_ids: [],
+        read_roots: [],
+        write_roots: [],
+        operations: ["call_mcp"],
+        network: "any",
+        expires_at: Math.floor(Date.now() / 1000) + 600,
+        rule_id: null,
+        mcp_calls: [{ ...call, revision: service.revision }],
+      },
+    },
+  });
+  assert.equal(permission.state, "committed", JSON.stringify(permission.error));
+  await js("document.getElementById('rules-events-tab').click()");
+  await until(() =>
+    js("Boolean(document.getElementById('rule-definition.name'))"),
+  );
+  const rule = {
+    name: "MCP schema form",
+    enabled: false,
+    event: "run.completed",
+    workspace_id: workspace.id,
+    source_run_id: null,
+    expires_at: permission.result.expires_at,
+    start: {
+      client_run_id: crypto.randomUUID(),
+      agent_id: 1,
+      workspace_id: workspace.id,
+      goal: "MCP action form",
+      authorization_id: permission.result.id,
+      action: { name: "call_mcp", arguments: call },
+    },
+  };
+  await fillSchemaForm(js, "rule-definition", rule);
+  const argumentId = "rule-definition.start.action.arguments.arguments";
+  await js(
+    `(()=>{const field=document.getElementById(${JSON.stringify(argumentId)});Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(field,'{');field.dispatchEvent(new Event('input',{bubbles:true}));})()`,
+  );
+  await js("document.getElementById('rule-save').click()");
+  await until(() =>
+    js(
+      "document.querySelector('[role=alert]')?.textContent.includes('未保存的文本')",
+    ),
+  );
+  assert.equal((await core.request("rules.list", {})).items.length, 0);
+  assert.equal(
+    await js(`document.getElementById(${JSON.stringify(argumentId)}).value`),
+    "{",
+  );
+  await fillSchemaForm(js, argumentId, call.arguments);
+  await js("document.getElementById('rule-save').click()");
+  const saved = await until(async () =>
+    (await core.request("rules.list", {})).items.find(
+      (item) => item.name === rule.name,
+    ),
+  );
+  assert.deepEqual(saved.start.action.arguments, call);
+  const started = await core.request("operations.execute", {
+    operation_id: crypto.randomUUID(),
+    instance_id: core.snapshot().storage_instance,
+    method: "agent.start",
+    input: { ...saved.start, client_run_id: crypto.randomUUID() },
+  });
+  assert.equal(started.state, "committed", JSON.stringify(started.error));
+  const completed = await until(async () => {
+    const result = await core.request("agent.get", {
+      id: started.result.run.id,
+    });
+    return ["completed", "failed"].includes(result.run.state) && result;
+  });
+  assert.equal(
+    completed.run.state,
+    "completed",
+    JSON.stringify(completed.run.error),
+  );
+  const toolCalls = mcp.calls.filter((call) => call.method === "tools/call");
+  assert.equal(toolCalls.length, 1);
+  assert.deepEqual(toolCalls[0].params.arguments, call.arguments);
+  report.checks.push(
+    "MCP action form retains nested JSON and leading-zero text, blocks invalid drafts, and executes the exact granted tool without a model",
+  );
+  await js("document.getElementById('rules-policies-tab').click()");
+  await until(() =>
+    js("Boolean(document.getElementById('causal-limits.max_depth'))"),
+  );
   report.layouts = [];
   for (const width of [1440, 768, 660]) {
     window.setSize(width, 980);
@@ -183,6 +297,7 @@ main()
   })
   .finally(async () => {
     await runtime?.core.stop();
+    await mcp?.close();
     report.coreStopped = !runtime?.core.child;
     fs.writeFileSync(
       path.join(profile, "core-policies-smoke.json"),

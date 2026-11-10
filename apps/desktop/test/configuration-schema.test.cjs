@@ -45,11 +45,37 @@ test("Core exposes generated configuration schemas and actual native action para
   };
   const form = ruleFormSchema(schemas, native);
   assert.equal(
-    form.properties.start.anyOf[0].properties.action.properties.arguments
-      .properties.path.type,
+    form.properties.start.anyOf[0].properties.action.anyOf[0].properties
+      .arguments.properties.path.type,
     "string",
   );
   assert.deepEqual(schemaDefault(form, native), native);
+  const nullable = { ...native, start: { ...native.start, action: null } };
+  assert.deepEqual(
+    schemaDefault(ruleFormSchema(schemas, nullable), nullable),
+    nullable,
+  );
+  const extended = {
+    ...native,
+    start: {
+      ...native.start,
+      action: {
+        name: "mcp_saved_tool",
+        arguments: { text: "001", nested: { keep: true } },
+      },
+    },
+  };
+  const extendedForm = ruleFormSchema(schemas, extended);
+  assert.equal(
+    extendedForm.properties.start.anyOf[0].properties.action["x-editor"],
+    "json",
+  );
+  assert.deepEqual(schemaDefault(extendedForm, extended), extended);
+  assert.equal(
+    schemas.actions.find((action) => action.name === "call_mcp").parameters
+      .properties.arguments["x-editor"],
+    "json",
+  );
   const cli = {
     ...native,
     start: {

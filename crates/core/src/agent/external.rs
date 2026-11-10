@@ -909,6 +909,9 @@ impl Manager {
                     task["stopped"] = json!(true);
                     task["result"] = json!({"ok":false,"error":error});
                     owner["causal_limit_state"] = json!("needs_attention");
+                    owner["state"] = json!("failed");
+                    owner["error"] = task["result"]["error"].clone();
+                    owner["waiting"] = json!([]);
                     return store.agent_commit(
                         owner,
                         &mut [],

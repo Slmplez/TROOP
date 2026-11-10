@@ -19,6 +19,16 @@ async function fillSchemaForm(js, id, value) {
     );
     await sleep(25);
   }
+  const json = await js(
+    `document.getElementById(${JSON.stringify(id)})?.hasAttribute('data-schema-json') ?? false`,
+  );
+  if (json) {
+    await js(
+      `(()=>{const field=document.getElementById(${JSON.stringify(id)});Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(field,${JSON.stringify(JSON.stringify(value, null, 2))});field.dispatchEvent(new Event('input',{bubbles:true}));})()`,
+    );
+    await sleep(25);
+    return;
+  }
   const branches = await js(
     `(()=>{const select=document.getElementById(${JSON.stringify(id + "-type")});return select?[...select.options].map(option=>({value:option.value,text:option.textContent})):null;})()`,
   );

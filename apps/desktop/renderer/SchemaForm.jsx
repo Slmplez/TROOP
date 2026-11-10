@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { schemaBranch, schemaDefault } from "./schema-values.mjs";
 
 const labels = {
+  server_id: "MCP 服务 ID",
+  tool: "MCP 工具名",
   name: "名称",
   kind: "平台类型",
   project: "平台项目",
@@ -54,7 +56,71 @@ const labels = {
   retention_seconds: "在线回执保留期（秒）",
 };
 
+function JsonField({ value, onChange, id, label, disabled, schema }) {
+  const serialized = JSON.stringify(value ?? {});
+  const last = useRef(serialized),
+    field = useRef(null);
+  const [text, setText] = useState(() => JSON.stringify(value ?? {}, null, 2));
+  useEffect(() => {
+    if (last.current !== serialized) {
+      last.current = serialized;
+      setText(JSON.stringify(value ?? {}, null, 2));
+      field.current?.setCustomValidity("");
+    }
+  }, [serialized, value]);
+  return (
+    <div className="schema-field">
+      <label htmlFor={id}>{label} JSON</label>
+      <textarea
+        data-schema-json
+        ref={field}
+        id={id}
+        rows={6}
+        disabled={disabled}
+        value={text}
+        onChange={(event) => {
+          setText(event.target.value);
+          try {
+            const parsed = JSON.parse(event.target.value);
+            last.current = JSON.stringify(parsed);
+            event.target.setCustomValidity("");
+            onChange(parsed);
+          } catch {
+            event.target.setCustomValidity(
+              "请输入有效的 JSON；未保存的文本已保留。",
+            );
+          }
+        }}
+      />
+      <p className="field-hint">{schema.description}</p>
+    </div>
+  );
+}
+
+export function validateSchemaFields(id) {
+  const fields = [
+    ...document.getElementById(id).querySelectorAll("input,select,textarea"),
+  ];
+  const invalid = fields.find((field) => !field.checkValidity());
+  if (invalid) {
+    invalid.reportValidity();
+    return false;
+  }
+  return true;
+}
+
 function Field({ schema, value, onChange, id, label, disabled }) {
+  if (schema["x-editor"] === "json")
+    return (
+      <JsonField
+        schema={schema}
+        value={value}
+        onChange={onChange}
+        id={id}
+        label={label}
+        disabled={disabled}
+      />
+    );
   const branches = schema.anyOf ?? schema.oneOf;
   if (branches) {
     const selected = schemaBranch(schema, value);

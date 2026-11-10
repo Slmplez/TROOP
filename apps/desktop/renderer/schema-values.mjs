@@ -21,6 +21,7 @@ export function schemaBranch(schema, value) {
 }
 
 export function schemaDefault(schema, previous) {
+  if (schema["x-editor"] === "json") return structuredClone(previous ?? {});
   if (schema.anyOf || schema.oneOf)
     return schemaDefault(schemaBranch(schema, previous), previous);
   if (schema.default !== undefined) return structuredClone(schema.default);
@@ -53,13 +54,25 @@ export function ruleFormSchema(catalogue, value) {
     if (!branch.properties.action) continue;
     const name = value.start?.action?.name;
     const action = catalogue.actions.find((action) => action.name === name);
+    if (value.start?.action && !action) {
+      branch.properties.action = {
+        "x-editor": "json",
+        description: "保留的扩展动作。Core 将在模拟和执行前核对其能力与参数。",
+      };
+      continue;
+    }
     branch.properties.action = {
-      type: "object",
-      properties: {
-        name: { enum: catalogue.actions.map((action) => action.name) },
-        arguments: action?.parameters ?? { type: "object", properties: {} },
-      },
-      required: ["name", "arguments"],
+      anyOf: [
+        {
+          type: "object",
+          properties: {
+            name: { enum: catalogue.actions.map((action) => action.name) },
+            arguments: action?.parameters ?? { type: "object", properties: {} },
+          },
+          required: ["name", "arguments"],
+        },
+        { type: "null" },
+      ],
     };
   }
   return schema;

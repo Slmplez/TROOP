@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { clientModels, useClientModel } from "./client/react";
 import { resources } from "./client/resources";
 import { call } from "./api";
-import SchemaForm from "./SchemaForm";
+import SchemaForm, { validateSchemaFields } from "./SchemaForm";
 
 const initial = (instance, workspaces) => ({
   name: "事件来源",
@@ -230,6 +230,8 @@ export default function EventSourcesPanel({
             disabled={!ready || busy || !schema}
             onClick={() =>
               act(async () => {
+                if (!validateSchemaFields("event-source-definition"))
+                  throw Error("配置参数尚未通过校验，未保存的文本已保留。");
                 const saved = await clientModels.command("events.source.save", {
                   id,
                   expected_revision: selected?.revision ?? 0,

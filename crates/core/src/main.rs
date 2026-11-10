@@ -341,6 +341,7 @@ impl Core {
                 .into_iter()
                 .filter(|tool| tool["name"] != "manage_rule")
                 .collect::<Vec<_>>());
+            schemas["actions"].as_array_mut().unwrap().push(json!({"name":"call_mcp","description":"Call an explicitly granted MCP tool. The discovered tool schema is checked before dispatch.","parameters":{"type":"object","additionalProperties":false,"properties":{"server_id":{"type":"string"},"tool":{"type":"string"},"arguments":{"x-editor":"json","description":"完整 MCP 工具参数。Core 将核对本次授权和发现后的工具 schema。"}},"required":["server_id","tool","arguments"]}}));
             schemas["engines"] = json!(["claude", "codex", "pi", "opencode"]);
             return Ok((schemas, false));
         }
