@@ -282,7 +282,8 @@ for (const independent of [false, true]) {
       },
     });
     assert.equal(rule.state, "committed", JSON.stringify(rule.error));
-    version = new Date().toISOString();
+    // Anchor the simulated post-rule event to the committed Core timestamp.
+    version = new Date(rule.result.effective_from_ms + 1).toISOString();
     const body = JSON.stringify({
         object_kind: "pipeline",
         project: { id: 7 },
@@ -347,7 +348,7 @@ for (const independent of [false, true]) {
       async () => (await h.core.request("agent.list", {})).items[0],
     ).catch(async (error) => {
       throw Error(
-        `${error.message} ${JSON.stringify({ apiCalls, records: await h.core.request("events.records", { source_id: id }) })}`,
+        `${error.message} ${JSON.stringify({ apiCalls, effective_from_ms: rule.result.effective_from_ms, records: await h.core.request("events.records", { source_id: id }) })}`,
       );
     });
     assert.equal((await h.done(run.id)).run.state, "completed");
