@@ -459,19 +459,20 @@ test("pre Hook failClosed differs from default fail-open; post errors never repe
 test("command Hook receives JSON stdin and additional context reaches the next model request", async (t) => {
   const h = await setup(t, { plan: read });
   await h.save({
+    timeout: 15,
     command:
       "$e=[Console]::In.ReadToEnd()|ConvertFrom-Json; if($e.data.tool_input.path -ne 'input.txt'){exit 8}; " +
       emit({ additional_context: "OWNED_HOOK_CONTEXT" }),
   });
   const id = await h.start();
   await h.done(id);
+  const c = (await h.calls(id)).items[0];
+  assert.equal(c.state, "succeeded", JSON.stringify(c));
   assert.ok(
     JSON.stringify(h.server.requests.at(-1).body).includes(
       "OWNED_HOOK_CONTEXT",
     ),
   );
-  const c = (await h.calls(id)).items[0];
-  assert.equal(c.state, "succeeded");
   const detail = await h.core.request("hooks.call", { id: c.id });
   assert.equal(detail.input.data.tool_input.path, "input.txt");
 });

@@ -383,6 +383,12 @@ export default function ChatPanel({
                         key={message.turn_id}
                         turnId={message.turn_id}
                         ready={ready && visible}
+                        scope={{
+                          agent_id: current?.agent_id ?? 1,
+                          project_id: current?.project_id ?? null,
+                          workspace_id: current?.workspace_id ?? null,
+                        }}
+                        workspaces={workspaces}
                         onManage={onManageAutomation}
                         onOpenRun={onOpenRun}
                         onOpenAuthorizations={onOpenAuthorizations}
@@ -390,7 +396,7 @@ export default function ChatPanel({
                           if (view.current.selected !== selected) return;
                           setDrafts((old) => ({
                             ...old,
-                            [selected]: `${old[selected] ?? ""}\n\n请基于自动化 ${result.rule_id} 执行 #${result.run_id} 的${result.truncated ? "结果节选" : "结果"}继续处理。来源摘要 ${result.sha256}\n${result.content}\n后续要求：`,
+                            [selected]: `${old[selected] ?? ""}\n\n请基于自动化 ${result.rule_id} 执行 #${result.run_id} 的${result.truncated ? "结果节选" : "结果"}继续处理。来源摘要 ${result.sha256}\n${result.content}\n请补充后续要求。`,
                           }));
                           setAutomation(false);
                         }}

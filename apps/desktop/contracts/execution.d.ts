@@ -2135,7 +2135,15 @@ export interface Requests {
     output: { accepted: boolean };
   };
   "automations.preview": {
-    input: { turn_id: number; authorization_id?: string | null };
+    input: {
+      turn_id: number;
+      authorization_id?: string | null;
+      scope?: {
+        agent_id: number;
+        project_id: string | null;
+        workspace_id: number | null;
+      };
+    };
     output: {
       id: string;
       source_sha256: string;
@@ -2148,6 +2156,11 @@ export interface Requests {
     input: {
       turn_id: number;
       authorization_id?: string | null;
+      scope?: {
+        agent_id: number;
+        project_id: string | null;
+        workspace_id: number | null;
+      };
       source_sha256: string;
       expected_plan_sha256?: string | null;
     };

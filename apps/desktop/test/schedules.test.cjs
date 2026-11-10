@@ -1,4 +1,5 @@
 const { test } = require("node:test");
+const { cliTest } = require("./fixtures/sandbox-support.cjs");
 const assert = require("node:assert/strict"),
   crypto = require("node:crypto"),
   fs = require("node:fs"),
@@ -310,7 +311,7 @@ test("Run insertion failure rolls back execution and records one blocked slot wi
 });
 
 for (const engine of ["codex", "claude", "pi", "opencode"])
-  test(`${engine} scheduled slot uses the real Worker and requires fixed CLI result review`, async (t) => {
+  cliTest(engine, `${engine} scheduled slot uses the real Worker and requires fixed CLI result review`, async (t) => {
     const h = await controlled(t);
     const program = {
       codex: "cli_protocol_probe",

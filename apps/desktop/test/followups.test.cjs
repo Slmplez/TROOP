@@ -1,4 +1,5 @@
 const { test } = require("node:test");
+const { cliTest } = require("./fixtures/sandbox-support.cjs");
 const assert = require("node:assert/strict"),
   crypto = require("node:crypto"),
   fs = require("node:fs"),
@@ -278,7 +279,7 @@ async function cliReview(h, runId, accepted = true, key) {
   return { input, result: await command(h, "cli.review", input, key) };
 }
 for (const engine of ["claude", "codex", "pi", "opencode"]) {
-  test(`${engine} fixed review registers one durable check and reuses the original chain`, async (t) => {
+  cliTest(engine, `${engine} fixed review registers one durable check and reuses the original chain`, async (t) => {
     const h = await controlled(t),
       at = h.time() + 90_000;
     fs.writeFileSync(
@@ -333,7 +334,7 @@ for (const engine of ["claude", "codex", "pi", "opencode"]) {
   });
 }
 for (const engine of ["claude", "codex", "pi", "opencode"]) {
-  test(`${engine} reviewed handoff retains the source chain and receiver permission`, async (t) => {
+  cliTest(engine, `${engine} reviewed handoff retains the source chain and receiver permission`, async (t) => {
     const h = await controlled(t);
     const item = await command(h, "work_items.save", {
       expected_revision: 0,
