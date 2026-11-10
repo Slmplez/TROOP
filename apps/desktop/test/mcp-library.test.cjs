@@ -374,7 +374,7 @@ test("MCP migration from 7 preserves all old tables", async (t) => {
     ),
     old,
   );
-  assert.equal(db.prepare("PRAGMA user_version").get().user_version, 33);
+  assert.equal(db.prepare("PRAGMA user_version").get().user_version, 35);
   assert.equal(db.prepare("SELECT count(*) n FROM mcp_servers").get().n, 0);
   db.close();
 });

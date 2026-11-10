@@ -291,7 +291,7 @@ impl Core {
             }
             return Ok((work_items::read(&self.store, method, p)?, false));
         }
-        if method.starts_with("rules.") {
+        if method.starts_with("rules.") && !method.starts_with("rules.limits.") {
             if method == "rules.save" {
                 return Err("规则变更需要操作账本。".into());
             }
@@ -324,6 +324,25 @@ impl Core {
         }
         if method == "agent.follow-content" {
             return Ok((self.agents.follow_content(&self.store, p)?, false));
+        }
+        if method == "configuration.schemas" {
+            if p != json!({}) {
+                return Err("配置 schema 查询参数无效。".into());
+            }
+            let mut schemas: Value = serde_json::from_str(troop_protocol::CONFIGURATION_SCHEMAS)
+                .map_err(|e| e.to_string())?;
+            schemas["causal_limits"]["properties"]["max_depth"]["maximum"] = json!(64);
+            schemas["causal_limits"]["properties"]["max_writes_per_hour"]["maximum"] = json!(10000);
+            schemas["causal_limits"]["properties"]["cooldown_seconds"]["maximum"] = json!(3600);
+            schemas["archive_settings"]["properties"]["retention_seconds"]["minimum"] = json!(60);
+            schemas["archive_settings"]["properties"]["retention_seconds"]["maximum"] =
+                json!(315360000);
+            schemas["actions"] = json!(tools::definitions()
+                .into_iter()
+                .filter(|tool| tool["name"] != "manage_rule")
+                .collect::<Vec<_>>());
+            schemas["engines"] = json!(["claude", "codex", "pi", "opencode"]);
+            return Ok((schemas, false));
         }
         if method == "operations.execute" {
             let request = params::<troop_protocol::OperationRequest>(p)?;
@@ -409,6 +428,22 @@ impl Core {
                 }
             }
             return Ok((receipt, false));
+        }
+        if method == "rules.limits.get" || method == "rules.limits.history" {
+            #[derive(serde::Deserialize)]
+            #[serde(deny_unknown_fields)]
+            struct LimitQuery {
+                scope: Value,
+            }
+            let query = params::<LimitQuery>(p)?;
+            return Ok((
+                if method == "rules.limits.get" {
+                    self.store.causal_policy_get(&query.scope)?
+                } else {
+                    self.store.causal_policy_history(&query.scope)?
+                },
+                false,
+            ));
         }
         if method == "operations.archive.settings" {
             if p != json!({}) {
@@ -835,7 +870,10 @@ async fn run() -> Result<(), String> {
             Some(message)=update.recv()=>core.accept(message)?,
             Some(message)=core.agents.receiver.recv()=>core.agents.accept(&mut core.store,message)?,
             Some(message)=core.oauth.receiver.recv()=>core.oauth.accept(&mut core.store,message)?,
-            _=event_retention.tick()=>{if let Err(error)=core.store.event_prune_payloads(){eprintln!("Event payload retention deferred: {error}");}if let Err(error)=core.store.archive_operations(){eprintln!("Operation receipt archive deferred: {error}");}},
+            _=event_retention.tick()=>{
+                if let Err(error)=core.store.event_prune_payloads(){eprintln!("Event payload retention deferred: {error}");}
+                if let Err(error)=core.store.archive_operations(){eprintln!("Operation receipt archive deferred: {error}");}
+            },
             _=schedule.tick()=>{ if !core.receiver_only {reminders::pump(&mut core.store,&mut core.reminder_clock)?;core.agents.pump_schedules(&mut core.store,&core.reminder_clock)?;core.agents.pump_followups(&mut core.store,&core.reminder_clock)?;core.event_consumer.pump(&mut core.store,&core.generation)?;core.agents.pump_rules(&mut core.store)?;} },
         }
         if !core.receiver_only {

@@ -6,7 +6,9 @@ pub mod schedule;
 
 pub const VERSION: u32 = 10;
 pub const MAX_FRAME: usize = 65_536;
+pub const CONFIGURATION_SCHEMAS: &str = include_str!("configuration.schemas.json");
 pub const METHODS: &[&str] = &[
+    "configuration.schemas",
     "office.open",
     "office.get",
     "office.pending",
@@ -107,6 +109,9 @@ pub const METHODS: &[&str] = &[
     "engines.capabilities",
     "engines.list",
     "rules.list",
+    "rules.limits.get",
+    "rules.limits.save",
+    "rules.limits.history",
     "rules.get",
     "rules.history",
     "rules.save",
@@ -210,6 +215,7 @@ pub const METHODS: &[&str] = &[
 ];
 
 pub const OPERATION_COMMANDS: &[&str] = &[
+    "rules.limits.save",
     "operations.archive.configure",
     "operations.archive.run",
     "office.draft.save",

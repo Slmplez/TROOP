@@ -6,6 +6,9 @@ import ReminderPanel from "./ReminderPanel";
 import SchedulesPanel from "./SchedulesPanel";
 import FollowupsPanel from "./FollowupsPanel";
 import WorkItemExecution from "./WorkItemExecution";
+import SchemaForm from "./SchemaForm";
+import CorePoliciesPanel from "./CorePoliciesPanel";
+import { ruleFormSchema, schemaDefault } from "./schema-values.mjs";
 
 const empty = () => ({
   name: "完成后执行",
@@ -62,6 +65,13 @@ export default function RulesPanel(props) {
         >
           持续跟进
         </button>
+        <button
+          id="rules-policies-tab"
+          aria-pressed={tab === "policies"}
+          onClick={() => setTab("policies")}
+        >
+          Core 策略
+        </button>
       </div>
       <div hidden={tab !== "events"}>
         <EventRulesPanel {...props} />
@@ -83,6 +93,13 @@ export default function RulesPanel(props) {
       <div hidden={tab !== "followups"}>
         <FollowupsPanel ready={props.ready} onOpenRun={props.onOpenRun} />
       </div>
+      {tab === "policies" && (
+        <CorePoliciesPanel
+          key={props.storageInstance ?? clientModels.instance}
+          ready={props.ready}
+          storageInstance={props.storageInstance ?? clientModels.instance}
+        />
+      )}
     </>
   );
 }
@@ -97,6 +114,29 @@ function EventRulesPanel({ ready, onOpenRun }) {
   const [historyOffset, setHistoryOffset] = useState(0);
   const lock = useRef(false);
   const list = useClientModel(clientModels.resource("rules.list", { offset }));
+  const catalogue = useClientModel(
+    clientModels.resource("configuration.schemas", {}),
+  );
+  const definition = JSON.parse(text);
+  const schema = catalogue.data
+    ? ruleFormSchema(catalogue.data, definition)
+    : null;
+  function changeDefinition(value) {
+    if (
+      value.start?.action?.name !== definition.start?.action?.name &&
+      value.start?.action
+    ) {
+      const action = catalogue.data.actions.find(
+        (action) => action.name === value.start.action.name,
+      );
+      if (action)
+        value.start.action.arguments = schemaDefault(
+          action.parameters,
+          definition.start?.action?.arguments,
+        );
+    }
+    setText(JSON.stringify(value));
+  }
   const history = useClientModel(
     selected
       ? clientModels.resource("rules.history", {
@@ -171,9 +211,9 @@ function EventRulesPanel({ ready, onOpenRun }) {
         work_item_id。接纳事件产生后复核依赖及授权，CLI
         需要已确认的权限计划。外部事件也可设置 work_item_id 关联后续工作。
       </p>
-      {(error || list.error) && (
+      {(error || list.error || catalogue.error) && (
         <p role="alert" className="error">
-          {error || list.error.message}
+          {error || list.error?.message || catalogue.error?.message}
         </p>
       )}
       <div className="models-layout">
@@ -214,19 +254,18 @@ function EventRulesPanel({ ready, onOpenRun }) {
             )}
         </section>
         <section className="provider-form">
-          <label htmlFor="rule-definition">规则配置 JSON</label>
-          <textarea
-            id="rule-definition"
-            style={{
-              width: "100%",
-              boxSizing: "border-box",
-              fontFamily: "monospace",
-            }}
-            rows={24}
-            disabled={!ready || busy}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
+          {schema ? (
+            <SchemaForm
+              id="rule-definition"
+              label="事件条件与执行动作"
+              schema={schema}
+              value={definition}
+              onChange={changeDefinition}
+              disabled={!ready || busy}
+            />
+          ) : (
+            <p role="status">正在读取规则配置 schema…</p>
+          )}
           <p>
             start 可使用原生执行或 CLI 启动契约。原生 action
             指定工具及完整参数。 CLI 指定 engine_id、tool_mode
@@ -236,7 +275,7 @@ function EventRulesPanel({ ready, onOpenRun }) {
           </p>
           <button
             id="rule-save"
-            disabled={!ready || busy}
+            disabled={!ready || busy || !schema}
             onClick={() => act(() => save())}
           >
             保存规则

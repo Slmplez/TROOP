@@ -222,6 +222,7 @@ test("legacy shared tombstones suppress other authors while baseline history sta
     1,
     "legacy forgotten fact",
   );
+  require("./fixtures/remove-policy-schema.cjs")(db);
   db.exec("PRAGMA user_version=17");
   db.close();
   await h.core.start();

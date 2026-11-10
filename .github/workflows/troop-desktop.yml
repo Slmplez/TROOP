@@ -65,6 +65,8 @@ jobs:
         run: node apps/desktop/scripts/conversation-automations-smoke.mjs
       - name: Verify office editing and conflict recovery in Electron
         run: node apps/desktop/scripts/office-smoke.mjs
+      - name: Verify scoped limits and schema forms in Electron
+        run: node apps/desktop/scripts/core-policies-smoke.mjs
       - name: Build and verify the independent TROOP portable
         shell: pwsh
         run: |

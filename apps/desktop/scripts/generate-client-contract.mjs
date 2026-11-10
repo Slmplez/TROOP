@@ -4,6 +4,51 @@ import { fileURLToPath } from "node:url";
 import contract from "../contracts/execution.cjs";
 import prettier from "prettier";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+function configurationSchema(schema) {
+  if (typeof schema === "string") {
+    if (schema.includes("|"))
+      return { anyOf: schema.split("|").map(configurationSchema) };
+    if (contract.types[schema])
+      return { ...configurationSchema(contract.types[schema]), title: schema };
+    if (schema === "id" || schema === "count")
+      return { type: "integer", minimum: schema === "id" ? 1 : 0 };
+    return schema === "json" ? {} : { type: schema };
+  }
+  if (schema.values) return { enum: schema.values };
+  if (schema.items)
+    return { type: "array", items: configurationSchema(schema.items) };
+  if (schema.record)
+    return {
+      type: "object",
+      additionalProperties: configurationSchema(schema.record),
+    };
+  const properties = Object.fromEntries(
+    Object.entries(schema.fields).map(([key, value]) => [
+      key.replace(/\?$/, ""),
+      configurationSchema(value),
+    ]),
+  );
+  return {
+    type: "object",
+    additionalProperties: false,
+    properties,
+    required: Object.keys(schema.fields).filter((key) => !key.endsWith("?")),
+  };
+}
+const configurationSchemas =
+  JSON.stringify(
+    {
+      revision: 1,
+      source: configurationSchema(contract.types.EventSourceDefinition),
+      rule: configurationSchema(contract.types.EventRuleDefinition),
+      causal_limits: configurationSchema(contract.types.CausalLimitValues),
+      archive_settings: configurationSchema(
+        contract.types.ArchivePolicyDefinition,
+      ),
+    },
+    null,
+    2,
+  ) + "\n";
 function type(schema) {
   if (typeof schema === "string")
     return schema
@@ -63,6 +108,10 @@ const preload = fs
     `// BEGIN EXECUTION CONTRACT\n${bindings}\n    // END EXECUTION CONTRACT`,
   );
 for (const [file, text] of [
+  [
+    "../../crates/protocol/src/configuration.schemas.json",
+    configurationSchemas,
+  ],
   ["contracts/execution.d.ts", types],
   ["src/preload.cjs", preload],
 ]) {

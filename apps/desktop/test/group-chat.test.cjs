@@ -563,6 +563,7 @@ test("schema 25 upgrade preserves work items and enables empty group storage", a
   });
   await h.core.stop();
   const db = new DatabaseSync(path.join(h.data, "troop.sqlite3"));
+  require("./fixtures/remove-policy-schema.cjs")(db);
   db.exec(
     "DROP TABLE followup_appointments; DROP TABLE followup_chains; DROP TABLE followup_states; DROP TABLE reminder_notifications; DROP TABLE reminder_slots; DROP TABLE reminder_states; DROP TABLE reminder_preferences; DROP TABLE group_executors; DROP TABLE group_chains; DROP TRIGGER group_project_revoked; DROP TABLE group_deliveries; DROP TABLE group_messages; DROP TABLE group_chats; PRAGMA user_version=25;",
   );

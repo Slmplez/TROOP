@@ -231,6 +231,7 @@ try {
   }
   const database = path.join(profile, "core/troop.sqlite3");
   const previous = new DatabaseSync(database);
+  require("../test/fixtures/remove-policy-schema.cjs")(previous);
   previous.exec(
     "DROP TABLE followup_appointments; DROP TABLE followup_chains; DROP TABLE followup_states; PRAGMA user_version=29",
   );
@@ -243,10 +244,10 @@ try {
   assert.equal(retained.goal, work.goal);
   await quit(running.evaluate, running.status.pid);
   const upgraded = new DatabaseSync(database, { readOnly: true });
-  assert.equal(upgraded.prepare("PRAGMA user_version").get().user_version, 33);
+  assert.equal(upgraded.prepare("PRAGMA user_version").get().user_version, 35);
   upgraded.close();
   report.checks.push(
-    "Production entry migrates a schema-29 fixture to schema 33 while retaining its work item and workspace; application quit leaves no Core process",
+    "Production entry migrates a schema-29 fixture to schema 35 while retaining its work item and workspace; application quit leaves no Core process",
   );
   if (process.env.TROOP_PREVIOUS_CORE) {
     upstream = await require("../test/fixtures/model-server.cjs").modelServer();
@@ -319,7 +320,7 @@ try {
       version: previous.version,
       sha256: previous.sha256,
       schema_before: schema,
-      schema_after: 33,
+      schema_after: 35,
       retained_messages: previous.messages.length,
       retained_credentials_used: true,
     };

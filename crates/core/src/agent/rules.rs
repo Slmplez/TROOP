@@ -347,6 +347,7 @@ impl Manager {
         }
         .to_string();
         let mut permission = Value::Null;
+        let mut causal_limit = Value::Null;
         let mut executable = false;
         if matched {
             match self.rule_permission(store, rule) {
@@ -356,11 +357,23 @@ impl Manager {
                 }
                 Err(error) => reason = error,
             }
-            if store.rule_frequency_blocked(rule["workspace_id"].as_i64().unwrap())? {
-                executable = false;
-                reason = "达到工作区每小时三次或六十秒冷却门禁。".into();
+            let context = causal::event_scope(store, rule, event)?;
+            let limits = store.causal_policy_resolve(&context)?;
+            causal_limit = json!({"context":context,"policy":limits});
+            if let Some(action) = rule["start"].get("action") {
+                let invocation = json!({"name":action["name"],"arguments":action["arguments"]});
+                if let Some(category) = self.causal_action(&invocation) {
+                    let decision = store.causal_write_check(&context, &category, "")?;
+                    causal_limit["write"] = decision.clone();
+                    if decision["allowed"] != true {
+                        executable = false;
+                        reason = decision["reason"].as_str().unwrap().to_owned();
+                    }
+                }
             }
-            if event["chain_depth"].as_u64().unwrap_or(0) >= 8 {
+            if event["chain_depth"].as_i64().unwrap_or(0)
+                >= limits["limits"]["max_depth"].as_i64().unwrap()
+            {
                 executable = false;
                 reason = "达到自动链深度上限。".into();
             }
@@ -395,7 +408,7 @@ impl Manager {
             }
         }
         Ok(
-            json!({"matched":matched,"executable":executable,"reason":reason,"permission":permission,"rule_revision":rule["revision"],"event_run_id":if event["external_event_id"].is_null(){event["id"].clone()}else{Value::Null},"external_event_id":event["external_event_id"]}),
+            json!({"matched":matched,"executable":executable,"reason":reason,"permission":permission,"causal_limit":causal_limit,"rule_revision":rule["revision"],"event_run_id":if event["external_event_id"].is_null(){event["id"].clone()}else{Value::Null},"external_event_id":event["external_event_id"]}),
         )
     }
 
@@ -462,7 +475,7 @@ impl Manager {
                     && preflight["matched"] == true
                     && preflight["executable"] != true
                     && preflight["reason"].as_str().is_some_and(|reason| {
-                        reason.starts_with("达到工作区")
+                        reason.starts_with("达到来源对象")
                             || reason.starts_with("等待前置")
                             || reason.starts_with("当前执行尚未")
                             || reason.starts_with("当前结果等待")
@@ -488,6 +501,7 @@ impl Manager {
                     let permission = &simulation["permission"];
                     result["permission"] = json!({"grant_id":permission["grant_id"],"grant_revision":permission["grant_revision"],"decision":permission["decision"]});
                         result["state"] = json!(if waiting {"waiting"}else{"skipped"});
+                        if !waiting && simulation["executable"]!=true && simulation["reason"].as_str().is_some_and(|reason|reason.starts_with("达到来源对象") || reason.starts_with("达到自动链")) { result["state"]=json!("needs_attention"); }
                         let mut run_result = Value::Null;
                         if simulation["executable"] == true {
                             let mut start = rule["start"].clone();
@@ -502,6 +516,8 @@ impl Manager {
                             let mut run =
                                 store.agent_run(run_result["run"]["id"].as_i64().unwrap())?;
                             run["trigger"] = input.clone();
+                            run["causal_scope"] = causal::event_scope(store,rule,&event)?;
+                            run["causal_policy"] = store.causal_policy_resolve(&run["causal_scope"])?;
                             run["chain_id"] = event["chain_id"]
                                 .as_str()
                                 .map(|s| json!(s))

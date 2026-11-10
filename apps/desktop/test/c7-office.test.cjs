@@ -386,7 +386,7 @@ test("C7 composes conversation automation, scoped context, Office editing, accep
     },
     snapshotDirectory,
   );
-  assert.equal(manifest.schema, 33);
+  assert.equal(manifest.schema, 35);
   await h.core.stop();
   const restored = path.join(h.directory, "restored");
   restoreBackup(snapshotDirectory, restored);
@@ -605,7 +605,7 @@ test(
     const db = new DatabaseSync(path.join(data, "troop.sqlite3"), {
       readOnly: true,
     });
-    assert.equal(db.prepare("PRAGMA user_version").get().user_version, 33);
+    assert.equal(db.prepare("PRAGMA user_version").get().user_version, 35);
     db.close();
   },
 );

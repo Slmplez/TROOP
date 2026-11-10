@@ -26,6 +26,24 @@ pub(super) fn migrate(db: &mut Connection) -> Result<(), String> {
 }
 
 impl Store {
+    pub(crate) fn operation_retry_receipt(
+        &self,
+        subject: &str,
+        receipt: Value,
+    ) -> Result<Value, String> {
+        if subject != "desktop" && receipt["state"] == "archived" {
+            return self.operation_archive_get(
+                subject,
+                receipt["operation_id"]
+                    .as_str()
+                    .ok_or("缺少归档操作身份。")?,
+                receipt["archive_ref"]["archive_id"]
+                    .as_str()
+                    .ok_or("缺少归档引用。")?,
+            );
+        }
+        Ok(receipt)
+    }
     pub fn operation_archive_settings(&self) -> Result<Value, String> {
         self.db.query_row("SELECT revision,enabled,retention_seconds FROM operation_archive_settings WHERE id=1", [], |r| {
             Ok(json!({"revision":r.get::<_,i64>(0)?,"enabled":r.get::<_,bool>(1)?,"retention_seconds":r.get::<_,i64>(2)?}))

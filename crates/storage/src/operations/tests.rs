@@ -178,6 +178,50 @@ fn archive_configuration_is_versioned_and_disabled_by_default() {
         .is_err());
     assert_eq!(store.operation_archive_settings().unwrap(), settings);
 }
+
+#[test]
+fn archived_internal_receipt_finishes_its_original_controller_without_reapplying() {
+    let mut fixture = Fixture::new();
+    let store = fixture.store.as_mut().unwrap();
+    let (original, _) = store
+        .execute_operation(
+            "rules",
+            "internal",
+            "rules.trigger",
+            &json!({}),
+            None,
+            |_| Ok((json!({"run_id":123}), ())),
+        )
+        .unwrap();
+    store
+        .operation_archive_configure(
+            &json!({"expected_revision":1,"enabled":true,"retention_seconds":60}),
+        )
+        .unwrap();
+    store
+        .db
+        .execute("UPDATE operation_receipt_times SET updated_at=0", [])
+        .unwrap();
+    store.archive_operations().unwrap();
+    assert_eq!(
+        store.operation_get("rules", "internal").unwrap()["state"],
+        "archived"
+    );
+    let (retried, effect) = store
+        .execute_operation(
+            "rules",
+            "internal",
+            "rules.trigger",
+            &json!({}),
+            None,
+            |_| -> Result<(Value, ()), OperationFailure> {
+                panic!("internal archived effect replayed")
+            },
+        )
+        .unwrap();
+    assert_eq!(retried, original);
+    assert!(effect.is_none());
+}
 #[test]
 fn receipt_and_business_commit_together_and_duplicate_survives_reopen() {
     let mut f = Fixture::new();

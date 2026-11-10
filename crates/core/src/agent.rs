@@ -17,6 +17,7 @@ use troop_storage::{public_run, Store};
 use uuid::Uuid;
 mod actions;
 mod automations;
+mod causal;
 mod cli_interactions;
 mod commands;
 pub(crate) mod context;
@@ -568,6 +569,9 @@ impl Manager {
                         })
                 };
                 if let Some(error) = rejected {
+                    if inv["causal_limit"]["allowed"] == false {
+                        doc["causal_limit_state"] = json!("needs_attention");
+                    }
                     inv["state"] = json!("failed");
                     inv["result"] = json!({"ok":false,"error":error});
                     if doc["kind"] != "tool_action" {
@@ -575,6 +579,21 @@ impl Manager {
                     }
                     remove_pending(&mut doc, inv_id);
                     store.agent_save(&mut doc, std::slice::from_mut(&mut inv), "tool_rejected")?;
+                    continue;
+                }
+                if let Err(error) = self.causal_reserve_invocation(store, &doc, &mut inv) {
+                    inv["state"] = json!("failed");
+                    inv["result"] = json!({"ok":false,"error":error});
+                    doc["causal_limit_state"] = json!("needs_attention");
+                    if doc["kind"] != "tool_action" {
+                        self.providers.model.append_result(&mut doc, &inv)?;
+                    }
+                    remove_pending(&mut doc, inv_id);
+                    store.agent_save(
+                        &mut doc,
+                        std::slice::from_mut(&mut inv),
+                        "causal_write_blocked",
+                    )?;
                     continue;
                 }
                 if self.group_reply_tool(store, &mut doc, &mut inv)? {

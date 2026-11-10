@@ -211,9 +211,6 @@ impl Store {
             .collect();
         candidates
     }
-    pub fn rule_frequency_blocked(&self, workspace: i64) -> Result<bool, String> {
-        self.db.query_row("SELECT COUNT(*)>=3 OR COALESCE(MAX(created_at),0)>unixepoch()-60 FROM automation_deliveries WHERE workspace_id=?1 AND created_at>unixepoch()-3600 AND json_extract(document,'$.state')='dispatched'",[workspace],|r|r.get(0)).map_err(|e|e.to_string())
-    }
     pub fn rule_waiting_reason(
         &self,
         rule: &Value,

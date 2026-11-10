@@ -1,6 +1,6 @@
 {
   "name": "troop-desktop",
-  "version": "0.10.4",
+  "version": "0.10.5",
   "private": true,
   "description": "TROOP independent Rust and Electron desktop",
   "main": "src/entry.cjs",

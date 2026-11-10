@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { clientModels, useClientModel } from "./client/react";
 import { resources } from "./client/resources";
 import { call } from "./api";
+import SchemaForm from "./SchemaForm";
 
 const initial = (instance, workspaces) => ({
   name: "事件来源",
@@ -51,6 +52,22 @@ export default function EventSourcesPanel({
     clientModels.resource("events.sources", { offset }),
   );
   const health = useClientModel(clientModels.resource("events.health", {}));
+  const catalogue = useClientModel(
+    clientModels.resource("configuration.schemas", {}),
+  );
+  const schema = catalogue.data ? structuredClone(catalogue.data.source) : null;
+  if (schema) {
+    schema.properties.consumer_id.readOnly = true;
+    if (selected)
+      for (const key of [
+        "kind",
+        "project",
+        "workspace_id",
+        "project_ids",
+        "api_base_url",
+      ])
+        schema.properties[key].readOnly = true;
+  }
   const records = useClientModel(
     selected
       ? clientModels.resource("events.records", {
@@ -116,9 +133,12 @@ export default function EventSourcesPanel({
         先保存来源，再在规则中绑定 source_id。接收器默认使用本机
         loopback，公开接入通过受控 HTTPS 入口配置。
       </p>
-      {(error || list.error || health.error) && (
+      {(error || list.error || health.error || catalogue.error) && (
         <p role="alert" className="error">
-          {error || list.error?.message || health.error?.message}
+          {error ||
+            list.error?.message ||
+            health.error?.message ||
+            catalogue.error?.message}
         </p>
       )}
       <div className="models-layout">
@@ -159,19 +179,18 @@ export default function EventSourcesPanel({
           <p>
             来源标识 <code id="event-source-id">{id}</code>
           </p>
-          <label htmlFor="event-source-definition">来源配置 JSON</label>
-          <textarea
-            id="event-source-definition"
-            rows={22}
-            style={{
-              width: "100%",
-              boxSizing: "border-box",
-              fontFamily: "monospace",
-            }}
-            disabled={!ready || busy}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
+          {schema ? (
+            <SchemaForm
+              id="event-source-definition"
+              label="来源配置"
+              schema={schema}
+              disabled={!ready || busy}
+              value={JSON.parse(text)}
+              onChange={(value) => setText(JSON.stringify(value))}
+            />
+          ) : (
+            <p role="status">正在读取来源配置 schema…</p>
+          )}
           <p>
             GitLab 可选择 standard 签名或旧版 token。remote 模式同时提供
             receiver_url 和 receiver_instance，消费者身份绑定当前 Core
@@ -208,7 +227,7 @@ export default function EventSourcesPanel({
           />
           <button
             id="event-source-save"
-            disabled={!ready || busy}
+            disabled={!ready || busy || !schema}
             onClick={() =>
               act(async () => {
                 const saved = await clientModels.command("events.source.save", {

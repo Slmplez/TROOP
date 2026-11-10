@@ -1,0 +1,425 @@
+{
+  "revision": 1,
+  "source": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "kind": {
+        "enum": ["github", "gitlab", "webhook"]
+      },
+      "project": {
+        "type": "string"
+      },
+      "workspace_id": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "enabled": {
+        "type": "boolean"
+      },
+      "mode": {
+        "enum": ["local", "remote"]
+      },
+      "api_base_url": {
+        "type": "string"
+      },
+      "consumer_id": {
+        "type": "string"
+      },
+      "project_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "receiver_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "receiver_instance": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "auth_mode": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "ttl_seconds": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "required": [
+      "name",
+      "kind",
+      "project",
+      "workspace_id",
+      "enabled",
+      "mode",
+      "api_base_url",
+      "consumer_id"
+    ]
+  },
+  "rule": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "source_work_item_id": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "work_item_id": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "work_definition_revision": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "name": {
+        "type": "string"
+      },
+      "enabled": {
+        "type": "boolean"
+      },
+      "event": {
+        "enum": [
+          "work.accepted",
+          "run.completed",
+          "run.failed",
+          "github.workflow.completed",
+          "github.issue.changed",
+          "github.pull_request.changed",
+          "gitlab.pipeline.changed",
+          "gitlab.issue.changed",
+          "gitlab.merge_request.changed",
+          "webhook.changed"
+        ]
+      },
+      "source_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "event_state": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "workspace_id": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "source_run_id": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "expires_at": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "start": {
+        "anyOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "client_run_id": {
+                "type": "string"
+              },
+              "workspace_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "provider_id": {
+                "type": "string"
+              },
+              "action": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "arguments": {}
+                },
+                "required": ["name", "arguments"]
+              },
+              "goal": {
+                "type": "string"
+              },
+              "agent_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "workflow_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "authorization_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "project_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "office_reference_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "rule_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "rule_management_authorization_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": ["client_run_id", "workspace_id", "goal"],
+            "title": "Start"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "native_transport": {
+                "enum": ["acp", "sdk_questions"]
+              },
+              "continuation_of": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "interaction_id": {
+                    "type": "string"
+                  },
+                  "evidence_sha256": {
+                    "type": "string"
+                  },
+                  "task_id": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "task_epoch": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "expected_task_revision": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": ["task_id", "task_epoch", "expected_task_revision"],
+                "title": "CliContinuation"
+              },
+              "expected_plan_sha256": {
+                "type": "string"
+              },
+              "client_run_id": {
+                "type": "string"
+              },
+              "workspace_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "engine_id": {
+                "type": "string"
+              },
+              "tool_mode": {
+                "enum": ["native", "disabled"]
+              },
+              "authorization_id": {
+                "type": "string"
+              },
+              "goal": {
+                "type": "string"
+              },
+              "office_reference_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "agent_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "project_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "rule_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "human_wait_seconds": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "startup_timeout_seconds": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "collaboration_mode": {
+                "enum": ["default", "plan"]
+              },
+              "approval_mode": {
+                "enum": ["preauthorized", "manual"]
+              }
+            },
+            "required": [
+              "client_run_id",
+              "workspace_id",
+              "engine_id",
+              "authorization_id",
+              "goal"
+            ],
+            "title": "CliStart"
+          }
+        ]
+      }
+    },
+    "required": [
+      "name",
+      "enabled",
+      "event",
+      "workspace_id",
+      "source_run_id",
+      "expires_at",
+      "start"
+    ]
+  },
+  "causal_limits": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "max_depth": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "max_writes_per_hour": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "cooldown_seconds": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "required": ["max_depth", "max_writes_per_hour", "cooldown_seconds"]
+  },
+  "archive_settings": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "type": "boolean"
+      },
+      "retention_seconds": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "required": ["enabled", "retention_seconds"]
+  }
+}

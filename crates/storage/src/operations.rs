@@ -66,7 +66,7 @@ impl Store {
             } else {
                 json!({"operation_id":id,"instance_id":self.instance_id()?,"state":"conflict","error":{"kind":"operation_conflict","message":"此 operationId 已用于不同命令或参数。"}})
             };
-            return Ok((receipt, false));
+            return Ok((self.operation_retry_receipt(subject, receipt)?, false));
         }
         let receipt = json!({"operation_id":id,"instance_id":self.instance_id()?,"method":method,"mode":"external","state":"needs_reconciliation","result":null,"error":{"kind":"needs_reconciliation","message":"外部操作已登记；请核对资源当前状态，不能自动重放。"},"execution_ref":null});
         tx.execute(
@@ -85,7 +85,7 @@ impl Store {
     ) -> Result<Value, String> {
         let mut receipt = self.operation_get(subject, id)?;
         if receipt["state"] == "archived" {
-            return Ok(receipt);
+            return self.operation_retry_receipt(subject, receipt);
         }
         match result {
             Ok(value) => {
@@ -173,7 +173,10 @@ impl Store {
                         None,
                     ));
                 }
-                return Ok((self.operation_get(subject, id)?, None));
+                return Ok((
+                    self.operation_retry_receipt(subject, self.operation_get(subject, id)?)?,
+                    None,
+                ));
             }
             self.db
                 .execute(
