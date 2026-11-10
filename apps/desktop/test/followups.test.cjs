@@ -697,6 +697,7 @@ test("schema 29 work and rule data migrate with empty follow-up state", async (t
     { DatabaseSync } = require("node:sqlite");
   await h.core.stop();
   const db = new DatabaseSync(path.join(h.data, "troop.sqlite3"));
+  require("./fixtures/remove-policy-schema.cjs")(db);
   db.exec(
     "DROP TABLE followup_appointments; DROP TABLE followup_chains; DROP TABLE followup_states; PRAGMA user_version=29",
   );

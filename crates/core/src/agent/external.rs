@@ -896,6 +896,32 @@ impl Manager {
         let id = task["id"].as_i64().unwrap();
         let epoch = task["epoch"].as_i64().unwrap();
         let run = owner["id"].as_i64().unwrap();
+        if owner["causal_scope"].is_object() && task["permission_plan"]["tool_mode"] != "disabled" {
+            match store.causal_write_reserve(
+                &owner["causal_scope"],
+                "process.exec",
+                &format!("cli-task:{id}:{epoch}"),
+                run,
+            ) {
+                Ok(binding) => task["causal_write"] = binding,
+                Err(error) => {
+                    task["state"] = json!("failed");
+                    task["stopped"] = json!(true);
+                    task["result"] = json!({"ok":false,"error":error});
+                    owner["causal_limit_state"] = json!("needs_attention");
+                    owner["state"] = json!("failed");
+                    owner["error"] = task["result"]["error"].clone();
+                    owner["waiting"] = json!([]);
+                    return store.agent_commit(
+                        owner,
+                        &mut [],
+                        std::slice::from_mut(task),
+                        None,
+                        "causal_cli_blocked",
+                    );
+                }
+            }
+        }
         let context = context::ContextPipeline::new(vec![Arc::new(context::MemoryContext)])
             .build(store, owner)?;
         task["arguments"]["context"] = json!(context);

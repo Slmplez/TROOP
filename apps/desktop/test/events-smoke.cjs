@@ -1,3 +1,4 @@
+const { fillSchemaForm } = require("./fixtures/schema-form-fill.cjs");
 const { app } = require("electron");
 const { bootstrap } = require("../src/main.cjs");
 const fs = require("node:fs"),
@@ -73,6 +74,8 @@ async function run() {
   ).result;
   const js = (code) => win.webContents.executeJavaScript(code, true);
   const field = async (id, value, type = "HTMLInputElement") => {
+    if (["rule-definition", "event-source-definition"].includes(id))
+      return fillSchemaForm(js, id, JSON.parse(value));
     await js(
       `(()=>{const el=document.getElementById(${JSON.stringify(id)});Object.getOwnPropertyDescriptor(${type}.prototype,'value').set.call(el,${JSON.stringify(value)});el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));})()`,
     );

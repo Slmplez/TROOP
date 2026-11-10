@@ -635,6 +635,22 @@ impl Manager {
             let cancel = Arc::new(AtomicBool::new(false));
             let flag = cancel.clone();
             let updates = self.sender.clone();
+            if doc["causal_scope"].is_object() {
+                match store.causal_write_reserve(
+                    &doc["causal_scope"],
+                    "process.exec",
+                    &format!("hook:{id}:{epoch}"),
+                    run,
+                ) {
+                    Ok(binding) => call["causal_write"] = binding,
+                    Err(error) => {
+                        call["state"] = json!("failed");
+                        call["error"] = json!(error);
+                        store.hook_call_save(call)?;
+                        return Ok(false);
+                    }
+                }
+            }
             call["state"] = json!("dispatched");
             if self
                 .execution

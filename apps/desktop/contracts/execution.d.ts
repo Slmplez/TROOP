@@ -58,11 +58,19 @@ export type OperationReceipt = {
     | "rejected"
     | "conflict"
     | "needs_reconciliation"
-    | "dismissed";
+    | "dismissed"
+    | "archived";
   method?: string;
   result?: unknown;
   error?: unknown;
   execution_ref?: number | null;
+  terminal_state?: string;
+  fingerprint?: string;
+  archive_ref?: {
+    archive_id: string;
+    operation_id: string;
+    instance_id: string;
+  };
 };
 export type Id = { id: number };
 export type Page = { offset?: number };
@@ -1755,6 +1763,15 @@ export type WorkspacePage = {
 };
 export type WorkspaceAdd = { path: string };
 export type WorkspaceRename = { id: number; name: string };
+export type CausalLimitValues = {
+  max_depth: number;
+  max_writes_per_hour: number;
+  cooldown_seconds: number;
+};
+export type ArchivePolicyDefinition = {
+  enabled: boolean;
+  retention_seconds: number;
+};
 export interface Requests {
   "agent.follow": { input: FollowRequest; output: FollowFrame };
   "agent.follow-content": { input: FollowContent; output: FollowContentPage };
@@ -1907,6 +1924,106 @@ export interface Requests {
   "workspace.remove": { input: Id; output: WorkspacePage };
   "desktop.choose-directory": { input: Empty; output: string | null };
   "rules.list": { input: Page; output: RulePage };
+  "configuration.schemas": {
+    input: Empty;
+    output: {
+      revision: number;
+      source: unknown;
+      rule: unknown;
+      causal_limits: unknown;
+      archive_settings: unknown;
+      actions: Array<unknown>;
+      engines: Array<string>;
+    };
+  };
+  "rules.limits.get": {
+    input: {
+      scope: {
+        kind: "global" | "workspace" | "source" | "object";
+        workspace_id?: number;
+        source_id?: string;
+        subject_id?: string;
+      };
+    };
+    output: {
+      scope: {
+        kind: "global" | "workspace" | "source" | "object";
+        workspace_id?: number;
+        source_id?: string;
+        subject_id?: string;
+      };
+      revision: number;
+      limits: unknown;
+    };
+  };
+  "rules.limits.history": {
+    input: {
+      scope: {
+        kind: "global" | "workspace" | "source" | "object";
+        workspace_id?: number;
+        source_id?: string;
+        subject_id?: string;
+      };
+    };
+    output: {
+      items: Array<{
+        scope: {
+          kind: "global" | "workspace" | "source" | "object";
+          workspace_id?: number;
+          source_id?: string;
+          subject_id?: string;
+        };
+        revision: number;
+        limits: unknown;
+      }>;
+    };
+  };
+  "rules.limits.save": {
+    input: {
+      scope: {
+        kind: "global" | "workspace" | "source" | "object";
+        workspace_id?: number;
+        source_id?: string;
+        subject_id?: string;
+      };
+      expected_revision: number;
+      limits: {
+        max_depth: number;
+        max_writes_per_hour: number;
+        cooldown_seconds: number;
+      };
+    };
+    output: {
+      scope: {
+        kind: "global" | "workspace" | "source" | "object";
+        workspace_id?: number;
+        source_id?: string;
+        subject_id?: string;
+      };
+      revision: number;
+      limits: unknown;
+    };
+  };
+  "operations.archive.settings": {
+    input: Empty;
+    output: { revision: number; enabled: boolean; retention_seconds: number };
+  };
+  "operations.archive.configure": {
+    input: {
+      expected_revision: number;
+      enabled: boolean;
+      retention_seconds: number;
+    };
+    output: { revision: number; enabled: boolean; retention_seconds: number };
+  };
+  "operations.archive.run": {
+    input: Empty;
+    output: { archived: number; settings_revision: number };
+  };
+  "operations.archive.query": {
+    input: { operation_id: string; instance_id: string; archive_id: string };
+    output: OperationReceipt;
+  };
   "rules.get": { input: ResourceId; output: AutomationRule };
   "rules.history": { input: ResourceHistory; output: RuleHistory };
   "rules.save": { input: RuleSave; output: AutomationRule };

@@ -291,7 +291,7 @@ impl Core {
             }
             return Ok((work_items::read(&self.store, method, p)?, false));
         }
-        if method.starts_with("rules.") {
+        if method.starts_with("rules.") && !method.starts_with("rules.limits.") {
             if method == "rules.save" {
                 return Err("规则变更需要操作账本。".into());
             }
@@ -324,6 +324,26 @@ impl Core {
         }
         if method == "agent.follow-content" {
             return Ok((self.agents.follow_content(&self.store, p)?, false));
+        }
+        if method == "configuration.schemas" {
+            if p != json!({}) {
+                return Err("配置 schema 查询参数无效。".into());
+            }
+            let mut schemas: Value = serde_json::from_str(troop_protocol::CONFIGURATION_SCHEMAS)
+                .map_err(|e| e.to_string())?;
+            schemas["causal_limits"]["properties"]["max_depth"]["maximum"] = json!(64);
+            schemas["causal_limits"]["properties"]["max_writes_per_hour"]["maximum"] = json!(10000);
+            schemas["causal_limits"]["properties"]["cooldown_seconds"]["maximum"] = json!(3600);
+            schemas["archive_settings"]["properties"]["retention_seconds"]["minimum"] = json!(60);
+            schemas["archive_settings"]["properties"]["retention_seconds"]["maximum"] =
+                json!(315360000);
+            schemas["actions"] = json!(tools::definitions()
+                .into_iter()
+                .filter(|tool| tool["name"] != "manage_rule")
+                .collect::<Vec<_>>());
+            schemas["actions"].as_array_mut().unwrap().push(json!({"name":"call_mcp","description":"Call an explicitly granted MCP tool. The discovered tool schema is checked before dispatch.","parameters":{"type":"object","additionalProperties":false,"properties":{"server_id":{"type":"string"},"tool":{"type":"string"},"arguments":{"x-editor":"json","description":"完整 MCP 工具参数。Core 将核对本次授权和发现后的工具 schema。"}},"required":["server_id","tool","arguments"]}}));
+            schemas["engines"] = json!(["claude", "codex", "pi", "opencode"]);
+            return Ok((schemas, false));
         }
         if method == "operations.execute" {
             let request = params::<troop_protocol::OperationRequest>(p)?;
@@ -409,6 +429,51 @@ impl Core {
                 }
             }
             return Ok((receipt, false));
+        }
+        if method == "rules.limits.get" || method == "rules.limits.history" {
+            #[derive(serde::Deserialize)]
+            #[serde(deny_unknown_fields)]
+            struct LimitQuery {
+                scope: Value,
+            }
+            let query = params::<LimitQuery>(p)?;
+            return Ok((
+                if method == "rules.limits.get" {
+                    self.store.causal_policy_get(&query.scope)?
+                } else {
+                    self.store.causal_policy_history(&query.scope)?
+                },
+                false,
+            ));
+        }
+        if method == "operations.archive.settings" {
+            if p != json!({}) {
+                return Err("归档配置查询参数无效。".into());
+            }
+            return Ok((self.store.operation_archive_settings()?, false));
+        }
+        if method == "operations.archive.query" {
+            #[derive(serde::Deserialize)]
+            #[serde(deny_unknown_fields)]
+            struct ArchiveQuery {
+                instance_id: String,
+                operation_id: String,
+                archive_id: String,
+            }
+            let query = params::<ArchiveQuery>(p)?;
+            if query.instance_id != self.store.instance_id()?
+                || Uuid::parse_str(&query.operation_id).is_err()
+            {
+                return Err("Invalid operation identity or storage instance".into());
+            }
+            return Ok((
+                self.store.operation_archive_get(
+                    "desktop",
+                    &query.operation_id,
+                    &query.archive_id,
+                )?,
+                false,
+            ));
         }
         if method == "operations.get" {
             let query = params::<troop_protocol::OperationQuery>(p)?;
@@ -806,7 +871,10 @@ async fn run() -> Result<(), String> {
             Some(message)=update.recv()=>core.accept(message)?,
             Some(message)=core.agents.receiver.recv()=>core.agents.accept(&mut core.store,message)?,
             Some(message)=core.oauth.receiver.recv()=>core.oauth.accept(&mut core.store,message)?,
-            _=event_retention.tick()=>{if let Err(error)=core.store.event_prune_payloads(){eprintln!("Event payload retention deferred: {error}");}},
+            _=event_retention.tick()=>{
+                if let Err(error)=core.store.event_prune_payloads(){eprintln!("Event payload retention deferred: {error}");}
+                if let Err(error)=core.store.archive_operations(){eprintln!("Operation receipt archive deferred: {error}");}
+            },
             _=schedule.tick()=>{ if !core.receiver_only {reminders::pump(&mut core.store,&mut core.reminder_clock)?;core.agents.pump_schedules(&mut core.store,&core.reminder_clock)?;core.agents.pump_followups(&mut core.store,&core.reminder_clock)?;core.event_consumer.pump(&mut core.store,&core.generation)?;core.agents.pump_rules(&mut core.store)?;} },
         }
         if !core.receiver_only {

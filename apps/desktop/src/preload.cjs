@@ -169,6 +169,22 @@ contextBridge.exposeInMainWorld(
     resourceselectWorkspacePath: (input) =>
       call("troop:resource-desktop.choose-directory", input),
     resourcerulesList: (input) => call("troop:resource-rules.list", input),
+    resourceconfigurationSchemas: (input) =>
+      call("troop:resource-configuration.schemas", input),
+    resourcecausalLimitsGet: (input) =>
+      call("troop:resource-rules.limits.get", input),
+    resourcecausalLimitsHistory: (input) =>
+      call("troop:resource-rules.limits.history", input),
+    resourcecausalLimitsSave: (input) =>
+      call("troop:resource-rules.limits.save", input),
+    resourceoperationArchiveSettings: (input) =>
+      call("troop:resource-operations.archive.settings", input),
+    resourceoperationArchiveConfigure: (input) =>
+      call("troop:resource-operations.archive.configure", input),
+    resourceoperationArchiveRun: (input) =>
+      call("troop:resource-operations.archive.run", input),
+    resourceoperationArchiveQuery: (input) =>
+      call("troop:resource-operations.archive.query", input),
     resourcerulesGet: (input) => call("troop:resource-rules.get", input),
     resourcerulesHistory: (input) =>
       call("troop:resource-rules.history", input),

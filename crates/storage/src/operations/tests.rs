@@ -33,6 +33,195 @@ fn create(store: &mut Store) -> Result<(Value, i64), OperationFailure> {
     store.agent_create("business-id", &json!({}), &mut run)?;
     Ok((json!({"run":run}), run["id"].as_i64().unwrap()))
 }
+
+#[test]
+fn archived_receipts_keep_identity_conflicts_and_original_result_after_restart() {
+    let mut fixture = Fixture::new();
+    let store = fixture.store.as_mut().unwrap();
+    let input = json!({"value": "original"});
+    let (original, _) = store
+        .execute_operation("desktop", "archive-once", "example", &input, None, |_| {
+            Ok((json!({"saved":true}), ()))
+        })
+        .unwrap();
+    store
+        .operation_archive_configure(
+            &json!({"expected_revision":1,"enabled":true,"retention_seconds":60}),
+        )
+        .unwrap();
+    store
+        .db
+        .execute("UPDATE operation_receipt_times SET updated_at=0", [])
+        .unwrap();
+    assert_eq!(store.archive_operations().unwrap()["archived"], 1);
+    let stub = store.operation_get("desktop", "archive-once").unwrap();
+    assert_eq!(stub["state"], "archived");
+    assert_eq!(stub["terminal_state"], "committed");
+    let archive_id = stub["archive_ref"]["archive_id"].as_str().unwrap();
+    assert_eq!(
+        store
+            .operation_archive_get("desktop", "archive-once", archive_id)
+            .unwrap(),
+        original
+    );
+    assert!(store
+        .operation_archive_get("other", "archive-once", archive_id)
+        .is_err());
+    assert!(store
+        .operation_archive_get("desktop", "other", archive_id)
+        .is_err());
+    drop(fixture.store.take());
+    fixture.store = Some(Store::open(&fixture.dir).unwrap());
+    let store = fixture.store.as_mut().unwrap();
+    let (replayed, effect) = store
+        .execute_operation(
+            "desktop",
+            "archive-once",
+            "example",
+            &input,
+            None,
+            |_| -> Result<(Value, ()), OperationFailure> {
+                panic!("archived command executed again")
+            },
+        )
+        .unwrap();
+    assert_eq!(replayed, stub);
+    assert!(effect.is_none());
+    let (conflict, _) = store
+        .execute_operation(
+            "desktop",
+            "archive-once",
+            "example",
+            &json!({"value":"changed"}),
+            None,
+            |_| Ok((Value::Null, ())),
+        )
+        .unwrap();
+    assert_eq!(conflict["error"]["kind"], "operation_conflict");
+    assert_eq!(store.archive_operations().unwrap()["archived"], 0);
+}
+
+#[test]
+fn archive_batch_rolls_back_and_preserves_unresolved_external_intents() {
+    let mut fixture = Fixture::new();
+    let store = fixture.store.as_mut().unwrap();
+    store
+        .operation_archive_configure(
+            &json!({"expected_revision":1,"enabled":true,"retention_seconds":60}),
+        )
+        .unwrap();
+    store
+        .reserve_external_operation("desktop", "pending", "external", &json!({}), None)
+        .unwrap();
+    let (original, _) = store
+        .execute_operation("desktop", "finished", "example", &json!({}), None, |_| {
+            Ok((json!("done"), ()))
+        })
+        .unwrap();
+    store
+        .db
+        .execute("UPDATE operation_receipt_times SET updated_at=0", [])
+        .unwrap();
+    store.db.execute_batch("CREATE TRIGGER fail_archive BEFORE UPDATE ON operations WHEN json_extract(NEW.receipt,'$.state')='archived' BEGIN SELECT RAISE(ABORT,'archive fault'); END;").unwrap();
+    assert!(store.archive_operations().is_err());
+    assert_eq!(
+        store.operation_get("desktop", "finished").unwrap(),
+        original
+    );
+    assert_eq!(
+        store
+            .db
+            .query_row("SELECT COUNT(*) FROM operation_archives", [], |r| r
+                .get::<_, i64>(0))
+            .unwrap(),
+        0
+    );
+    store.db.execute_batch("DROP TRIGGER fail_archive").unwrap();
+    assert_eq!(store.archive_operations().unwrap()["archived"], 1);
+    assert_eq!(
+        store.operation_get("desktop", "pending").unwrap()["state"],
+        "needs_reconciliation"
+    );
+    assert_eq!(
+        store
+            .finish_external_operation("desktop", "pending", Ok(json!("reconciled")))
+            .unwrap()["state"],
+        "committed"
+    );
+    assert_eq!(store.archive_operations().unwrap()["archived"], 0);
+}
+
+#[test]
+fn archive_configuration_is_versioned_and_disabled_by_default() {
+    let mut fixture = Fixture::new();
+    let store = fixture.store.as_mut().unwrap();
+    assert_eq!(
+        store.operation_archive_settings().unwrap()["enabled"],
+        false
+    );
+    assert_eq!(store.archive_operations().unwrap()["archived"], 0);
+    let settings = store
+        .operation_archive_configure(
+            &json!({"expected_revision":1,"enabled":true,"retention_seconds":3600}),
+        )
+        .unwrap();
+    assert_eq!(settings["revision"], 2);
+    assert!(store
+        .operation_archive_configure(
+            &json!({"expected_revision":1,"enabled":false,"retention_seconds":3600})
+        )
+        .is_err());
+    assert!(store
+        .operation_archive_configure(
+            &json!({"expected_revision":2,"enabled":true,"retention_seconds":0})
+        )
+        .is_err());
+    assert_eq!(store.operation_archive_settings().unwrap(), settings);
+}
+
+#[test]
+fn archived_internal_receipt_finishes_its_original_controller_without_reapplying() {
+    let mut fixture = Fixture::new();
+    let store = fixture.store.as_mut().unwrap();
+    let (original, _) = store
+        .execute_operation(
+            "rules",
+            "internal",
+            "rules.trigger",
+            &json!({}),
+            None,
+            |_| Ok((json!({"run_id":123}), ())),
+        )
+        .unwrap();
+    store
+        .operation_archive_configure(
+            &json!({"expected_revision":1,"enabled":true,"retention_seconds":60}),
+        )
+        .unwrap();
+    store
+        .db
+        .execute("UPDATE operation_receipt_times SET updated_at=0", [])
+        .unwrap();
+    store.archive_operations().unwrap();
+    assert_eq!(
+        store.operation_get("rules", "internal").unwrap()["state"],
+        "archived"
+    );
+    let (retried, effect) = store
+        .execute_operation(
+            "rules",
+            "internal",
+            "rules.trigger",
+            &json!({}),
+            None,
+            |_| -> Result<(Value, ()), OperationFailure> {
+                panic!("internal archived effect replayed")
+            },
+        )
+        .unwrap();
+    assert_eq!(retried, original);
+    assert!(effect.is_none());
+}
 #[test]
 fn receipt_and_business_commit_together_and_duplicate_survives_reopen() {
     let mut f = Fixture::new();

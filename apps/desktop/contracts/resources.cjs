@@ -1699,6 +1699,86 @@ module.exports = ({ object: o, array: a, oneOf: e, method: m }) => {
     "string|null",
   );
   add("rules.list", "rulesList", "Page", "RulePage");
+  add(
+    "configuration.schemas",
+    "configurationSchemas",
+    "Empty",
+    o({
+      revision: "id",
+      source: "json",
+      rule: "json",
+      causal_limits: "json",
+      archive_settings: "json",
+      actions: a("json"),
+      engines: a("string"),
+    }),
+  );
+  const limitScope = o({
+    kind: e("global", "workspace", "source", "object"),
+    "workspace_id?": "id",
+    "source_id?": "string",
+    "subject_id?": "string",
+  });
+  const causalLimits = o({
+    max_depth: "id",
+    max_writes_per_hour: "id",
+    cooldown_seconds: "count",
+  });
+  types.CausalLimitValues = causalLimits;
+  types.ArchivePolicyDefinition = o({
+    enabled: "boolean",
+    retention_seconds: "id",
+  });
+  const limitPolicy = o({
+    scope: limitScope,
+    revision: "count",
+    limits: "json",
+  });
+  add(
+    "rules.limits.get",
+    "causalLimitsGet",
+    o({ scope: limitScope }),
+    limitPolicy,
+  );
+  add(
+    "rules.limits.history",
+    "causalLimitsHistory",
+    o({ scope: limitScope }),
+    o({ items: a(limitPolicy) }),
+  );
+  add(
+    "rules.limits.save",
+    "causalLimitsSave",
+    o({ scope: limitScope, expected_revision: "count", limits: causalLimits }),
+    limitPolicy,
+    true,
+  );
+  add(
+    "operations.archive.settings",
+    "operationArchiveSettings",
+    "Empty",
+    o({ revision: "id", enabled: "boolean", retention_seconds: "id" }),
+  );
+  add(
+    "operations.archive.configure",
+    "operationArchiveConfigure",
+    o({ expected_revision: "id", enabled: "boolean", retention_seconds: "id" }),
+    o({ revision: "id", enabled: "boolean", retention_seconds: "id" }),
+    true,
+  );
+  add(
+    "operations.archive.run",
+    "operationArchiveRun",
+    "Empty",
+    o({ archived: "count", settings_revision: "id" }),
+    true,
+  );
+  add(
+    "operations.archive.query",
+    "operationArchiveQuery",
+    o({ operation_id: "string", instance_id: "string", archive_id: "string" }),
+    "OperationReceipt",
+  );
   add("rules.get", "rulesGet", "ResourceId", "AutomationRule");
   add("rules.history", "rulesHistory", "ResourceHistory", "RuleHistory");
   add("rules.save", "rulesSave", "RuleSave", "AutomationRule", true);

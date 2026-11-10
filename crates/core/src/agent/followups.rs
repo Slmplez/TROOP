@@ -867,6 +867,14 @@ impl Manager {
             let Some(source) = source.as_ref() else {
                 return Ok(());
             };
+            if source["causal_scope"].is_object() {
+                let policy = store.causal_policy_resolve(&source["causal_scope"])?;
+                if source["chain_depth"].as_i64().unwrap_or(0)
+                    >= policy["limits"]["max_depth"].as_i64().unwrap()
+                {
+                    return Err("达到自动链深度上限。".into());
+                }
+            }
             if source["intent"].is_string()
                 || matches!(
                     source["state"].as_str(),
@@ -1062,6 +1070,13 @@ impl Manager {
             .ok_or_else(|| "执行身份缺失。".to_owned())?;
         self.link_started_work(store, &item, run_id)?;
         let mut run = store.agent_run(run_id)?;
+        if let Some(source) = source
+            .as_ref()
+            .filter(|run| run["causal_scope"].is_object())
+        {
+            run["causal_scope"] = source["causal_scope"].clone();
+            run["chain_depth"] = json!(source["chain_depth"].as_i64().unwrap_or(0) + 1);
+        }
         run["followup_chain_id"] = chain["id"].clone();
         run["followup_chain_generation"] = chain["generation"].clone();
         run["followup_policy_id"] = policy["id"].clone();

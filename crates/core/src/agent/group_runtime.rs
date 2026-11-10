@@ -385,6 +385,11 @@ impl Manager {
             let ceiling=group::scope(&grant);
             if !message["scope_ceiling"].is_null()&&message["scope_ceiling"]!=ceiling{return Err("接收者授权范围不匹配当前协作上限，请明确交办。".to_owned().into());}
             let goal=Self::group_goal(store,&current,&message,&delivery)?;
+            let causal_source=message["source_run_id"].as_i64().map(|id|store.agent_run(id)).transpose()?.filter(|run|run["causal_scope"].is_object());
+            if let Some(source)=&causal_source {
+                let policy=store.causal_policy_resolve(&source["causal_scope"])?;
+                if source["chain_depth"].as_i64().unwrap_or(0)>=policy["limits"]["max_depth"].as_i64().unwrap() {return Err("达到自动链深度上限。".to_owned().into());}
+            }
             if !text_ok(&goal){return Err("群信封与工作资料超过执行输入容量，请缩小内容。".to_owned().into());}
             let run_id=if message["execute_work_item"]==true{
                 let item=store.work_item(message["work_item_id"].as_i64().ok_or_else(||"工作项身份无效。".to_owned())?)?;
@@ -395,6 +400,7 @@ impl Manager {
                 let value=self.apply_record_command(store,&method,input)?;value["run"]["id"].as_i64().ok_or_else(||"执行身份缺失。".to_owned())?
             };
             let mut run=store.agent_run(run_id)?;
+            if let Some(source)=causal_source {run["causal_scope"]=source["causal_scope"].clone();run["chain_depth"]=json!(source["chain_depth"].as_i64().unwrap_or(0)+1);}
             run["group_id"]=current["id"].clone();run["group_delivery_id"]=delivery["id"].clone();run["group_message_id"]=message["id"].clone();run["group_project_id"]=current["project_id"].clone();run["group_chain_id"]=chain["id"].clone();run["group_chain_generation"]=chain["generation"].clone();run["group_scope_ceiling"]=ceiling;run["group_work_item_id"]=message["work_item_id"].clone();
             run["group_topic_id"]=if current["source_group_id"].is_i64(){current["id"].clone()}else{Value::Null};
             store.agent_save(&mut run,&mut [],"group_delivery_linked")?;

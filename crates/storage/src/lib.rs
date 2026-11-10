@@ -7,6 +7,7 @@ use std::{
 };
 mod agent;
 mod authorizations;
+mod causal_limits;
 mod chat;
 mod cli_interactions;
 mod events;
@@ -24,6 +25,7 @@ mod memory_conflicts;
 mod memory_revisions;
 mod oauth;
 mod office;
+mod operation_archive;
 mod operations;
 mod reminders;
 mod rules;
@@ -77,7 +79,7 @@ impl Store {
         let version: i64 = db
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .map_err(|e| e.to_string())?;
-        if version > 33 {
+        if version > 35 {
             return Err("Database was created by a newer TROOP version".into());
         }
         let has_table = |name: &str| {
@@ -88,6 +90,21 @@ impl Store {
             )
             .map_err(|e| e.to_string())
         };
+        if version >= 35
+            && (!has_table("causal_limit_policies")?
+                || !has_table("causal_limit_history")?
+                || !has_table("causal_writes")?)
+        {
+            return Err("Causal limit storage is incomplete".into());
+        }
+        if version >= 34
+            && (!has_table("operation_archives")?
+                || !has_table("operation_receipt_times")?
+                || !has_table("operation_archive_settings")?
+                || !has_table("operation_archive_settings_history")?)
+        {
+            return Err("Operation archive storage is incomplete".into());
+        }
         if version >= 32
             && (!has_table("office_documents")?
                 || !has_table("office_versions")?
@@ -291,6 +308,12 @@ impl Store {
         if version < 33 {
             office::migrate_references(&mut db)?;
         }
+        if version < 34 {
+            operation_archive::migrate(&mut db)?;
+        }
+        if version < 35 {
+            causal_limits::migrate(&mut db)?;
+        }
         let mut store = Self { db, _lock: lock };
         store.recover_executions()?;
         store.cli_interactions_recover()?;
@@ -461,7 +484,7 @@ mod tests {
         fs::create_dir_all(&directory).unwrap();
         let database = directory.join("troop.sqlite3");
         let connection = Connection::open(&database).unwrap();
-        connection.execute_batch("PRAGMA user_version=34;").unwrap();
+        connection.execute_batch("PRAGMA user_version=36;").unwrap();
         drop(connection);
         assert!(matches!(Store::open(&directory), Err(message) if message.contains("newer")));
         let connection = Connection::open(database).unwrap();
@@ -472,7 +495,7 @@ mod tests {
         let version: i64 = connection
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .unwrap();
-        assert_eq!(version, 34);
+        assert_eq!(version, 36);
     }
 
     #[test]

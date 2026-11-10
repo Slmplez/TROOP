@@ -1,6 +1,7 @@
 // Build an actual pre-ledger fixture before replaying migrations 8/9 onward.
 // Keeping schema-12 triggers while lowering user_version is not an old database.
 module.exports = function removeLedgerSchema(db) {
+  require("./remove-policy-schema.cjs")(db);
   db.exec(
     "DROP TABLE followup_appointments; DROP TABLE followup_chains; DROP TABLE followup_states; DROP TABLE reminder_notifications; DROP TABLE reminder_slots; DROP TABLE reminder_states; DROP TABLE reminder_preferences; DROP TABLE group_executors; DROP TABLE group_chains; DROP TRIGGER group_project_revoked;",
   );

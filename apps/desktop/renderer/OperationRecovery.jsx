@@ -2,6 +2,9 @@ import React, { useState, useSyncExternalStore } from "react";
 import { operationJournal, troopClient, clientModels } from "./client/react";
 
 const names = {
+  "rules.limits.save": "保存回流限额",
+  "operations.archive.configure": "保存归档配置",
+  "operations.archive.run": "归档到期回执",
   "cli.start": "启动外部 CLI",
   "cli.review": "审核 CLI 结果",
   "events.source.save": "保存事件来源",
@@ -53,6 +56,7 @@ const resourcePage = (method) =>
   ({
     authorizations: "authorizations",
     rules: "rules",
+    operations: "rules",
     events: "events",
     memory: "memory",
     skills: "skills",

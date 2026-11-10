@@ -1938,7 +1938,7 @@ dependencies = [
 
 [[package]]
 name = "troop-core"
-version = "0.10.4"
+version = "0.10.5"
 dependencies = [
  "base64 0.23.1",
  "bytes",
@@ -1966,7 +1966,7 @@ dependencies = [
 
 [[package]]
 name = "troop-gateway"
-version = "0.10.4"
+version = "0.10.5"
 dependencies = [
  "futures-util",
  "reqwest",
@@ -1979,7 +1979,7 @@ dependencies = [
 
 [[package]]
 name = "troop-mcp"
-version = "0.10.4"
+version = "0.10.5"
 dependencies = [
  "base64 0.23.1",
  "form_urlencoded",
@@ -1997,7 +1997,7 @@ dependencies = [
 
 [[package]]
 name = "troop-protocol"
-version = "0.10.4"
+version = "0.10.5"
 dependencies = [
  "chrono",
  "chrono-tz",
@@ -2007,7 +2007,7 @@ dependencies = [
 
 [[package]]
 name = "troop-storage"
-version = "0.10.4"
+version = "0.10.5"
 dependencies = [
  "base64 0.23.1",
  "rusqlite",

@@ -236,6 +236,27 @@ impl Manager {
             &canonical,
             request.expected_revision,
             |store| {
+                if method == "rules.limits.save" {
+                    return store
+                        .causal_policy_save(&input)
+                        .map(|value| (value, AfterCommit::None))
+                        .map_err(Into::into);
+                }
+                if method == "operations.archive.configure" {
+                    return store
+                        .operation_archive_configure(&input)
+                        .map(|value| (value, AfterCommit::None))
+                        .map_err(Into::into);
+                }
+                if method == "operations.archive.run" {
+                    if input != json!({}) {
+                        return Err("归档命令参数无效。".to_string().into());
+                    }
+                    return store
+                        .archive_operations()
+                        .map(|value| (value, AfterCommit::None))
+                        .map_err(Into::into);
+                }
                 if method.starts_with("office.") {
                     return crate::office::write(store, method, input.clone(), None)
                         .map(|value| (value, AfterCommit::None))

@@ -1,3 +1,4 @@
+const { fillSchemaForm } = require("./fixtures/schema-form-fill.cjs");
 const { app } = require("electron"),
   { bootstrap } = require("../src/main.cjs"),
   { agentServer } = require("./fixtures/agent-server.cjs"),
@@ -107,9 +108,7 @@ async function main() {
       goal: "推进后续工作",
     },
   };
-  await js(
-    `(()=>{const e=document.querySelector('#rule-definition');Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(e,${JSON.stringify(JSON.stringify(rule))});e.dispatchEvent(new Event('input',{bubbles:true}));})()`,
-  );
+  await fillSchemaForm(js, "rule-definition", rule);
   await sleep(60);
   await js(
     "document.querySelector('#rule-save').click();document.querySelector('#rule-save').click()",

@@ -120,6 +120,7 @@ impl Manager {
         run: &Value,
         inv: &mut Value,
     ) -> Result<(), String> {
+        self.causal_check_invocation(store, run, inv)?;
         if matches!(
             inv["name"].as_str(),
             Some("propose_followup" | "request_handoff")
