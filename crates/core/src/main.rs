@@ -806,7 +806,10 @@ async fn run() -> Result<(), String> {
             Some(message)=update.recv()=>core.accept(message)?,
             Some(message)=core.agents.receiver.recv()=>core.agents.accept(&mut core.store,message)?,
             Some(message)=core.oauth.receiver.recv()=>core.oauth.accept(&mut core.store,message)?,
-            _=event_retention.tick()=>{if let Err(error)=core.store.event_prune_payloads(){eprintln!("Event payload retention deferred: {error}");}},
+            _=event_retention.tick()=>{
+                if let Err(error)=core.store.event_prune_payloads(){eprintln!("Event payload retention deferred: {error}");}
+                if let Err(error)=core.store.retain_operation_receipts(){eprintln!("Operation receipt retention deferred: {error}");}
+            },
             _=schedule.tick()=>{ if !core.receiver_only {reminders::pump(&mut core.store,&mut core.reminder_clock)?;core.agents.pump_schedules(&mut core.store,&core.reminder_clock)?;core.agents.pump_followups(&mut core.store,&core.reminder_clock)?;core.event_consumer.pump(&mut core.store,&core.generation)?;core.agents.pump_rules(&mut core.store)?;} },
         }
         if !core.receiver_only {

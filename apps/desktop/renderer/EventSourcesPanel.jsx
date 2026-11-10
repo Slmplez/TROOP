@@ -2,20 +2,14 @@ import React, { useRef, useState } from "react";
 import { clientModels, useClientModel } from "./client/react";
 import { resources } from "./client/resources";
 import { call } from "./api";
+import { defaultSource, issuesForSource } from "./schema-form.mjs";
+import { SourceDefinitionEditor } from "./SchemaForm.jsx";
 
-const initial = (instance, workspaces) => ({
-  name: "事件来源",
-  kind: "github",
-  project: "owner/repo",
-  workspace_id: workspaces[0]?.id ?? 1,
-  project_ids: [],
-  enabled: false,
-  mode: "local",
-  api_base_url: "https://api.github.com",
-  consumer_id: instance,
-  auth_mode: "standard",
-  ttl_seconds: 86400,
-});
+const initial = (instance, workspaces) =>
+  defaultSource({
+    consumer_id: instance,
+    workspace_id: workspaces[0]?.id ?? 1,
+  });
 const definition = ({
   id,
   revision,
@@ -159,18 +153,10 @@ export default function EventSourcesPanel({
           <p>
             来源标识 <code id="event-source-id">{id}</code>
           </p>
-          <label htmlFor="event-source-definition">来源配置 JSON</label>
-          <textarea
-            id="event-source-definition"
-            rows={22}
-            style={{
-              width: "100%",
-              boxSizing: "border-box",
-              fontFamily: "monospace",
-            }}
+          <SourceDefinitionEditor
+            text={text}
             disabled={!ready || busy}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
+            onText={setText}
           />
           <p>
             GitLab 可选择 standard 签名或旧版 token。remote 模式同时提供
@@ -211,6 +197,8 @@ export default function EventSourcesPanel({
             disabled={!ready || busy}
             onClick={() =>
               act(async () => {
+                const problems = issuesForSource(text);
+                if (problems.length) throw Error(problems.join("\n"));
                 const saved = await clientModels.command("events.source.save", {
                   id,
                   expected_revision: selected?.revision ?? 0,

@@ -6,23 +6,10 @@ import ReminderPanel from "./ReminderPanel";
 import SchedulesPanel from "./SchedulesPanel";
 import FollowupsPanel from "./FollowupsPanel";
 import WorkItemExecution from "./WorkItemExecution";
+import { defaultRule, issuesForRule } from "./schema-form.mjs";
+import { RuleDefinitionEditor } from "./SchemaForm.jsx";
 
-const empty = () => ({
-  name: "完成后执行",
-  enabled: false,
-  event: "run.completed",
-  workspace_id: 1,
-  source_run_id: null,
-  expires_at: Math.floor(Date.now() / 1000) + 3600,
-  start: {
-    client_run_id: crypto.randomUUID(),
-    agent_id: 1,
-    workspace_id: 1,
-    goal: "规则直接动作",
-    authorization_id: "请选择已创建的授权",
-    action: { name: "read_file", arguments: { path: "input.txt" } },
-  },
-});
+const empty = defaultRule;
 export default function RulesPanel(props) {
   const [tab, setTab] = useState("events");
   useEffect(() => {
@@ -122,6 +109,7 @@ function EventRulesPanel({ ready, onOpenRun }) {
           updated_at,
           created_at_ms,
           effective_from_ms,
+          origin,
           ...definition
         }) => definition)(rule)
       : empty();
@@ -145,6 +133,8 @@ function EventRulesPanel({ ready, onOpenRun }) {
     }
   }
   async function save(toggle) {
+    const problems = issuesForRule(text);
+    if (problems.length) throw Error(problems.join("\n"));
     const rule = JSON.parse(text);
     if (toggle !== undefined) rule.enabled = toggle;
     const saved = await clientModels.command("rules.save", {
@@ -214,18 +204,10 @@ function EventRulesPanel({ ready, onOpenRun }) {
             )}
         </section>
         <section className="provider-form">
-          <label htmlFor="rule-definition">规则配置 JSON</label>
-          <textarea
-            id="rule-definition"
-            style={{
-              width: "100%",
-              boxSizing: "border-box",
-              fontFamily: "monospace",
-            }}
-            rows={24}
+          <RuleDefinitionEditor
+            text={text}
             disabled={!ready || busy}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
+            onText={setText}
           />
           <p>
             start 可使用原生执行或 CLI 启动契约。原生 action

@@ -59,6 +59,7 @@ const types = {
     instance_id: "string",
     state: oneOf(
       "not_found",
+      "archived",
       "committed",
       "rejected",
       "conflict",

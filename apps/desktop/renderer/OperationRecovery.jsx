@@ -100,6 +100,7 @@ export default function OperationRecovery({
               committed: "命令已接纳",
               rejected: "命令已拒绝",
               not_found: "尚未找到接纳记录",
+              archived: "回执已归档",
               conflict: "操作标识冲突",
               needs_reconciliation: "请核对资源当前状态",
             }[entry.receipt?.state] ?? "结果待查询"}
@@ -117,6 +118,11 @@ export default function OperationRecovery({
           </button>
           {entry.redacted && entry.receipt?.state === "not_found" && (
             <p>凭据未保存在此记录中。请返回配置页面重新输入后提交。</p>
+          )}
+          {entry.receipt?.state === "archived" && (
+            <p>
+              {`归档引用 ${entry.receipt.archive_ref}。正文可能已按保留期清理，操作不会因此被当成未找到而重放。`}
+            </p>
           )}
           {entry.receipt?.state === "not_found" && !entry.redacted && (
             <button

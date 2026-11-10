@@ -105,7 +105,9 @@ Start/resume activation and cancellation signals occur after commit. A committed
 receipt means command acceptance, not successful execution or exactly-once external
 effects. Rejected receipts remain stable; a revised intent requires a new operation.
 The current trusted local desktop principal is supplied by Core. Remote service
-authentication is not implemented. Receipts are retained without automatic expiry.
+authentication is not implemented. Live receipts are archived after 30 days.
+Lookup then returns an archive reference instead of `not_found`; the body is
+kept for another 30 days and the reference remains after the body expires.
 Resource commands involving credential storage or runtime signals first commit an
 external-operation intent. The receipt starts as `needs_reconciliation`. Completion
 stores the result. A crash, effect failure or receipt-write failure preserves the
@@ -185,9 +187,10 @@ in the rule revision. The initial editor exposes typed configuration through JSO
 Core records a per-rule Run/epoch semantic identity and commits accepted dispatch,
 the new Run, trigger evidence and delivery together. Stored executions recover
 through the existing reconciliation path. Rules retain their event baseline,
-revision authors and grant references. Workspace dispatches share a conservative
-three-per-hour limit and sixty-second cooldown. Automatic chains stop at depth
-eight. Agent `manage_rule` requires a separate rule-management grant and checks
+revision authors and grant references. Workspace dispatches share a versioned write-limit policy. The default remains
+a conservative three-per-hour limit and sixty-second cooldown, counted in a
+ledger keyed by source, object and action, with a workspace ceiling of the same
+numbers. Automatic chains stop at depth eight. Agent `manage_rule` requires a separate rule-management grant and checks
 both original and proposed scope, current project membership, operation and expiry.
 
 Observed rule and authorization reads use shared polling and release it on final

@@ -1,3 +1,4 @@
+use super::write_limits::{chain_parts, limit_identity, WriteLimitWrite};
 use super::Store;
 use rusqlite::{params, Connection, OptionalExtension};
 use serde_json::{json, Value};
@@ -211,42 +212,52 @@ impl Store {
             .collect();
         candidates
     }
-    pub fn rule_frequency_blocked(&self, workspace: i64) -> Result<bool, String> {
-        self.db.query_row("SELECT COUNT(*)>=3 OR COALESCE(MAX(created_at),0)>unixepoch()-60 FROM automation_deliveries WHERE workspace_id=?1 AND created_at>unixepoch()-3600 AND json_extract(document,'$.state')='dispatched'",[workspace],|r|r.get(0)).map_err(|e|e.to_string())
-    }
     pub fn rule_waiting_reason(
         &self,
         rule: &Value,
         event: &Value,
     ) -> Result<Option<String>, String> {
-        let key = if let Some(id) = event["work_event_id"].as_i64() {
-            format!("work:{id}")
-        } else if let Some(id) = event["external_event_id"].as_i64() {
-            format!("external:{id}")
-        } else {
-            format!("{}:{}", event["id"], event["epoch"])
-        };
+        let key = delivery_event_key(event);
         self.db.query_row("SELECT json_extract(document,'$.reason') FROM automation_deliveries WHERE rule_id=?1 AND event_key=?2 AND json_extract(document,'$.state')='waiting'",params![rule["id"].as_str(),key],|row|row.get(0)).optional().map_err(|e|e.to_string())
     }
     pub fn rule_delivery(&self, rule: &Value, event: &Value, result: &Value) -> Result<(), String> {
+        let event_key = delivery_event_key(event);
         self.db
             .execute(
                 "INSERT INTO automation_deliveries VALUES(?1,?2,?3,unixepoch(),?4) ON CONFLICT(rule_id,event_key) DO UPDATE SET document=excluded.document,created_at=excluded.created_at WHERE json_extract(automation_deliveries.document,'$.state')='waiting'",
                 params![
                     rule["id"].as_str(),
-                    if let Some(id) = event["work_event_id"].as_i64() {
-                        format!("work:{id}")
-                    } else if let Some(id) = event["external_event_id"].as_i64() {
-                        format!("external:{id}")
-                    } else {
-                        format!("{}:{}", event["id"], event["epoch"])
-                    },
+                    event_key,
                     rule["workspace_id"].as_i64(),
                     result.to_string()
                 ],
             )
             .map_err(|e| e.to_string())?;
+        if result["state"] == "dispatched" {
+            let (source, object, action) = limit_identity(rule);
+            let (chain_id, cause) = chain_parts(event);
+            self.record_write_limit(&WriteLimitWrite {
+                source,
+                object,
+                action,
+                event_key,
+                chain_id,
+                chain_depth: i64::try_from(cause.saturating_add(1)).unwrap_or(i64::MAX),
+                workspace_id: rule["workspace_id"].as_i64().unwrap_or(0),
+                document: result.clone(),
+            })?;
+        }
         Ok(())
+    }
+}
+
+fn delivery_event_key(event: &Value) -> String {
+    if let Some(id) = event["work_event_id"].as_i64() {
+        format!("work:{id}")
+    } else if let Some(id) = event["external_event_id"].as_i64() {
+        format!("external:{id}")
+    } else {
+        format!("{}:{}", event["id"], event["epoch"])
     }
 }
 

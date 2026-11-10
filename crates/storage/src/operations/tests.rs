@@ -1,4 +1,5 @@
 use super::*;
+use rusqlite::Connection;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 struct Fixture {
@@ -151,4 +152,139 @@ fn rejected_partial_mutation_rolls_back_and_rejection_is_stable() {
         .0,
         receipt
     );
+}
+
+#[test]
+fn archived_receipt_keeps_a_reference_and_does_not_replay() {
+    let mut f = Fixture::new();
+    let s = f.store.as_mut().unwrap();
+    let (receipt, _) = s
+        .execute_operation(
+            "desktop",
+            "op",
+            "agent.start",
+            &json!({"n": 1}),
+            None,
+            create,
+        )
+        .unwrap();
+    assert_eq!(s.archive_operation_receipts(30, 30).unwrap(), 0);
+    assert_eq!(
+        s.operation_get("desktop", "op").unwrap()["state"],
+        "committed"
+    );
+    s.db.execute(
+        "UPDATE operations SET recorded_at=unixepoch()-100 WHERE operation_id='op'",
+        [],
+    )
+    .unwrap();
+    assert_eq!(s.archive_operation_receipts(30, 60).unwrap(), 1);
+    let archived = s.operation_get("desktop", "op").unwrap();
+    assert_eq!(archived["state"], "archived");
+    assert!(archived.get("result").is_none());
+    let reference = archived["archive_ref"].as_str().unwrap();
+    assert!(reference.starts_with("archive:"));
+    let body = s.operation_archive_get(reference).unwrap();
+    assert_eq!(body["state"], "committed");
+    assert_eq!(body["result"]["run"]["id"], receipt["result"]["run"]["id"]);
+    let reference = reference.to_owned();
+    let (again, effect) = s
+        .execute_operation::<()>(
+            "desktop",
+            "op",
+            "agent.start",
+            &json!({"n": 1}),
+            None,
+            |_| panic!("archived command replayed"),
+        )
+        .unwrap();
+    assert!(effect.is_none());
+    assert_eq!(again["state"], "archived");
+    assert_eq!(again["archive_ref"], reference);
+    let (conflict, effect) = s
+        .execute_operation::<()>(
+            "desktop",
+            "op",
+            "agent.start",
+            &json!({"n": 2}),
+            None,
+            |_| panic!("conflicting archived command ran"),
+        )
+        .unwrap();
+    assert!(effect.is_none());
+    assert_eq!(conflict["error"]["kind"], "operation_conflict");
+    s.db.execute(
+        "UPDATE operation_receipt_archive SET payload_expires_at=unixepoch()-1",
+        [],
+    )
+    .unwrap();
+    assert_eq!(s.archive_operation_receipts(30, 60).unwrap(), 0);
+    assert!(s
+        .operation_archive_get(&reference)
+        .unwrap_err()
+        .contains("保留期"));
+    let still = s.operation_get("desktop", "op").unwrap();
+    assert_eq!(still["state"], "archived");
+    assert_eq!(still["archive_ref"], reference);
+    assert_eq!(
+        s.operation_get("desktop", "missing").unwrap()["state"],
+        "not_found"
+    );
+}
+
+#[test]
+fn schema_34_gains_receipt_archive_without_losing_the_receipt() {
+    let mut f = Fixture::new();
+    let (receipt, _) = f
+        .store
+        .as_mut()
+        .unwrap()
+        .execute_operation("desktop", "keep", "agent.start", &json!({}), None, create)
+        .unwrap();
+    f.store
+        .as_ref()
+        .unwrap()
+        .db
+        .execute_batch("ALTER TABLE operations DROP COLUMN recorded_at; DROP TABLE operation_receipt_archive; PRAGMA user_version=34;")
+        .unwrap();
+    let dir = f.dir.clone();
+    drop(f.store.take());
+    f.store = Some(Store::open(&dir).unwrap());
+    let s = f.store.as_ref().unwrap();
+    let version: i64 =
+        s.db.pragma_query_value(None, "user_version", |row| row.get(0))
+            .unwrap();
+    assert_eq!(version, 35);
+    assert_eq!(s.operation_get("desktop", "keep").unwrap(), receipt);
+    let recorded: bool =
+        s.db.query_row(
+            "SELECT EXISTS(SELECT 1 FROM pragma_table_info('operations') WHERE name='recorded_at')",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert!(recorded);
+}
+
+#[test]
+fn incomplete_receipt_archive_is_rejected_without_migration() {
+    let mut f = Fixture::new();
+    f.store
+        .as_ref()
+        .unwrap()
+        .db
+        .execute_batch("DROP TABLE operation_receipt_archive; PRAGMA user_version=35;")
+        .unwrap();
+    let dir = f.dir.clone();
+    drop(f.store.take());
+    match Store::open(&dir) {
+        Err(error) => assert!(error.contains("Operation receipt archive is incomplete")),
+        Ok(_) => panic!("incomplete receipt archive was opened"),
+    }
+    let db = Connection::open(dir.join("troop.sqlite3")).unwrap();
+    let version: i64 = db
+        .pragma_query_value(None, "user_version", |row| row.get(0))
+        .unwrap();
+    assert_eq!(version, 35);
+    drop(db);
 }

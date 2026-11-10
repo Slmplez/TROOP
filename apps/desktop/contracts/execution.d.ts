@@ -54,6 +54,7 @@ export type OperationReceipt = {
   instance_id: string;
   state:
     | "not_found"
+    | "archived"
     | "committed"
     | "rejected"
     | "conflict"
