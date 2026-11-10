@@ -193,7 +193,7 @@ test("C7 composes conversation automation, scoped context, Office editing, accep
     conversation_id: conversation.id,
     provider_id: h.provider.id,
     client_turn_id: crypto.randomUUID(),
-    text: "Schedule this selected fixed reference",
+    text: "C7_CREATOR_CHAT_ONLY. Schedule this selected fixed reference",
     automation: true,
     office_reference_ids: [reference.id],
   });
@@ -266,14 +266,28 @@ test("C7 composes conversation automation, scoped context, Office editing, accep
       .source_run_id,
     execution.run_id,
   );
-  const requests = JSON.stringify(h.server.requests);
+  const nativeRequests = h.server.requests.filter(
+    (request) => request.body.tools?.length && !hook(request.body),
+  );
+  const initial = nativeRequests.find(
+    (request) => results(request.body).length === 0,
+  );
+  assert.ok(initial, "Scheduled Run initial model request");
+  const initialContext = JSON.stringify(initial.body);
   for (const marker of [
     "C7_MEMORY_CONTEXT",
     "C7_SKILL_CONTEXT",
-    "C7_HOOK_CONTEXT",
     "C7_FROZEN_REFERENCE",
   ])
-    assert.ok(requests.includes(marker), marker);
+    assert.ok(initialContext.includes(marker), marker);
+  assert.ok(!initialContext.includes("C7_CREATOR_CHAT_ONLY"));
+  assert.ok(
+    nativeRequests.some(
+      (request) =>
+        results(request.body).length > 0 &&
+        JSON.stringify(request.body).includes("C7_HOOK_CONTEXT"),
+    ),
+  );
   assert.equal(
     (await h.core.request("work_items.get", { id: dependent.id }))
       .allowed_actions.start.allowed,
