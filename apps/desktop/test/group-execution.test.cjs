@@ -1044,7 +1044,7 @@ test("schema 26 group history migrates without replay and resumes the original d
   const migrated = new DatabaseSync(path.join(h.data, "troop.sqlite3"), {
     readOnly: true,
   });
-  assert.equal(migrated.prepare("PRAGMA user_version").get().user_version, 34);
+  assert.equal(migrated.prepare("PRAGMA user_version").get().user_version, 35);
   migrated.close();
   await configure(h, g);
   let current = await deliveryFor(h, g, sent);

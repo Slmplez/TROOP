@@ -105,7 +105,9 @@ Start/resume activation and cancellation signals occur after commit. A committed
 receipt means command acceptance, not successful execution or exactly-once external
 effects. Rejected receipts remain stable; a revised intent requires a new operation.
 The current trusted local desktop principal is supplied by Core. Remote service
-authentication is not implemented. Receipts are retained without automatic expiry.
+authentication is not implemented. Live receipts are archived after 30 days.
+Lookup then returns an archive reference instead of `not_found`; the body is
+kept for another 30 days and the reference remains after the body expires.
 Resource commands involving credential storage or runtime signals first commit an
 external-operation intent. The receipt starts as `needs_reconciliation`. Completion
 stores the result. A crash, effect failure or receipt-write failure preserves the

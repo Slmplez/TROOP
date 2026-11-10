@@ -519,7 +519,7 @@ mod tests {
             .db
             .pragma_query_value(None, "user_version", |row| row.get(0))
             .unwrap();
-        assert_eq!(version, 34);
+        assert_eq!(version, 35);
     }
 
     #[test]
@@ -765,7 +765,7 @@ mod tests {
             .db
             .pragma_query_value(None, "user_version", |row| row.get(0))
             .unwrap();
-        assert_eq!(version, 34);
+        assert_eq!(version, 35);
         assert_eq!(store.list(0).unwrap().items[0].name, "保留");
         assert_eq!(store.write_limit_policy().unwrap()["revision"], 1);
         let (count, object, action): (i64, String, String) = store.db.query_row(
