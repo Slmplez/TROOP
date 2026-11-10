@@ -371,6 +371,7 @@ export class ClientModels {
           "authorizations.list",
           "authorizations.get",
           "authorizations.history",
+          "office.reference.get",
         ].includes(method)
           ? this.pollInterval
           : 0,

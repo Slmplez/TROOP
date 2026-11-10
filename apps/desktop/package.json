@@ -1,6 +1,6 @@
 {
   "name": "troop-desktop",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "private": true,
   "description": "TROOP independent Rust and Electron desktop",
   "main": "src/entry.cjs",
@@ -25,6 +25,10 @@
     "smoke:mcp-management": "node scripts/mcp-management-smoke.mjs"
   },
   "dependencies": {
+    "@tiptap/core": "3.33.0",
+    "@tiptap/markdown": "3.33.0",
+    "@tiptap/react": "3.33.0",
+    "@tiptap/starter-kit": "3.33.0",
     "react": "19.2.1",
     "react-dom": "19.2.1"
   },

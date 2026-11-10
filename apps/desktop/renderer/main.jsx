@@ -5,6 +5,7 @@ import "./style.css";
 import { call } from "./api";
 import { clientModels } from "./client/react";
 import ChatPanel from "./ChatPanel";
+import OfficePanel from "./OfficePanel";
 import ModelSettings from "./ModelSettings";
 import AgentPanel from "./AgentPanel";
 import OperationRecovery from "./OperationRecovery";
@@ -30,6 +31,7 @@ function App() {
   const [page, setPage] = useState("chat");
   const [openRun, setOpenRun] = useState(null);
   const [openAutomation, setOpenAutomation] = useState(null);
+  const [officeReference, setOfficeReference] = useState(null);
   const [providers, setProviders] = useState([]);
   const [status, setStatus] = useState({ state: "starting" });
   const [rows, setRows] = useState([]);
@@ -126,6 +128,14 @@ function App() {
         </div>
         <div className="scope">本机工作空间</div>
         <nav aria-label="主导航">
+          <button
+            disabled={!status.capabilities?.includes("office.get")}
+            className={page === "office" ? "selected" : ""}
+            aria-current={page === "office" ? "page" : undefined}
+            onClick={() => setPage("office")}
+          >
+            文件办公
+          </button>
           <button
             disabled={!status.capabilities?.includes("groups.list")}
             className={page === "groups" ? "selected" : ""}
@@ -313,6 +323,8 @@ function App() {
         />
         <div className="chat-mount" hidden={page !== "chat"}>
           <ChatPanel
+            officeReference={officeReference}
+            onReferenceConsumed={() => setOfficeReference(null)}
             onManageAutomation={(rule) => {
               setOpenAutomation(rule);
               setPage("rules");
@@ -328,6 +340,23 @@ function App() {
             workspaces={rows}
             onOpenModels={() => setPage("models")}
             visible={page === "chat"}
+          />
+        </div>
+        <div hidden={page !== "office"}>
+          <OfficePanel
+            key={status.storage_instance ?? "starting"}
+            ready={ready}
+            visible={page === "office"}
+            instance={status.storage_instance}
+            workspaces={rows}
+            onRunReference={(reference) => {
+              setOfficeReference(reference);
+              setPage("authorizations");
+            }}
+            onReference={(reference) => {
+              setOfficeReference(reference);
+              setPage("chat");
+            }}
           />
         </div>
         <div hidden={page !== "agent"}>
@@ -387,6 +416,8 @@ function App() {
         )}
         {page === "authorizations" && (
           <AuthorizationsPanel
+            officeReference={officeReference}
+            onReferenceConsumed={() => setOfficeReference(null)}
             onOpenRun={(id) => {
               setOpenRun(id);
               setPage("agent");

@@ -7,6 +7,25 @@ pub mod schedule;
 pub const VERSION: u32 = 10;
 pub const MAX_FRAME: usize = 65_536;
 pub const METHODS: &[&str] = &[
+    "office.open",
+    "office.get",
+    "office.pending",
+    "office.list",
+    "office.history",
+    "office.version",
+    "office.draft.get",
+    "office.draft.save",
+    "office.draft.discard",
+    "office.save",
+    "office.restore",
+    "office.save_as",
+    "office.capture_external",
+    "office.reconcile",
+    "office.reference.create",
+    "office.reference.get",
+    "office.csv.encode",
+    "office.csv.decode",
+    "office.markdown.check",
     "automations.result",
     "automations.confirm",
     "followups.preview",
@@ -187,6 +206,9 @@ pub const METHODS: &[&str] = &[
 ];
 
 pub const OPERATION_COMMANDS: &[&str] = &[
+    "office.draft.save",
+    "office.draft.discard",
+    "office.reference.create",
     "automations.confirm",
     "followups.save",
     "followups.request",
@@ -254,6 +276,12 @@ pub const OPERATION_COMMANDS: &[&str] = &[
     "agent.compact",
 ];
 pub const EXTERNAL_OPERATION_COMMANDS: &[&str] = &[
+    "office.open",
+    "office.save",
+    "office.restore",
+    "office.save_as",
+    "office.capture_external",
+    "office.reconcile",
     "events.source.save",
     "memory.agent.save",
     "memory.job.cancel",

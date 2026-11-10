@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { clientModels, useClientModel } from "./client/react";
 import ConversationAutomation from "./ConversationAutomation";
+import OfficeReference from "./OfficeReference";
 const statuses = {
   streaming: "正在生成",
   completed: "已完成",
@@ -11,6 +12,8 @@ const statuses = {
 };
 export default function ChatPanel({
   ready,
+  officeReference,
+  onReferenceConsumed,
   generation,
   providers,
   workspaces,
@@ -59,6 +62,10 @@ export default function ChatPanel({
   const active = messages.find(
     (m) => m.role === "assistant" && m.status === "streaming",
   );
+  useEffect(() => {
+    if (officeReference && selected === null)
+      setWorkspace(String(officeReference.workspace_id));
+  }, [officeReference, selected]);
   function setDraft(text) {
     setDrafts((old) => ({ ...old, [selected ?? "new"]: text }));
   }
@@ -86,24 +93,15 @@ export default function ChatPanel({
     setProvider(sessions.find((s) => s.id === id)?.provider_id ?? "");
     pendingSend.current = null;
   }
-  async function create() {
-    setBusy(true);
-    setError("");
-    try {
-      const chat = await clientModels.command("chat.create", {
-        title: "新对话",
-        workspace_id: workspace ? Number(workspace) : null,
-        agent_id: agentId,
-        project_id: projectId || null,
-      });
-      await loadSessions();
-      setSelected(chat.id);
-      pendingSend.current = null;
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
+  function create() {
+    if (current) {
+      setAgentId(current.agent_id ?? 1);
+      setProjectId(current.project_id ?? "");
+      setWorkspace(current.workspace_id ? String(current.workspace_id) : "");
     }
+    setSelected(null);
+    pendingSend.current = null;
+    setError("");
   }
   async function send(event) {
     event?.preventDefault();
@@ -143,10 +141,12 @@ export default function ChatPanel({
         client_turn_id: client,
         text,
         automation,
+        office_reference_ids: officeReference ? [officeReference.id] : [],
       });
       if (view.current.generation !== expected) return;
       setDrafts((old) => ({ ...old, [selected ?? "new"]: "", [id]: "" }));
       pendingSend.current = null;
+      onReferenceConsumed();
       pinned.current = true;
       await loadSessions();
       await loadMessages(id);
@@ -236,6 +236,13 @@ export default function ChatPanel({
         <div className="error" role="alert">
           {error}
         </div>
+      )}
+      {officeReference && (
+        <OfficeReference
+          reference={officeReference}
+          ready={ready && visible}
+          onRemove={onReferenceConsumed}
+        />
       )}
       <div className="chat-layout">
         <aside className="conversation-list" aria-label="对话历史">

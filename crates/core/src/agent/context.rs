@@ -33,7 +33,10 @@ impl ContextSources<'_> {
         })
     }
     pub fn history(&self) -> ContextFragment {
-        let items = Manager::context_view(self.run);
+        let mut items = system(crate::office::reference_context(
+            &self.run["office_references"],
+        ));
+        items.extend(Manager::context_view(self.run));
         ContextFragment {
             source: "history".into(),
             revision: json!({"context_start":self.run["context_start"],"sha256":tools::hash(serde_json::to_vec(&items).unwrap().as_slice())}),

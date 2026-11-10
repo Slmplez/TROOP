@@ -10,6 +10,7 @@ mod followups;
 mod grok;
 mod group_runtime;
 mod groups;
+mod office;
 mod omp;
 mod opencode;
 mod pi;
@@ -102,6 +103,8 @@ struct SendChat {
     text: String,
     #[serde(default)]
     automation: bool,
+    #[serde(default)]
+    office_reference_ids: Vec<String>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -244,6 +247,9 @@ impl Core {
                 false,
             ));
         }
+        if method.starts_with("office.") {
+            return Ok((office::read(&self.store, method, p)?, false));
+        }
         if method == "automations.result" {
             return Ok((
                 self.agents
@@ -344,7 +350,19 @@ impl Core {
                 if !fresh {
                     return Ok((receipt, false));
                 }
-                let result = if request.method == "events.source.save" {
+                let result = if request.method.starts_with("office.") {
+                    self.agents
+                        .office_host_available(&self.store)
+                        .and_then(|()| {
+                            office::write(
+                                &self.store,
+                                &request.method,
+                                request.input,
+                                Some(&request.operation_id),
+                            )
+                        })
+                        .map(|value| (value, false))
+                } else if request.method == "events.source.save" {
                     (|| -> Result<(Value, bool), String> {
                         let saved = events::save_source(
                             &mut self.store,
@@ -361,6 +379,13 @@ impl Core {
                     Box::pin(self.dispatch(&request.method, request.input)).await
                 }
                 .map(|(v, _)| v);
+                if request.method.starts_with("office.") {
+                    return Ok((
+                        self.store
+                            .finish_office_operation(&request.operation_id, result)?,
+                        false,
+                    ));
+                }
                 return Ok((
                     self.store.finish_external_operation(
                         "desktop",
@@ -548,7 +573,15 @@ impl Core {
                 json!({"cancelled":self.stop_turn(a.turn_id,"cancelled","已停止生成，已接收的文本已保留。").await?})
             }
             "chat.send" => {
-                let a = params::<SendChat>(p)?;
+                let mut a = params::<SendChat>(p)?;
+                let scope = self.store.chat_scope(a.conversation_id)?;
+                let references = office::materialize_references(
+                    &self.store,
+                    &a.office_reference_ids,
+                    scope["workspace_id"].as_i64(),
+                    None,
+                )?;
+                a.text.push_str(&office::reference_context(&references));
                 if self
                     .store
                     .chat_automation_mode(&a.client_turn_id)?
@@ -612,6 +645,7 @@ impl Core {
                     &provider,
                     &a.text,
                     a.automation,
+                    &a.office_reference_ids,
                 )?;
                 let request = agent::model::ModelRequest {
                     config,
