@@ -319,7 +319,7 @@ try {
       version: previous.version,
       sha256: previous.sha256,
       schema_before: schema,
-      schema_after: 33,
+      schema_after: 35,
       retained_messages: previous.messages.length,
       retained_credentials_used: true,
     };

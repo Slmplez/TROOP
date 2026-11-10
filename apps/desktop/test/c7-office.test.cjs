@@ -386,7 +386,7 @@ test("C7 composes conversation automation, scoped context, Office editing, accep
     },
     snapshotDirectory,
   );
-  assert.equal(manifest.schema, 33);
+  assert.equal(manifest.schema, 35);
   await h.core.stop();
   const restored = path.join(h.directory, "restored");
   restoreBackup(snapshotDirectory, restored);
