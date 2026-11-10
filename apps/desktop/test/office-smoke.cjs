@@ -70,7 +70,7 @@ async function main() {
   );
   fs.writeFileSync(
     path.join(workspace, "table.csv"),
-    "编号,名称\r\n001,原始名称\r\n",
+    '编号,名称\r\n001,"首行\r\n末行"\r\n',
   );
   const wid = (await core.request("workspace.add", { path: workspace }))
     .items[0].id;
@@ -187,7 +187,7 @@ async function main() {
   await field(
     w,
     '[aria-label="单元格 2,2"]',
-    "CSV 修改内容",
+    "CSV 修改内容\n继续内容",
     "HTMLTextAreaElement",
   );
   await until(() =>
@@ -205,7 +205,7 @@ async function main() {
   assert.ok(
     fs
       .readFileSync(path.join(workspace, "table.csv"), "utf8")
-      .includes("001,CSV 修改内容\r\n"),
+      .includes('001,"CSV 修改内容\r\n继续内容"\r\n'),
   );
   report.checks.push(
     "CSV cell edit retains leading zeros and CRLF through real renderer and Core",

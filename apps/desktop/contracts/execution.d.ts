@@ -91,6 +91,7 @@ export type Start = {
 };
 export type Steer = { id: number; client_input_id: string; text: string };
 export type Run = {
+  office_references?: Array<unknown>;
   group_id?: number | null;
   group_delivery_id?: number | null;
   group_chain_id?: string | null;

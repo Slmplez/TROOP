@@ -148,8 +148,13 @@ for (const protocol of ["chat_completions", "responses", "anthropic"])
     assert.ok(result.invocations.every((i) => i.state === "succeeded"));
     assert.equal(h.upstream.requests.length, 2);
     const first = h.upstream.requests[0].body;
-    assert.equal(first.tools.length, 18);
-    for (const name of ["propose_followup", "request_handoff"]) {
+    assert.equal(first.tools.length, 20);
+    for (const name of [
+      "propose_followup",
+      "request_handoff",
+      "office_read",
+      "office_edit",
+    ]) {
       assert.ok(
         first.tools.some((tool) => (tool.function ?? tool).name === name),
       );

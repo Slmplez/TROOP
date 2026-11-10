@@ -97,6 +97,7 @@ const types = {
   }),
   Steer: object({ id: "id", client_input_id: "string", text: "string" }),
   Run: object({
+    "office_references?": array("json"),
     "group_id?": "id|null",
     "group_delivery_id?": "id|null",
     "group_chain_id?": "string|null",

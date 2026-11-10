@@ -439,7 +439,9 @@ test("fixed references reach chat and Run from immutable content and cannot cros
     authorization_id: grant.id,
     office_reference_ids: [reference.id],
   });
-  await h.done(id);
+  const completed = await h.done(id);
+  assert.equal(completed.run.office_references[0].id, reference.id);
+  assert.equal(completed.run.office_references[0].content, undefined);
   assert.ok(
     h.server.requests.some((request) =>
       JSON.stringify(request.body).includes(reference.id),
