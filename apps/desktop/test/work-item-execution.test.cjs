@@ -1,4 +1,5 @@
 const { test } = require("node:test");
+const { sandboxTest } = require("./fixtures/sandbox-support.cjs");
 const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const { DatabaseSync } = require("node:sqlite");
@@ -166,7 +167,7 @@ test("competing starts, edits, stale evidence and cancellation cannot revive the
   assert.equal(restored.allowed_actions.start.allowed, false);
   assert.equal((await h.core.request("agent.list", {})).items.length, 1);
 });
-test("external work requires its confirmed permission plan and fixed CLI review before work acceptance", async (t) => {
+sandboxTest("external work requires its confirmed permission plan and fixed CLI review before work acceptance", async (t) => {
   const fs = require("node:fs"),
     path = require("node:path");
   const h = await setup(t),

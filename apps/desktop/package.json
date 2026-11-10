@@ -12,6 +12,7 @@
     "start": "node scripts/start.mjs",
     "prepare:electron": "node node_modules/electron/install.js",
     "test": "node --test test/*.test.cjs",
+    "test:ci": "node scripts/test-ci.mjs",
     "format": "prettier --write src renderer scripts test package.json",
     "format:check": "prettier --check src renderer scripts test package.json",
     "smoke": "node scripts/smoke.mjs",

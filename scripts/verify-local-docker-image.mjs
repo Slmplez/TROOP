@@ -12,6 +12,12 @@ export const DEFAULT_LOCAL_DOCKER_IMAGE_SOURCE = path.resolve(
 export const EXPECTED_REGISTRY = "public.ecr.aws";
 export const EXPECTED_REPOSITORY = "k0i0n2g5/cursorenvironments/universal";
 export const EXPECTED_BLOB_REDIRECT_HOST = "d5l0dvt14r5h8.cloudfront.net";
+// Public ECR uses regional distributions. The second host is also documented at
+// https://aws.amazon.com/cn/blogs/china/use-kubesphere-management-amazon-eks-anywhere-cluster/
+export const EXPECTED_BLOB_REDIRECT_HOSTS = Object.freeze([
+  EXPECTED_BLOB_REDIRECT_HOST,
+  "d2glxqk2uabbnd.cloudfront.net",
+]);
 export const EXPECTED_PLATFORM = Object.freeze({ os: "linux", architecture: "amd64" });
 export const EXPECTED_ENTRYPOINT = Object.freeze(["/usr/local/bin/start-sand-box"]);
 
@@ -144,7 +150,6 @@ async function fetchBoundedBytes(
 }
 
 function validatedBlobRedirect(location) {
-  const approvedPrefix = `https://${EXPECTED_BLOB_REDIRECT_HOST}/`;
   if (typeof location !== "string") {
     throw new SafeVerificationError("Pinned image config redirect is not an absolute URL.");
   }
@@ -154,14 +159,14 @@ function validatedBlobRedirect(location) {
   } catch {
     throw new SafeVerificationError("Pinned image config redirect is not an absolute URL.");
   }
-  if (!location.startsWith(approvedPrefix)
+  if (!location.startsWith(`https://${redirect.hostname}/`)
     || redirect.protocol !== "https:"
-    || redirect.hostname !== EXPECTED_BLOB_REDIRECT_HOST
+    || !EXPECTED_BLOB_REDIRECT_HOSTS.includes(redirect.hostname)
     || redirect.port !== ""
     || redirect.username !== ""
     || redirect.password !== ""
     || redirect.hash !== "") {
-    throw new SafeVerificationError("Pinned image config redirect is outside the approved HTTPS CloudFront host.");
+    throw new SafeVerificationError(`Pinned image config redirect is outside the approved HTTPS CloudFront host (received origin ${redirect.origin}).`);
   }
   return redirect.href;
 }
