@@ -6,6 +6,7 @@ const { setup, until } = require("./fixtures/hooks-fixture.cjs");
 const { DatabaseSync } = require("node:sqlite");
 const { once } = require("node:events");
 const fs = require("node:fs");
+const { baseContainerSkip, sandboxTest } = require("./fixtures/sandbox-support.cjs");
 before(() => {
   const result = require("node:child_process").spawnSync(
     "cargo",
@@ -473,7 +474,7 @@ for (const [engine, peer] of [
       `${engine} contained native tools enforce roots and ${revoke ? "stop on revocation without replay" : "seal artifacts for exact review"}`,
       {
         skip:
-          engine === "oh-my-pi" ? "Outside the current four-CLI scope" : false,
+          engine === "oh-my-pi" ? "Outside the current four-CLI scope" : baseContainerSkip,
       },
       async (t) => {
         process.env.TROOP_PI_TEST_API_KEY = "TROOP_SELECTED_FAKE";
@@ -608,7 +609,7 @@ for (const [name, extra] of [
     assert.equal((await h.core.request("agent.list", {})).items.length, 0);
   });
 
-test("Pi native failure after a tool effect requires reconciliation", async (t) => {
+sandboxTest("Pi native failure after a tool effect requires reconciliation", async (t) => {
   const h = await setup(t);
   const readonly = path.join(h.directory, "readonly.txt");
   const outside = path.join(h.directory, "outside.txt");

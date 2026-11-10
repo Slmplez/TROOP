@@ -3,10 +3,10 @@ name: TROOP Windows portable
 on:
   pull_request:
     branches: [main]
-    paths: ['apps/desktop/**', 'crates/**', 'Cargo.*', 'scripts/verify-local-docker-image.mjs', '.github/workflows/troop-desktop.yml']
+    paths: ['apps/desktop/**', 'crates/**', 'Cargo.*', 'scripts/verify-local-docker-image.mjs', 'scripts/lib/debug-port.mjs', 'source/electron-main/box/local-docker-host-connector.ts', '.github/workflows/troop-desktop.yml']
   push:
     branches: [main]
-    paths: ['apps/desktop/**', 'crates/**', 'Cargo.*', 'scripts/verify-local-docker-image.mjs', '.github/workflows/troop-desktop.yml']
+    paths: ['apps/desktop/**', 'crates/**', 'Cargo.*', 'scripts/verify-local-docker-image.mjs', 'scripts/lib/debug-port.mjs', 'source/electron-main/box/local-docker-host-connector.ts', '.github/workflows/troop-desktop.yml']
   workflow_dispatch:
 
 permissions:
@@ -50,7 +50,7 @@ jobs:
           npm --prefix apps/desktop ci --ignore-scripts --no-audit --no-fund
           node apps/desktop/node_modules/electron/install.js
           node apps/desktop/scripts/prepare-sandbox.mjs
-      - name: Build and verify the independent TROOP portable
+      - name: Build Core and protocol regression fixtures
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -59,8 +59,15 @@ jobs:
           cargo test --workspace --offline --locked
           cargo build --offline --locked -p troop-core --examples
           npm --prefix apps/desktop run build
-          npm --prefix apps/desktop run test:ci
-          node apps/desktop/scripts/conversation-automations-smoke.mjs
+      - name: Run complete desktop regressions with skip evidence
+        run: npm --prefix apps/desktop run test:ci
+      - name: Verify conversation automation in Electron
+        run: node apps/desktop/scripts/conversation-automations-smoke.mjs
+      - name: Build and verify the independent TROOP portable
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
           npm --prefix apps/desktop run package:windows
           node apps/desktop/scripts/portable-smoke.mjs
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

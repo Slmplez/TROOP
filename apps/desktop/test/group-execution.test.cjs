@@ -1,4 +1,5 @@
 const { test } = require("node:test");
+const { cliTest } = require("./fixtures/sandbox-support.cjs");
 const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const fs = require("node:fs"),
@@ -249,7 +250,7 @@ test("busy deliveries remain ordered and isolated from another group's discussio
 });
 for (const stream of ["group", "topic"]) {
   for (const engine of ["codex", "claude", "pi", "opencode"]) {
-    test(`${engine} ${stream}: real Worker requires native adoption proof and reviewed structured output before a group reply`, async (t) => {
+    cliTest(engine, `${engine} ${stream}: real Worker requires native adoption proof and reviewed structured output before a group reply`, async (t) => {
       const h = await setup(t);
       let g = await group(h);
       const program = {

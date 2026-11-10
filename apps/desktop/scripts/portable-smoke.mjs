@@ -8,6 +8,7 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
 import { verifyPortable } from "./package-windows.mjs";
+import { readPortableStatus } from "./portable-status.mjs";
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -151,7 +152,9 @@ async function start(profile) {
   };
   const status = await until(async () => {
     report.phase = "waiting_core";
-    const value = await evaluate("window.troop?.status()");
+    if (child.exitCode !== null)
+      throw Error(`Portable exited ${child.exitCode}: ${stderr}`);
+    const value = await readPortableStatus(evaluate);
     report.last_status = value && {
       state: value.state,
       version: value.version,
