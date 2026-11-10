@@ -185,9 +185,10 @@ in the rule revision. The initial editor exposes typed configuration through JSO
 Core records a per-rule Run/epoch semantic identity and commits accepted dispatch,
 the new Run, trigger evidence and delivery together. Stored executions recover
 through the existing reconciliation path. Rules retain their event baseline,
-revision authors and grant references. Workspace dispatches share a conservative
-three-per-hour limit and sixty-second cooldown. Automatic chains stop at depth
-eight. Agent `manage_rule` requires a separate rule-management grant and checks
+revision authors and grant references. Workspace dispatches share a versioned write-limit policy. The default remains
+a conservative three-per-hour limit and sixty-second cooldown, counted in a
+ledger keyed by source, object and action, with a workspace ceiling of the same
+numbers. Automatic chains stop at depth eight. Agent `manage_rule` requires a separate rule-management grant and checks
 both original and proposed scope, current project membership, operation and expiry.
 
 Observed rule and authorization reads use shared polling and release it on final

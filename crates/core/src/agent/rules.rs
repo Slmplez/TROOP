@@ -356,13 +356,9 @@ impl Manager {
                 }
                 Err(error) => reason = error,
             }
-            if store.rule_frequency_blocked(rule["workspace_id"].as_i64().unwrap())? {
+            if let Some(limit) = store.automation_limit_reason(rule, event)? {
                 executable = false;
-                reason = "达到工作区每小时三次或六十秒冷却门禁。".into();
-            }
-            if event["chain_depth"].as_u64().unwrap_or(0) >= 8 {
-                executable = false;
-                reason = "达到自动链深度上限。".into();
+                reason = limit;
             }
             if let Some(id) = rule["work_item_id"].as_i64() {
                 let item = store.work_item(id)?;

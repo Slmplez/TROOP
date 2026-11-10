@@ -605,7 +605,7 @@ test(
     const db = new DatabaseSync(path.join(data, "troop.sqlite3"), {
       readOnly: true,
     });
-    assert.equal(db.prepare("PRAGMA user_version").get().user_version, 33);
+    assert.equal(db.prepare("PRAGMA user_version").get().user_version, 34);
     db.close();
   },
 );
