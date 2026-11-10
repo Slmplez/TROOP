@@ -19,6 +19,9 @@ export default function OfficeReference({
       </p>
       <p>{value.stale ? "已过期，交付仍使用原版本内容" : "固定版本内容"}</p>
       {state.error && <p role="alert">{state.error.message}</p>}
+      {state.loading && !state.data && (
+        <p role="status">正在读取固定版本正文…</p>
+      )}
       <pre className="office-original">{value.content}</pre>
       {onRemove && (
         <button type="button" onClick={onRemove}>
