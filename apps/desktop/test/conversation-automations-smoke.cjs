@@ -215,12 +215,7 @@ async function main() {
   await field(w, "#chat-input", "定时核对交付。", "HTMLTextAreaElement");
   await js(w, "document.querySelector('form.composer').requestSubmit()");
   await until(() => js(w, `Boolean(${card})`));
-  await field(
-    w,
-    '[aria-label="对话自动化确认"] select',
-    grant.id,
-    "HTMLSelectElement",
-  );
+  await field(w, '[aria-label="定时执行授权"]', grant.id, "HTMLSelectElement");
   await button(w, "预览时间与范围", card);
   await until(() =>
     js(w, "document.body.innerText.includes('2026-11-09 08:00:04')"),

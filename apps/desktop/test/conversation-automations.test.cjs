@@ -225,3 +225,51 @@ test("conversation project is durable and membership revocation blocks confirmat
   assert.match(rejected.error.message, /成员资格/);
   assert.equal((await h.core.request("rules.list", {})).items.length, 0);
 });
+
+test("explicit human scope can select another joined project; replay cannot change it", async (t) => {
+  const h = await fixture(t, proposal(), "source");
+  await command(h, "memory.membership", {
+    agent_id: 1,
+    project: "target",
+    action: "create",
+  });
+  const scope = { agent_id: 1, project_id: "target", workspace_id: h.wid };
+  const draft = await h.core.request("automations.preview", {
+    turn_id: h.turn,
+    scope,
+  });
+  assert.equal(draft.rule.project_id, "target");
+  const receipt = await confirm(h, draft, { scope });
+  assert.equal(receipt.state, "committed", JSON.stringify(receipt.error));
+  assert.equal(receipt.result.project_id, "target");
+  await command(h, "memory.membership", {
+    agent_id: 1,
+    project: "source",
+    action: "leave",
+  });
+  assert.equal(
+    (await confirm(h, draft, { scope: { ...scope, project_id: "source" } }))
+      .state,
+    "rejected",
+  );
+  assert.equal(
+    (await h.core.request("automations.preview", { turn_id: h.turn }))
+      .registered.id,
+    receipt.result.id,
+  );
+  await command(h, "memory.membership", {
+    agent_id: 1,
+    project: "target",
+    action: "leave",
+  });
+  await assert.rejects(
+    h.core.request("automations.preview", { turn_id: h.turn }),
+  );
+  await assert.rejects(
+    h.core.request("automations.preview", {
+      turn_id: h.turn,
+      scope: { ...scope, project_id: "unjoined" },
+    }),
+    /成员资格/,
+  );
+});

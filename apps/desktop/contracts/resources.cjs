@@ -2055,7 +2055,15 @@ module.exports = ({ object: o, array: a, oneOf: e, method: m }) => {
   add(
     "automations.preview",
     "automationPreview",
-    o({ turn_id: "id", "authorization_id?": "string|null" }),
+    o({
+      turn_id: "id",
+      "authorization_id?": "string|null",
+      "scope?": o({
+        agent_id: "id",
+        project_id: "string|null",
+        workspace_id: "id|null",
+      }),
+    }),
     o({
       id: "string",
       source_sha256: "string",
@@ -2070,6 +2078,11 @@ module.exports = ({ object: o, array: a, oneOf: e, method: m }) => {
     o({
       turn_id: "id",
       "authorization_id?": "string|null",
+      "scope?": o({
+        agent_id: "id",
+        project_id: "string|null",
+        workspace_id: "id|null",
+      }),
       source_sha256: "string",
       "expected_plan_sha256?": "string|null",
     }),

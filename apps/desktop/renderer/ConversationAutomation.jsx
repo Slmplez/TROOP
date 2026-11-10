@@ -4,6 +4,8 @@ import { clientModels, useClientModel } from "./client/react";
 export default function ConversationAutomation({
   turnId,
   ready,
+  scope,
+  workspaces,
   onManage,
   onOpenRun,
   onOpenAuthorizations,
@@ -12,6 +14,7 @@ export default function ConversationAutomation({
   const [draft, setDraft] = useState(null);
   const [saved, setSaved] = useState(null);
   const [grant, setGrant] = useState("");
+  const [selectedScope, setScope] = useState(scope);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
@@ -20,6 +23,13 @@ export default function ConversationAutomation({
     ready,
   );
   const registered = saved ?? draft?.registered;
+  const agents = useClientModel(clientModels.agents(), ready);
+  const projects = useClientModel(
+    clientModels.resource("memory.projects", {
+      agent_id: selectedScope.agent_id,
+    }),
+    ready,
+  );
   const kind = registered?.kind === "scheduled" ? "schedules" : "reminders";
   const live = useClientModel(
     registered
@@ -27,12 +37,10 @@ export default function ConversationAutomation({
       : null,
     ready,
   );
-  const history = useClientModel(
-    registered
-      ? clientModels.resource(`${kind}.history`, { id: registered.id })
-      : null,
-    ready,
-  );
+  const historyModel = registered
+    ? clientModels.resource(`${kind}.history`, { id: registered.id })
+    : null;
+  const history = useClientModel(historyModel, ready);
   const current = live.data ?? registered;
   async function act(confirm) {
     if (lock.current) return;
@@ -40,7 +48,13 @@ export default function ConversationAutomation({
     setBusy(true);
     setError("");
     try {
-      const input = { turn_id: turnId, authorization_id: grant || null };
+      const input = {
+        turn_id: turnId,
+        authorization_id: grant || null,
+        ...(JSON.stringify(selectedScope) === JSON.stringify(scope)
+          ? {}
+          : { scope: selectedScope }),
+      };
       if (typeof confirm === "number") {
         onContinue(
           await clientModels.read("automations.result", {
@@ -73,8 +87,77 @@ export default function ConversationAutomation({
       {!registered && (
         <>
           <label>
+            负责 Agent
+            <select
+              value={selectedScope.agent_id}
+              disabled={busy}
+              onChange={(e) => {
+                setScope({
+                  ...selectedScope,
+                  agent_id: Number(e.target.value),
+                  project_id: null,
+                });
+                setDraft(null);
+                setGrant("");
+              }}
+            >
+              {(agents.data ?? []).map((agent) => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            自动化项目
+            <select
+              value={selectedScope.project_id ?? ""}
+              disabled={busy}
+              onChange={(e) => {
+                setScope({
+                  ...selectedScope,
+                  project_id: e.target.value || null,
+                });
+                setDraft(null);
+                setGrant("");
+              }}
+            >
+              <option value="">个人范围</option>
+              {(projects.data ?? [])
+                .filter((p) => p.joined)
+                .map((p) => (
+                  <option key={p.slug} value={p.slug}>
+                    {p.slug}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <label>
+            执行工作区
+            <select
+              value={selectedScope.workspace_id ?? ""}
+              disabled={busy}
+              onChange={(e) => {
+                setScope({
+                  ...selectedScope,
+                  workspace_id: e.target.value ? Number(e.target.value) : null,
+                });
+                setDraft(null);
+                setGrant("");
+              }}
+            >
+              <option value="">请选择执行工作区</option>
+              {workspaces.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name ?? w.root}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
             定时执行授权
             <select
+              aria-label="定时执行授权"
               value={grant}
               disabled={busy}
               onChange={(e) => {
@@ -92,6 +175,19 @@ export default function ConversationAutomation({
                 ))}
             </select>
           </label>
+          {grants.data?.next_offset != null && (
+            <button
+              disabled={!ready || busy || grants.loading}
+              onClick={() =>
+                clientModels
+                  .resource("authorizations.list", { offset: 0 })
+                  .more()
+                  .catch((e) => setError(e.message))
+              }
+            >
+              更多执行授权
+            </button>
+          )}
           <button disabled={!ready || busy} onClick={() => act(false)}>
             预览时间与范围
           </button>
@@ -140,6 +236,16 @@ export default function ConversationAutomation({
               </li>
             ))}
           </ul>
+          {history.data?.next_before != null && (
+            <button
+              disabled={!ready || busy || history.loading}
+              onClick={() =>
+                historyModel.more().catch((e) => setError(e.message))
+              }
+            >
+              更早的运行记录
+            </button>
+          )}
           {!registered && (
             <button disabled={!ready || busy} onClick={() => act(true)}>
               确认登记自动化
@@ -190,6 +296,16 @@ export default function ConversationAutomation({
               </li>
             ))}
           </ul>
+          {history.data?.next_before != null && (
+            <button
+              disabled={!ready || busy || history.loading}
+              onClick={() =>
+                historyModel.more().catch((e) => setError(e.message))
+              }
+            >
+              更早的运行记录
+            </button>
+          )}
         </>
       )}
     </section>

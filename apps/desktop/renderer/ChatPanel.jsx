@@ -367,6 +367,12 @@ export default function ChatPanel({
                         key={message.turn_id}
                         turnId={message.turn_id}
                         ready={ready && visible}
+                        scope={{
+                          agent_id: current?.agent_id ?? 1,
+                          project_id: current?.project_id ?? null,
+                          workspace_id: current?.workspace_id ?? null,
+                        }}
+                        workspaces={workspaces}
                         onManage={onManageAutomation}
                         onOpenRun={onOpenRun}
                         onOpenAuthorizations={onOpenAuthorizations}
