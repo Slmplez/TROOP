@@ -663,6 +663,7 @@ module.exports = ({ object: o, array: a, oneOf: e, method: m }) => {
       "tool_mode?": e("native", "disabled"),
       authorization_id: "string",
       goal: "string",
+      "office_reference_ids?": a("string"),
       "agent_id?": "id",
       "project_ids?": a("string"),
       "rule_id?": "string|null",
@@ -2100,6 +2101,162 @@ module.exports = ({ object: o, array: a, oneOf: e, method: m }) => {
       content: "string",
       truncated: "boolean",
     }),
+  );
+  add(
+    "office.open",
+    "officeOpen",
+    o({ workspace_id: "id", path: "string" }),
+    "json",
+    true,
+  );
+  add("office.pending", "officePending", o({ id: "string" }), "json");
+  add(
+    "office.get",
+    "officeGet",
+    o({ id: "string", "delimiter?": "string|null", "actor?": "string|null" }),
+    "json",
+  );
+  add(
+    "office.list",
+    "officeList",
+    o({ workspace_id: "id", "before?": "string|null" }),
+    "json",
+  );
+  add(
+    "office.history",
+    "officeHistory",
+    o({ id: "string", "before?": "id|null" }),
+    "json",
+  );
+  add(
+    "office.version",
+    "officeVersion",
+    o({ id: "string", revision: "id" }),
+    "json",
+  );
+  add(
+    "office.draft.get",
+    "officeDraftGet",
+    o({ id: "string", actor: "string" }),
+    "json",
+  );
+  add(
+    "office.draft.save",
+    "officeDraftSave",
+    o({
+      id: "string",
+      actor: "string",
+      expected_revision: "count",
+      base_revision: "id",
+      content: "string",
+    }),
+    "json",
+    true,
+  );
+  add(
+    "office.draft.discard",
+    "officeDraftDiscard",
+    o({ id: "string", actor: "string", expected_revision: "id" }),
+    "json",
+    true,
+  );
+  add(
+    "office.save",
+    "officeSave",
+    o({
+      id: "string",
+      expected_revision: "id",
+      actor: "string",
+      draft_revision: "id",
+      "resolve_drafts_sha256?": "string|null",
+    }),
+    "json",
+    true,
+  );
+  add(
+    "office.restore",
+    "officeRestore",
+    o({
+      id: "string",
+      expected_revision: "id",
+      source_revision: "id",
+      "actor?": "string|null",
+      "resolve_drafts_sha256?": "string|null",
+    }),
+    "json",
+    true,
+  );
+  add(
+    "office.save_as",
+    "officeSaveAs",
+    o({ id: "string", actor: "string", draft_revision: "id", path: "string" }),
+    "json",
+    true,
+  );
+  add(
+    "office.capture_external",
+    "officeCaptureExternal",
+    o({ id: "string", expected_revision: "id", expected_sha256: "string" }),
+    "json",
+    true,
+  );
+  add(
+    "office.reconcile",
+    "officeReconcile",
+    o({
+      id: "string",
+      effect_id: "string",
+      expected_disk_sha256: "string",
+      decision: e("accept", "preserve"),
+    }),
+    "json",
+    true,
+  );
+  add(
+    "office.reference.create",
+    "officeReferenceCreate",
+    o({
+      id: "string",
+      revision: "id",
+      kind: e("paragraphs", "cells"),
+      start: "count",
+      end: "id",
+      "column_start?": "count|null",
+      "column_end?": "id|null",
+      "delimiter?": "string|null",
+    }),
+    "json",
+    true,
+  );
+  add(
+    "office.reference.get",
+    "officeReferenceGet",
+    o({ id: "string" }),
+    "json",
+  );
+  add(
+    "office.csv.decode",
+    "officeCsvDecode",
+    o({ content: "string", "delimiter?": "string|null" }),
+    o({ rows: a(a("string")) }),
+  );
+  add(
+    "office.csv.encode",
+    "officeCsvEncode",
+    o({
+      rows: a(a("string")),
+      "delimiter?": "string|null",
+      newline: e("lf", "crlf"),
+      bom: "boolean",
+      "trailing_newline?": "boolean",
+    }),
+    o({ content: "string" }),
+  );
+  add(
+    "office.markdown.check",
+    "officeMarkdownCheck",
+    o({ original: "string", candidate: "string" }),
+    o({ equivalent: "boolean", unsupported_features: a("string") }),
   );
   return { types, methods };
 };

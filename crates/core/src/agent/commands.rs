@@ -61,6 +61,20 @@ impl Manager {
                 if let Some(reason) = self.authorization_blocker(store, &doc) {
                     return Err(reason);
                 }
+                let grant = a
+                    .authorization_id
+                    .as_deref()
+                    .map(|id| store.authorization_get(id))
+                    .transpose()?;
+                if !a.office_reference_ids.is_empty() && grant.is_none() {
+                    return Err("Agent 文件引用需要本次明确读取授权。".into());
+                }
+                doc["office_references"] = crate::office::materialize_references(
+                    store,
+                    &a.office_reference_ids,
+                    Some(a.workspace_id),
+                    grant.as_ref(),
+                )?;
                 Self::freeze_mcp(store, &mut doc)?;
                 Self::freeze_hooks(store, &mut doc)?;
                 if a.authorization_id.is_some() {
@@ -222,6 +236,11 @@ impl Manager {
             &canonical,
             request.expected_revision,
             |store| {
+                if method.starts_with("office.") {
+                    return crate::office::write(store, method, input.clone(), None)
+                        .map(|value| (value, AfterCommit::None))
+                        .map_err(Into::into);
+                }
                 if method == "automations.confirm" {
                     return self
                         .confirm_automation(store, input.clone(), reminder_now_ms)

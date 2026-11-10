@@ -519,6 +519,6 @@ test("OAuth schema 8 upgrade preserves MCP definitions and starts with no author
     db.prepare("SELECT * FROM mcp_servers ORDER BY id").all(),
     before,
   );
-  assert.equal(db.prepare("PRAGMA user_version").get().user_version, 31);
+  assert.equal(db.prepare("PRAGMA user_version").get().user_version, 33);
   db.close();
 });

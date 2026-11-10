@@ -23,6 +23,7 @@ pub mod memory;
 mod memory_conflicts;
 mod memory_revisions;
 mod oauth;
+mod office;
 mod operations;
 mod reminders;
 mod rules;
@@ -76,7 +77,7 @@ impl Store {
         let version: i64 = db
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .map_err(|e| e.to_string())?;
-        if version > 31 {
+        if version > 33 {
             return Err("Database was created by a newer TROOP version".into());
         }
         let has_table = |name: &str| {
@@ -87,6 +88,14 @@ impl Store {
             )
             .map_err(|e| e.to_string())
         };
+        if version >= 32
+            && (!has_table("office_documents")?
+                || !has_table("office_versions")?
+                || !has_table("office_drafts")?
+                || !has_table("office_references")?)
+        {
+            return Err("Office storage is incomplete".into());
+        }
         if version >= 30
             && (!has_table("followup_states")?
                 || !has_table("followup_chains")?
@@ -276,6 +285,12 @@ impl Store {
         if version < 31 {
             chat::migrate_scope(&mut db)?;
         }
+        if version < 32 {
+            office::migrate(&mut db)?;
+        }
+        if version < 33 {
+            office::migrate_references(&mut db)?;
+        }
         let mut store = Self { db, _lock: lock };
         store.recover_executions()?;
         store.cli_interactions_recover()?;
@@ -446,7 +461,7 @@ mod tests {
         fs::create_dir_all(&directory).unwrap();
         let database = directory.join("troop.sqlite3");
         let connection = Connection::open(&database).unwrap();
-        connection.execute_batch("PRAGMA user_version=32;").unwrap();
+        connection.execute_batch("PRAGMA user_version=34;").unwrap();
         drop(connection);
         assert!(matches!(Store::open(&directory), Err(message) if message.contains("newer")));
         let connection = Connection::open(database).unwrap();
@@ -457,7 +472,7 @@ mod tests {
         let version: i64 = connection
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .unwrap();
-        assert_eq!(version, 32);
+        assert_eq!(version, 34);
     }
 
     #[test]

@@ -4,6 +4,140 @@
   font-weight: 100 900;
   font-display: swap;
 }
+.office-layout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 24px;
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+  padding-top: 20px;
+}
+.office-detail {
+  min-width: 0;
+}
+.office-open {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.office-open label {
+  flex: 1 1 200px;
+}
+.office-tools {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.office-tools label {
+  max-width: 130px;
+}
+.office-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.office-heading h2 {
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+.office-heading span,
+.office-version span {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.office-markdown {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: white;
+  padding: 20px 24px;
+}
+.office-markdown .tiptap {
+  min-height: 260px;
+  outline: none;
+  overflow-wrap: anywhere;
+}
+.office-markdown .tiptap[contenteditable="true"] {
+  border-left: 2px solid var(--accent);
+  padding-left: 16px;
+}
+.office-markdown pre,
+.office-original,
+.office-comparison pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 350px;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.office-secondary {
+  border-top: 1px solid var(--border);
+  margin-top: 24px;
+  padding-top: 12px;
+}
+.office-secondary h3 {
+  font-size: 15px;
+}
+.office-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.office-comparison > * {
+  min-width: 0;
+}
+.office-table-scroll {
+  max-width: 100%;
+  overflow: auto;
+  max-height: 480px;
+  margin-top: 12px;
+}
+.office-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.office-table td,
+.office-table th {
+  border-bottom: 1px solid var(--border);
+  padding: 4px;
+}
+.office-table th {
+  color: var(--muted);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.office-table textarea {
+  min-width: 100px;
+  width: 100%;
+}
+.office-version {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 8px 0;
+}
+@media (max-width: 1000px) {
+  .office-layout {
+    grid-template-columns: 1fr;
+  }
+  .office-layout > aside {
+    max-height: 160px;
+    overflow: auto;
+  }
+}
+@media (max-width: 640px) {
+  .office-comparison {
+    grid-template-columns: 1fr;
+  }
+  .office-markdown {
+    padding: 12px;
+  }
+}
 .agent-start {
   display: grid;
   grid-template-columns: 1fr 1fr;

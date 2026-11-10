@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { resources } from "./client/resources";
 import { clientModels, useClientModel } from "./client/react";
 import { call } from "./api";
+import OfficeReference from "./OfficeReference";
 
 const purposes = {
   tool_call: "工具调用",
@@ -61,6 +62,8 @@ export default function AuthorizationsPanel({
   generation,
   workspaces,
   onOpenRun,
+  officeReference,
+  onReferenceConsumed,
 }) {
   const [actionArguments, setActionArguments] = useState(
     '{"path":"input.txt"}',
@@ -160,6 +163,7 @@ export default function AuthorizationsPanel({
     project_ids: saved.project_ids,
     rule_id: saved.rule_id,
     goal: cliGoal,
+    ...(officeReference ? { office_reference_ids: [officeReference.id] } : {}),
   });
   const change = (key, value) => {
     setDraft((old) => ({ ...old, [key]: value }));
@@ -750,6 +754,18 @@ export default function AuthorizationsPanel({
             <button id="authorization-save" className="primary" type="submit">
               保存授权
             </button>
+            {officeReference && (
+              <>
+                <OfficeReference
+                  reference={officeReference}
+                  ready={ready}
+                  onRemove={onReferenceConsumed}
+                />
+                <p>
+                  请选择包含引用文件读取范围的授权，再启动原生 Agent 或 CLI。
+                </p>
+              </>
+            )}
             {selected && (
               <button id="authorization-revoke" type="button" onClick={revoke}>
                 撤销授权
@@ -1019,6 +1035,7 @@ export default function AuthorizationsPanel({
                           client_run_id: cliPending.current.id,
                         });
                         cliPending.current = null;
+                        onReferenceConsumed?.();
                         return () => onOpenRun?.(result.run.id);
                       })
                     }
@@ -1078,6 +1095,9 @@ export default function AuthorizationsPanel({
                           project_ids: saved.project_ids,
                           rule_id: saved.rule_id,
                           goal: agentGoal,
+                          ...(officeReference
+                            ? { office_reference_ids: [officeReference.id] }
+                            : {}),
                         };
                         const signature = JSON.stringify(input);
                         if (agentPending.current?.signature !== signature)
@@ -1090,6 +1110,7 @@ export default function AuthorizationsPanel({
                           { ...input, client_run_id: agentPending.current.id },
                         );
                         agentPending.current = null;
+                        onReferenceConsumed?.();
                         return () => onOpenRun?.(result.run.id);
                       })
                     }

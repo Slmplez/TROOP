@@ -163,6 +163,9 @@ impl Manager {
                 rule["work_item_id"] = Value::Null;
                 rule["expected_plan_sha256"] = Value::Null;
                 rule["start"] = json!({"client_run_id":id,"agent_id":agent,"workspace_id":scope["workspace_id"],"project_ids":scope["project_id"].as_str().map(|id|json!([id])).unwrap_or(json!([])),"provider_id":source["provider_id"],"authorization_id":query.authorization_id,"goal":proposal.goal});
+                if let Some(ids) = source.get("office_reference_ids") {
+                    rule["start"]["office_reference_ids"] = ids.clone();
+                }
                 self.schedules_read(
                     store,
                     "schedules.preview",

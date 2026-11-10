@@ -85,11 +85,13 @@ export type Start = {
   workflow_id?: string | null;
   authorization_id?: string | null;
   project_ids?: Array<string>;
+  office_reference_ids?: Array<string>;
   rule_id?: string | null;
   rule_management_authorization_id?: string | null;
 };
 export type Steer = { id: number; client_input_id: string; text: string };
 export type Run = {
+  office_references?: Array<unknown>;
   group_id?: number | null;
   group_delivery_id?: number | null;
   group_chain_id?: string | null;
@@ -205,6 +207,7 @@ export type Send = {
   client_turn_id: string;
   text: string;
   automation?: boolean;
+  office_reference_ids?: Array<string>;
 };
 export type Turn = { turn_id: number };
 export type Removed = { removed: boolean };
@@ -922,6 +925,7 @@ export type CliStart = {
   tool_mode?: "native" | "disabled";
   authorization_id: string;
   goal: string;
+  office_reference_ids?: Array<string>;
   agent_id?: number;
   project_ids?: Array<string>;
   rule_id?: string | null;
@@ -2171,5 +2175,110 @@ export interface Requests {
       content: string;
       truncated: boolean;
     };
+  };
+  "office.open": {
+    input: { workspace_id: number; path: string };
+    output: unknown;
+  };
+  "office.pending": { input: { id: string }; output: unknown };
+  "office.get": {
+    input: { id: string; delimiter?: string | null; actor?: string | null };
+    output: unknown;
+  };
+  "office.list": {
+    input: { workspace_id: number; before?: string | null };
+    output: unknown;
+  };
+  "office.history": {
+    input: { id: string; before?: number | null };
+    output: unknown;
+  };
+  "office.version": {
+    input: { id: string; revision: number };
+    output: unknown;
+  };
+  "office.draft.get": { input: { id: string; actor: string }; output: unknown };
+  "office.draft.save": {
+    input: {
+      id: string;
+      actor: string;
+      expected_revision: number;
+      base_revision: number;
+      content: string;
+    };
+    output: unknown;
+  };
+  "office.draft.discard": {
+    input: { id: string; actor: string; expected_revision: number };
+    output: unknown;
+  };
+  "office.save": {
+    input: {
+      id: string;
+      expected_revision: number;
+      actor: string;
+      draft_revision: number;
+      resolve_drafts_sha256?: string | null;
+    };
+    output: unknown;
+  };
+  "office.restore": {
+    input: {
+      id: string;
+      expected_revision: number;
+      source_revision: number;
+      actor?: string | null;
+      resolve_drafts_sha256?: string | null;
+    };
+    output: unknown;
+  };
+  "office.save_as": {
+    input: { id: string; actor: string; draft_revision: number; path: string };
+    output: unknown;
+  };
+  "office.capture_external": {
+    input: { id: string; expected_revision: number; expected_sha256: string };
+    output: unknown;
+  };
+  "office.reconcile": {
+    input: {
+      id: string;
+      effect_id: string;
+      expected_disk_sha256: string;
+      decision: "accept" | "preserve";
+    };
+    output: unknown;
+  };
+  "office.reference.create": {
+    input: {
+      id: string;
+      revision: number;
+      kind: "paragraphs" | "cells";
+      start: number;
+      end: number;
+      column_start?: number | null;
+      column_end?: number | null;
+      delimiter?: string | null;
+    };
+    output: unknown;
+  };
+  "office.reference.get": { input: { id: string }; output: unknown };
+  "office.csv.decode": {
+    input: { content: string; delimiter?: string | null };
+    output: { rows: Array<Array<string>> };
+  };
+  "office.csv.encode": {
+    input: {
+      rows: Array<Array<string>>;
+      delimiter?: string | null;
+      newline: "lf" | "crlf";
+      bom: boolean;
+      trailing_newline?: boolean;
+    };
+    output: { content: string };
+  };
+  "office.markdown.check": {
+    input: { original: string; candidate: string };
+    output: { equivalent: boolean; unsupported_features: Array<string> };
   };
 }

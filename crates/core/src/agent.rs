@@ -27,6 +27,7 @@ mod followups;
 mod group_runtime;
 mod maintenance_settings;
 pub(crate) mod model;
+mod office;
 mod permissions;
 pub(crate) mod providers;
 mod rules;
@@ -55,6 +56,8 @@ struct Start {
     authorization_id: Option<String>,
     #[serde(default)]
     project_ids: Vec<String>,
+    #[serde(default)]
+    office_reference_ids: Vec<String>,
     rule_id: Option<String>,
     rule_management_authorization_id: Option<String>,
 }
@@ -603,6 +606,9 @@ impl Manager {
                     }
                     continue;
                 }
+                if self.office_read_tool(store, &mut doc, &mut inv)? {
+                    continue;
+                }
                 let current = std::fs::canonicalize(
                     store.workspace_path(doc["workspace_id"].as_i64().unwrap())?,
                 );
@@ -981,6 +987,16 @@ impl Manager {
                     let _ = gate.send(false);
                     return Ok(());
                 }
+                if let Err(error) = Self::office_prepare_write(store, &doc, &mut inv) {
+                    inv["office_error"] = json!(error);
+                    store.agent_save(
+                        &mut doc,
+                        std::slice::from_mut(&mut inv),
+                        "office_write_blocked",
+                    )?;
+                    let _ = gate.send(false);
+                    return Ok(());
+                }
                 inv["state"] = json!("running");
                 inv["stopped"] = json!(false);
                 let allowed = self.execution.ready(
@@ -1002,6 +1018,7 @@ impl Manager {
                     return Ok(());
                 }
                 let mut inv = store.agent_invocation(inv_id)?;
+                Self::office_finish_worker(store, &inv, &mut result);
                 if let Some(a) = result.as_object_mut().and_then(|m| m.remove("_artifacts")) {
                     inv["_mcp_artifacts"] = a;
                 }

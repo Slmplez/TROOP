@@ -137,7 +137,22 @@ impl Store {
         Ok(self.db.last_insert_rowid())
     }
     pub fn automation_chat_source(&self, turn: i64) -> Result<Value, String> {
-        self.db.query_row("SELECT t.assistant_text,t.status,t.provider_id,c.id,c.agent_id,c.project_id,c.workspace_id FROM turns t JOIN conversations c ON c.id=t.conversation_id WHERE t.id=?1", [turn], |row| Ok(json!({"output":row.get::<_,String>(0)?,"state":row.get::<_,String>(1)?,"provider_id":row.get::<_,String>(2)?,"conversation_id":row.get::<_,i64>(3)?,"agent_id":row.get::<_,i64>(4)?,"project_id":row.get::<_,Option<String>>(5)?,"workspace_id":row.get::<_,Option<i64>>(6)?}))).map_err(|_|"自动化来源对话不存在。".into())
+        let mut source:Value = self.db.query_row("SELECT t.assistant_text,t.status,t.provider_id,c.id,c.agent_id,c.project_id,c.workspace_id,t.office_reference_ids FROM turns t JOIN conversations c ON c.id=t.conversation_id WHERE t.id=?1", [turn], |row| {
+            let raw:String=row.get(7)?;
+            let mut value=json!({"output":row.get::<_,String>(0)?,"state":row.get::<_,String>(1)?,"provider_id":row.get::<_,String>(2)?,"conversation_id":row.get::<_,i64>(3)?,"agent_id":row.get::<_,i64>(4)?,"project_id":row.get::<_,Option<String>>(5)?,"workspace_id":row.get::<_,Option<i64>>(6)?});
+            value["office_reference_ids"] = serde_json::from_str(&raw).unwrap_or(Value::Null);
+            Ok(value)
+        }).map_err(|_|"自动化来源对话不存在。".to_string())?;
+        if source["office_reference_ids"]
+            .as_array()
+            .is_some_and(|ids| ids.is_empty())
+        {
+            source
+                .as_object_mut()
+                .unwrap()
+                .remove("office_reference_ids");
+        }
+        Ok(source)
     }
     pub fn providers(&self) -> Result<Vec<Provider>, String> {
         let mut q = self
@@ -310,7 +325,7 @@ impl Store {
         provider: &Provider,
         text: &str,
     ) -> Result<TurnReceipt, String> {
-        self.begin_turn_mode(client_id, conversation_id, provider, text, false)
+        self.begin_turn_mode(client_id, conversation_id, provider, text, false, &[])
     }
     pub fn begin_turn_mode(
         &mut self,
@@ -319,13 +334,14 @@ impl Store {
         provider: &Provider,
         text: &str,
         automation: bool,
+        office_reference_ids: &[String],
     ) -> Result<TurnReceipt, String> {
         let tx = self.db.transaction().map_err(|e| e.to_string())?;
         tx.execute("INSERT INTO turns(client_turn_id,conversation_id,provider_id,provider_revision,provider_name,model,protocol,user_text,status) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,'streaming')",params![client_id,conversation_id,provider.id,provider.revision,provider.config["name"].as_str().unwrap_or(""),provider.config["model"].as_str().unwrap_or(""),provider.config["protocol"].as_str().unwrap_or(""),text]).map_err(|e|e.to_string())?;
         let id = tx.last_insert_rowid();
         tx.execute(
-            "UPDATE turns SET automation_mode=?2 WHERE id=?1",
-            params![id, automation],
+            "UPDATE turns SET automation_mode=?2,office_reference_ids=?3 WHERE id=?1",
+            params![id, automation, json!(office_reference_ids).to_string()],
         )
         .map_err(|e| e.to_string())?;
         tx.execute("UPDATE conversations SET provider_id=?1,title=CASE WHEN NOT EXISTS(SELECT 1 FROM turns WHERE conversation_id=?2 AND id<>?3) THEN ?4 ELSE title END,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=?2",params![provider.id,conversation_id,id,text.split_whitespace().collect::<Vec<_>>().join(" ").chars().take(40).collect::<String>()]).map_err(|e|e.to_string())?;

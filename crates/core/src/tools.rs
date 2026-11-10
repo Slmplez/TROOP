@@ -21,6 +21,8 @@ pub fn definitions() -> Vec<Value> {
         ("group_reply","Explicitly reply to the current delivery. Core binds sender and chain. targets_json contains Agent numeric IDs. broadcast is true or false. Optional destination is current or parent, where parent publishes a topic conclusion to its source group.",json!({"body":{"type":"string"},"targets_json":{"type":"string"},"broadcast":{"type":"string","enum":["true","false"]},"destination":{"type":"string","enum":["current","parent"]}}),vec!["body","targets_json","broadcast"]),
         ("manage_rule","Save or toggle an internal event rule using the Run dedicated rule management authorization. id is empty for create. expected_revision is an exact decimal revision. definition is strict rule JSON.",json!({"id":{"type":"string"},"expected_revision":{"type":"string"},"definition":{"type":"string"}}),vec!["id","expected_revision","definition"]),
         ("list_directory", "List a workspace directory (maximum 100 entries).", json!({"path":{"type":"string"}}), vec!["path"]),
+        ("office_read", "Read and register a Markdown or CSV file, returning immutable version and paragraph/cell metadata. Use its revision and hash for office_edit.", json!({"path":{"type":"string"}}), vec!["path"]),
+        ("office_edit", "Save a Markdown or CSV version through the managed office interface. Stops on unsaved drafts, external changes or stale versions. expected_revision is a decimal version and expected_hash its SHA-256. Requires approval.", json!({"path":{"type":"string"},"content":{"type":"string"},"expected_hash":{"type":"string"},"expected_revision":{"type":"string"}}), vec!["path","content","expected_hash","expected_revision"]),
         ("read_file", "Read a UTF-8 workspace file up to 8KB and its SHA-256 for subsequent writes.", json!({"path":{"type":"string"}}), vec!["path"]),
         ("search_text", "Search literal text in workspace UTF-8 files; bounded, excludes .git and reparse points.", json!({"path":{"type":"string"},"text":{"type":"string"}}), vec!["path","text"]),
         ("write_file", "Create/update a UTF-8 workspace file up to 8KB. expected_hash must be the previous SHA-256, or 'missing' for a new file. Requires user approval.", json!({"path":{"type":"string"},"content":{"type":"string"},"expected_hash":{"type":"string"}}), vec!["path","content","expected_hash"]),
@@ -42,7 +44,7 @@ pub fn needs_approval(name: &str) -> bool {
     name.starts_with("mcp_")
         || matches!(
             name,
-            "write_file" | "run_command" | "git_status" | "start_background"
+            "write_file" | "office_edit" | "run_command" | "git_status" | "start_background"
         )
 }
 pub fn read_only(name: &str) -> bool {
@@ -56,6 +58,7 @@ pub fn read_only(name: &str) -> bool {
         name,
         "list_directory"
             | "read_file"
+            | "office_read"
             | "search_text"
             | "spawn_agent"
             | "task_status"
@@ -157,7 +160,7 @@ pub(crate) fn reparse(path: &Path) -> Result<bool, String> {
         Ok(metadata.file_type().is_symlink())
     }
 }
-fn target(root: &Path, input: &str, new: bool) -> Result<PathBuf, String> {
+pub(crate) fn target(root: &Path, input: &str, new: bool) -> Result<PathBuf, String> {
     if input.len() > 2000 || input.contains(':') || input.contains('\0') {
         return Err("工作区路径无效。".into());
     }
@@ -359,6 +362,20 @@ pub(crate) fn host_shell() -> Result<PathBuf, String> {
         .canonicalize()
         .map_err(|_| "Windows PowerShell unavailable".into())
 }
+pub(crate) fn workspace_text(
+    workspace: &str,
+    path: &str,
+    replacement: Option<(&str, &str)>,
+) -> Result<Value, String> {
+    match replacement {
+        Some((content, expected)) => perform(
+            workspace,
+            "write_file",
+            &json!({"path":path,"content":content,"expected_hash":expected}),
+        ),
+        None => perform(workspace, "read_file", &json!({"path":path})),
+    }
+}
 fn perform(workspace: &str, name: &str, args: &Value) -> Result<Value, String> {
     if name == "__hook_command" {
         let root = fs::canonicalize(workspace).map_err(|_| "Hook workspace unavailable")?;
@@ -426,7 +443,7 @@ fn perform(workspace: &str, name: &str, args: &Value) -> Result<Value, String> {
         target(
             &root,
             args["path"].as_str().unwrap_or("."),
-            name == "write_file",
+            matches!(name, "write_file" | "office_edit"),
         )
     };
     match name {
@@ -451,7 +468,7 @@ fn perform(workspace: &str, name: &str, args: &Value) -> Result<Value, String> {
             let text = std::str::from_utf8(&bytes).map_err(|_| "文件不是 UTF-8 文本。")?;
             Ok(json!({"content":text,"sha256":hash(&bytes)}))
         }
-        "write_file" => {
+        "write_file" | "office_edit" => {
             let path = path()?;
             let content = args["content"].as_str().unwrap();
             let expected = args["expected_hash"].as_str().unwrap();
@@ -469,9 +486,11 @@ fn perform(workspace: &str, name: &str, args: &Value) -> Result<Value, String> {
                 options.create_new(true);
             }
             let mut file = options
-                .open(path)
+                .open(&path)
                 .map_err(|_| "文件版本冲突、被占用或无法写入；未覆盖。")?;
             if expected != "missing" {
+                #[cfg(windows)]
+                troop_mcp::program::check_write_aliases(&[path.to_string_lossy().into_owned()])?;
                 let mut old = Vec::new();
                 (&mut file)
                     .take(8001)

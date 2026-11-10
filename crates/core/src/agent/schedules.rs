@@ -172,7 +172,16 @@ impl Manager {
             let config: Config =
                 serde_json::from_value(provider.config.clone()).map_err(|_| "模型配置无效。")?;
             config.endpoint()?;
-            let basis = json!({"grant_id":grant["id"],"grant_revision":grant["revision"],"agent_id":definition.agent_id,"workspace_id":definition.workspace_id,"project_ids":projects,"operations":grant["operations"],"read_roots":grant["read_roots"],"write_roots":grant["write_roots"],"network":grant["network"],"provider_id":provider.id,"provider_config":provider.config,"provider_binding_sha256":tools::hash(json!({"config":provider.config,"secret_ref":provider.secret_ref}).to_string().as_bytes())});
+            let mut basis = json!({"grant_id":grant["id"],"grant_revision":grant["revision"],"agent_id":definition.agent_id,"workspace_id":definition.workspace_id,"project_ids":projects,"operations":grant["operations"],"read_roots":grant["read_roots"],"write_roots":grant["write_roots"],"network":grant["network"],"provider_id":provider.id,"provider_config":provider.config,"provider_binding_sha256":tools::hash(json!({"config":provider.config,"secret_ref":provider.secret_ref}).to_string().as_bytes())});
+            if !request.office_reference_ids.is_empty() {
+                let references = crate::office::materialize_references(
+                    store,
+                    &request.office_reference_ids,
+                    Some(request.workspace_id),
+                    Some(&grant),
+                )?;
+                basis["office_references"] = references;
+            }
             json!({"plan_sha256":tools::hash(basis.to_string().as_bytes()),"plan":basis})
         };
         plan["grant_id"] = grant["id"].clone();

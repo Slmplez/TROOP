@@ -66,6 +66,16 @@ pub fn public_run(doc: &Value, brief: bool) -> Value {
         .take(80)
         .collect::<String>());
     if !brief {
+        result["office_references"] = json!(doc["office_references"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(|reference| {
+                let mut value = reference.clone();
+                value.as_object_mut().unwrap().remove("content");
+                value
+            })
+            .collect::<Vec<_>>());
         result["provider_name"] = doc["config"]["name"].clone();
         result["model"] = doc["config"]["model"].clone();
         for (key, limit) in [("goal", 1000), ("output", 3000)] {

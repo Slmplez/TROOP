@@ -201,7 +201,7 @@ impl Manager {
         };
         let action = json!({"id":id,"agent_id":run["agent_id"],"engine_id":"native",
             "workspace_id":run["workspace_id"],"project_ids":run["project_ids"],
-            "rule_id":run["rule_id"],"operation":if is_mcp {json!("call_mcp")}else{inv["name"].clone()},
+            "rule_id":run["rule_id"],"operation":if is_mcp {json!("call_mcp")}else{match inv["name"].as_str() {Some("office_read") => json!("read_file"), Some("office_edit") => json!("write_file"), _ => inv["name"].clone()}},
             "path":if is_mcp{Value::Null}else{inv["arguments"]["path"].clone()},"network":if is_mcp{store.authorization_get(id)?["network"].clone()}else{json!("none")},"mcp":operation});
         let mut decision = crate::authorizations::read(store, "authorizations.evaluate", action)?;
         if decision["decision"] != "allow" {

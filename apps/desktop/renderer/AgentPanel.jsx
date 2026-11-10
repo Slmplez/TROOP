@@ -5,6 +5,7 @@ import OwnedTasks from "./OwnedTasks";
 import { HookHistory } from "./HooksPanel";
 import McpRunPanel from "./McpRunPanel";
 import MemoryUsage from "./MemoryUsage";
+import OfficeReference from "./OfficeReference";
 const states = {
   queued: "排队中",
   running: "正在执行",
@@ -197,9 +198,13 @@ export default function AgentPanel({
     invocation.approval === null &&
     (invocation.hook_ask ||
       invocation.name.startsWith("mcp_") ||
-      ["write_file", "run_command", "git_status", "start_background"].includes(
-        invocation.name,
-      )) &&
+      [
+        "write_file",
+        "office_edit",
+        "run_command",
+        "git_status",
+        "start_background",
+      ].includes(invocation.name)) &&
     active;
   const unresolved =
     snapshot?.mcp_unresolved ||
@@ -740,6 +745,19 @@ export default function AgentPanel({
                       : "放弃后续步骤"}
                   </button>
                 </div>
+              )}
+              {run.office_references?.length > 0 && (
+                <section>
+                  <h3>本次固定文件引用</h3>
+                  {run.office_references.map((reference) => (
+                    <OfficeReference
+                      key={reference.id}
+                      reference={reference}
+                      ready={ready && visible}
+                      label="执行固定文件引用"
+                    />
+                  ))}
+                </section>
               )}
               <MemoryUsage
                 key={run.id}

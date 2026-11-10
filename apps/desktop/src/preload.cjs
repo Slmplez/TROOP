@@ -284,6 +284,40 @@ contextBridge.exposeInMainWorld(
       call("troop:resource-automations.confirm", input),
     resourceautomationResult: (input) =>
       call("troop:resource-automations.result", input),
+    resourceofficeOpen: (input) => call("troop:resource-office.open", input),
+    resourceofficePending: (input) =>
+      call("troop:resource-office.pending", input),
+    resourceofficeGet: (input) => call("troop:resource-office.get", input),
+    resourceofficeList: (input) => call("troop:resource-office.list", input),
+    resourceofficeHistory: (input) =>
+      call("troop:resource-office.history", input),
+    resourceofficeVersion: (input) =>
+      call("troop:resource-office.version", input),
+    resourceofficeDraftGet: (input) =>
+      call("troop:resource-office.draft.get", input),
+    resourceofficeDraftSave: (input) =>
+      call("troop:resource-office.draft.save", input),
+    resourceofficeDraftDiscard: (input) =>
+      call("troop:resource-office.draft.discard", input),
+    resourceofficeSave: (input) => call("troop:resource-office.save", input),
+    resourceofficeRestore: (input) =>
+      call("troop:resource-office.restore", input),
+    resourceofficeSaveAs: (input) =>
+      call("troop:resource-office.save_as", input),
+    resourceofficeCaptureExternal: (input) =>
+      call("troop:resource-office.capture_external", input),
+    resourceofficeReconcile: (input) =>
+      call("troop:resource-office.reconcile", input),
+    resourceofficeReferenceCreate: (input) =>
+      call("troop:resource-office.reference.create", input),
+    resourceofficeReferenceGet: (input) =>
+      call("troop:resource-office.reference.get", input),
+    resourceofficeCsvDecode: (input) =>
+      call("troop:resource-office.csv.decode", input),
+    resourceofficeCsvEncode: (input) =>
+      call("troop:resource-office.csv.encode", input),
+    resourceofficeMarkdownCheck: (input) =>
+      call("troop:resource-office.markdown.check", input),
     // END EXECUTION CONTRACT
     saveMemoryAgent: (input) => call("troop:memory-agent.save", input),
     listMemoryProjects: (agent_id) =>

@@ -63,6 +63,8 @@ jobs:
         run: npm --prefix apps/desktop run test:ci
       - name: Verify conversation automation in Electron
         run: node apps/desktop/scripts/conversation-automations-smoke.mjs
+      - name: Verify office editing and conflict recovery in Electron
+        run: node apps/desktop/scripts/office-smoke.mjs
       - name: Build and verify the independent TROOP portable
         shell: pwsh
         run: |

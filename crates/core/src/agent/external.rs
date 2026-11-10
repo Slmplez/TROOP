@@ -25,6 +25,8 @@ struct StartExternal {
     agent_id: i64,
     #[serde(default)]
     project_ids: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    office_reference_ids: Vec<String>,
     rule_id: Option<String>,
     #[serde(default = "default_timeout")]
     timeout_seconds: u64,
@@ -79,6 +81,9 @@ fn plan_basis(plan: &Value) -> Value {
         "interaction_capabilities",
     ] {
         value[key] = plan[key].clone();
+    }
+    if let Some(digest) = plan.get("office_references_sha256") {
+        value["office_references_sha256"] = digest.clone();
     }
     value
 }
@@ -455,7 +460,12 @@ impl Manager {
         run["continuation_of"] = self.continuation_basis(store, &request, &basis)?;
         let text_only = request.tool_mode == "disabled";
         let workspace = PathBuf::from(run["workspace"].as_str().ok_or("工作区无效。")?);
-        let arguments = json!({"goal":request.goal,"permission_plan":plan,"timeout_seconds":request.timeout_seconds.to_string()});
+        let goal = format!(
+            "{}{}",
+            request.goal,
+            crate::office::reference_context(&run["office_references"])
+        );
+        let arguments = json!({"goal":goal,"permission_plan":plan,"timeout_seconds":request.timeout_seconds.to_string()});
         if arguments.to_string().len() > 20_000 {
             return Err("CLI 目标与权限计划的组合超过传输容量。".into());
         }
@@ -640,12 +650,22 @@ impl Manager {
             .map(PathBuf::from)
             .map(Ok)
             .unwrap_or_else(|| default_program(&request.engine_id))?;
-        let run = json!({"kind":"external_cli","engine_id":request.engine_id,"state":"queued","epoch":1,"revision":0,"step":0,"intent":null,"workspace_id":request.workspace_id,"workspace":workspace,"agent_id":request.agent_id,"authorization_id":request.authorization_id,"authorization_revision":grant["revision"],"project_ids":request.project_ids,"rule_id":request.rule_id,"goal":request.goal,"pending":[],"history":[],"output":"","model_text":"","waiting":["external_cli"],"error":null,"hook_snapshot":[],"mcp_snapshot":[]});
+        let mut run = json!({"kind":"external_cli","engine_id":request.engine_id,"state":"queued","epoch":1,"revision":0,"step":0,"intent":null,"workspace_id":request.workspace_id,"workspace":workspace,"agent_id":request.agent_id,"authorization_id":request.authorization_id,"authorization_revision":grant["revision"],"project_ids":request.project_ids,"rule_id":request.rule_id,"goal":request.goal,"pending":[],"history":[],"output":"","model_text":"","waiting":["external_cli"],"error":null,"hook_snapshot":[],"mcp_snapshot":[]});
         Self::external_authorized(store, &run)?;
+        run["office_references"] = crate::office::materialize_references(
+            store,
+            &request.office_reference_ids,
+            Some(request.workspace_id),
+            Some(&grant),
+        )?;
         if request.engine_id == "codex" && grant["network"] == "none" {
             return Err("Codex 0.166.0 的 Windows 原生工具仍可访问本机网络，无法落实网络关闭授权；已阻止启动。请使用具备完整断网能力的执行环境。".into());
         }
         let mut plan = json!({"id":Uuid::new_v4().to_string(),"adapter":"codex-app-server-v1","required_version":"0.166.0","program":program,"program_sha256":program_hash(&program)?,"grant_id":request.authorization_id,"grant_revision":grant["revision"],"read_roots":grant["read_roots"],"write_roots":grant["write_roots"],"read_all":grant["read_all"]==true,"network":grant["network"],"approval_policy":"never","scope":"native_commands_and_file_tools","extensions":"disabled","tool_mode":request.tool_mode});
+        if !request.office_reference_ids.is_empty() {
+            plan["office_references_sha256"] =
+                json!(tools::hash(run["office_references"].to_string().as_bytes()));
+        }
         plan["interaction_capabilities"] = crate::engines::interactions(&request.engine_id);
         plan["native_transport"] = json!(request.native_transport);
         plan["approval_mode"] = json!(request.approval_mode);
