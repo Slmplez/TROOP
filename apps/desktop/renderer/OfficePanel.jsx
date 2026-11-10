@@ -358,6 +358,10 @@ export default function OfficePanel({
     <section className="agent-page office-page" aria-label="文件办公">
       <h1>文件办公</h1>
       <p className="muted">Markdown 与 CSV · 固定版本、窗口草稿与内容引用</p>
+      <p className="muted">
+        支持 UTF-8 文件，单个文件最多 8000 字节。CSV 最多 200 行、50 列、2000
+        个单元格。
+      </p>
       {error && (
         <p role="alert" className="error">
           {error}
