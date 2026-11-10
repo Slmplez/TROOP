@@ -29,6 +29,7 @@ const labels = {
 function App() {
   const [page, setPage] = useState("chat");
   const [openRun, setOpenRun] = useState(null);
+  const [openAutomation, setOpenAutomation] = useState(null);
   const [providers, setProviders] = useState([]);
   const [status, setStatus] = useState({ state: "starting" });
   const [rows, setRows] = useState([]);
@@ -312,6 +313,15 @@ function App() {
         />
         <div className="chat-mount" hidden={page !== "chat"}>
           <ChatPanel
+            onManageAutomation={(rule) => {
+              setOpenAutomation(rule);
+              setPage("rules");
+            }}
+            onOpenRun={(id) => {
+              setOpenRun(id);
+              setPage("agent");
+            }}
+            onOpenAuthorizations={() => setPage("authorizations")}
             ready={ready}
             generation={status.generation}
             providers={providers}
@@ -366,6 +376,7 @@ function App() {
         )}
         {page === "rules" && (
           <RulesPanel
+            openAutomation={openAutomation}
             ready={ready}
             workspaces={rows}
             onOpenRun={(id) => {

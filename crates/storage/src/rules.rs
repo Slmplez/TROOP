@@ -124,6 +124,13 @@ impl Store {
             .map(|r| r["created_at_ms"].clone())
             .filter(|v| !v.is_null())
             .unwrap_or(json!(effective_from));
+        if let Some(origin) = old
+            .as_ref()
+            .and_then(|value| value.get("origin"))
+            .or_else(|| author.get("automation_origin"))
+        {
+            rule["origin"] = origin.clone();
+        }
         rule["author"] = author;
         rule["updated_at"] = json!(self
             .db

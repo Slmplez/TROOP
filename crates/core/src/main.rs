@@ -84,6 +84,8 @@ struct SaveProvider {
 struct CreateChat {
     title: String,
     workspace_id: Option<i64>,
+    agent_id: Option<i64>,
+    project_id: Option<String>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -98,6 +100,8 @@ struct SendChat {
     provider_id: String,
     client_turn_id: String,
     text: String,
+    #[serde(default)]
+    automation: bool,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -237,6 +241,20 @@ impl Core {
             return Ok((
                 self.agents
                     .schedules_read(&self.store, method, p, self.reminder_clock.now()?)?,
+                false,
+            ));
+        }
+        if method == "automations.result" {
+            return Ok((
+                self.agents
+                    .automation_result(&self.store, p, self.reminder_clock.now()?)?,
+                false,
+            ));
+        }
+        if method == "automations.preview" {
+            return Ok((
+                self.agents
+                    .preview_automation(&self.store, p, self.reminder_clock.now()?)?,
                 false,
             ));
         }
@@ -508,7 +526,7 @@ impl Core {
             "chat.list" => self.store.conversations(params::<List>(p)?.offset)?,
             "chat.create" => {
                 let a = params::<CreateChat>(p)?;
-                json!({"id":self.store.create_conversation(&a.title,a.workspace_id)?})
+                json!({"id":self.store.create_scoped_conversation(&a.title,a.workspace_id,a.agent_id.unwrap_or(1),a.project_id.as_deref())?})
             }
             "chat.remove" => {
                 let a = params::<Id>(p)?;
@@ -531,6 +549,13 @@ impl Core {
             }
             "chat.send" => {
                 let a = params::<SendChat>(p)?;
+                if self
+                    .store
+                    .chat_automation_mode(&a.client_turn_id)?
+                    .is_some_and(|mode| mode != a.automation)
+                {
+                    return Err("同一消息身份不能改变自动化模式。".into());
+                }
                 if Uuid::parse_str(&a.client_turn_id).is_err()
                     || a.text.trim().is_empty()
                     || a.text.len() > 12_000
@@ -573,15 +598,20 @@ impl Core {
                     .into_iter()
                     .map(|(role, content)| Message { role, content })
                     .collect();
+                if a.automation {
+                    let scope = self.store.chat_scope(a.conversation_id)?;
+                    messages.insert(0,Message { role:"system".into(),content:format!("用户正在创建待人工确认的自动化。当前 UTC 毫秒时间 {}，对话范围 {}。时间参考默认 Asia/Shanghai，用户可指定其他 IANA 时区。信息不足时用自然语言补问，绝不猜测目标或具体时间。信息完整时只输出一个 JSON 对象，不使用代码围栏。格式为 {{\"troop_automation\":{{\"kind\":\"reminder\",\"name\":\"名称\",\"body\":\"提醒正文\",\"schedule\":{{\"kind\":\"once\",\"timezone\":\"Asia/Shanghai\",\"date\":\"YYYY-MM-DD\",\"time\":\"HH:MM\",\"weekdays\":[]}}}}}}。定时 Agent 执行使用 kind=scheduled，以 goal 替换 body。重复支持 daily（date=null，weekdays=[]）和 weekly（date=null，weekdays=ISO周一1至周日7）。只提出草稿，只有用户在确认卡片接纳后才登记。",self.reminder_clock.now()?,scope) });
+                }
                 messages.push(Message {
                     role: "user".into(),
                     content: a.text.clone(),
                 });
-                let receipt = self.store.begin_turn(
+                let receipt = self.store.begin_turn_mode(
                     &a.client_turn_id,
                     a.conversation_id,
                     &provider,
                     &a.text,
+                    a.automation,
                 )?;
                 let request = agent::model::ModelRequest {
                     config,

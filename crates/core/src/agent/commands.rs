@@ -222,6 +222,11 @@ impl Manager {
             &canonical,
             request.expected_revision,
             |store| {
+                if method == "automations.confirm" {
+                    return self
+                        .confirm_automation(store, input.clone(), reminder_now_ms)
+                        .map(|value| (value, AfterCommit::None));
+                }
                 if method.starts_with("followups.") {
                     let (value, stop) =
                         self.followup_command(store, method, input.clone(), reminder_now_ms)?;

@@ -235,6 +235,20 @@ export class ClientModels {
     return value;
   }
   resource(method, input = {}) {
+    if (method === "authorizations.list") {
+      contract.validate(method, input);
+      return this.model(
+        `authorizations:${input.offset ?? 0}`,
+        (offset) =>
+          this.client.request(method, { offset: offset ?? input.offset ?? 0 }),
+        {
+          cursor: "next_offset",
+          refreshPages: true,
+          interval: this.pollInterval,
+          order: () => 0,
+        },
+      );
+    }
     if (
       [
         "groups.list",

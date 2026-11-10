@@ -42,7 +42,8 @@ async function setup(t, options = {}) {
   fs.writeFileSync(path.join(workspace, "input.txt"), "owned input");
   const server = await agentServer({ plan: () => [], ...options });
   const core = new CoreSupervisor({
-    executable: path.resolve(__dirname, "../../bin", coreBinary),
+    executable:
+      options.executable ?? path.resolve(__dirname, "../../bin", coreBinary),
     args: ["--data-dir", data, ...(options.coreArgs ?? [])],
     timeout: 10000,
   });

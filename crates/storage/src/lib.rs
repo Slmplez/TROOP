@@ -76,7 +76,7 @@ impl Store {
         let version: i64 = db
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .map_err(|e| e.to_string())?;
-        if version > 30 {
+        if version > 31 {
             return Err("Database was created by a newer TROOP version".into());
         }
         let has_table = |name: &str| {
@@ -273,6 +273,9 @@ impl Store {
         if version < 30 {
             followups::migrate(&mut db)?;
         }
+        if version < 31 {
+            chat::migrate_scope(&mut db)?;
+        }
         let mut store = Self { db, _lock: lock };
         store.recover_executions()?;
         store.cli_interactions_recover()?;
@@ -443,7 +446,7 @@ mod tests {
         fs::create_dir_all(&directory).unwrap();
         let database = directory.join("troop.sqlite3");
         let connection = Connection::open(&database).unwrap();
-        connection.execute_batch("PRAGMA user_version=31;").unwrap();
+        connection.execute_batch("PRAGMA user_version=32;").unwrap();
         drop(connection);
         assert!(matches!(Store::open(&directory), Err(message) if message.contains("newer")));
         let connection = Connection::open(database).unwrap();
@@ -454,7 +457,7 @@ mod tests {
         let version: i64 = connection
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .unwrap();
-        assert_eq!(version, 31);
+        assert_eq!(version, 32);
     }
 
     #[test]

@@ -14,6 +14,40 @@ pub(super) fn migrate(db: &mut Connection) -> Result<(), String> {
     ").map_err(|e|e.to_string())?;
     tx.commit().map_err(|e| e.to_string())
 }
+pub(super) fn migrate_scope(db: &mut Connection) -> Result<(), String> {
+    let tx = db.transaction().map_err(|e| e.to_string())?;
+    for (table, column, statement) in [
+        (
+            "conversations",
+            "agent_id",
+            "ALTER TABLE conversations ADD COLUMN agent_id INTEGER NOT NULL DEFAULT 1",
+        ),
+        (
+            "conversations",
+            "project_id",
+            "ALTER TABLE conversations ADD COLUMN project_id TEXT",
+        ),
+        (
+            "turns",
+            "automation_mode",
+            "ALTER TABLE turns ADD COLUMN automation_mode INTEGER NOT NULL DEFAULT 0",
+        ),
+    ] {
+        let present: bool = tx
+            .query_row(
+                "SELECT EXISTS(SELECT 1 FROM pragma_table_info(?1) WHERE name=?2)",
+                params![table, column],
+                |row| row.get(0),
+            )
+            .map_err(|e| e.to_string())?;
+        if !present {
+            tx.execute_batch(statement).map_err(|e| e.to_string())?;
+        }
+    }
+    tx.execute_batch("PRAGMA user_version=31")
+        .map_err(|e| e.to_string())?;
+    tx.commit().map_err(|e| e.to_string())
+}
 #[derive(Serialize)]
 pub struct Provider {
     pub id: String,
@@ -26,6 +60,8 @@ pub struct Provider {
 #[derive(Serialize)]
 pub struct Conversation {
     pub id: i64,
+    pub agent_id: i64,
+    pub project_id: Option<String>,
     pub title: String,
     pub workspace_id: Option<i64>,
     pub provider_id: Option<String>,
@@ -60,6 +96,49 @@ pub struct TurnReceipt {
 }
 
 impl Store {
+    pub fn chat_scope(&self, conversation: i64) -> Result<Value, String> {
+        self.db.query_row("SELECT agent_id,project_id,workspace_id FROM conversations WHERE id=?1",[conversation],|row|Ok(json!({"agent_id":row.get::<_,i64>(0)?,"project_id":row.get::<_,Option<String>>(1)?,"workspace_id":row.get::<_,Option<i64>>(2)?}))).map_err(|_|"对话不存在。".into())
+    }
+    pub fn chat_automation_mode(&self, client: &str) -> Result<Option<bool>, String> {
+        self.db
+            .query_row(
+                "SELECT automation_mode FROM turns WHERE client_turn_id=?1",
+                [client],
+                |row| row.get(0),
+            )
+            .optional()
+            .map_err(|e| e.to_string())
+    }
+    pub fn create_scoped_conversation(
+        &self,
+        title: &str,
+        workspace: Option<i64>,
+        agent: i64,
+        project: Option<&str>,
+    ) -> Result<i64, String> {
+        self.memory_agent(agent)?;
+        if let Some(project) = project {
+            if !self
+                .memory_projects(agent)?
+                .as_array()
+                .is_some_and(|items| {
+                    items
+                        .iter()
+                        .any(|item| item["slug"] == project && item["joined"] == true)
+                })
+            {
+                return Err("对话项目成员资格无效。".into());
+            }
+        }
+        if title.trim().is_empty() || title.chars().count() > 80 {
+            return Err("对话标题无效。".into());
+        }
+        self.db.execute("INSERT INTO conversations(title,workspace_id,agent_id,project_id) VALUES(?1,?2,?3,?4)", params![title.trim(),workspace,agent,project]).map_err(|e|e.to_string())?;
+        Ok(self.db.last_insert_rowid())
+    }
+    pub fn automation_chat_source(&self, turn: i64) -> Result<Value, String> {
+        self.db.query_row("SELECT t.assistant_text,t.status,t.provider_id,c.id,c.agent_id,c.project_id,c.workspace_id FROM turns t JOIN conversations c ON c.id=t.conversation_id WHERE t.id=?1", [turn], |row| Ok(json!({"output":row.get::<_,String>(0)?,"state":row.get::<_,String>(1)?,"provider_id":row.get::<_,String>(2)?,"conversation_id":row.get::<_,i64>(3)?,"agent_id":row.get::<_,i64>(4)?,"project_id":row.get::<_,Option<String>>(5)?,"workspace_id":row.get::<_,Option<i64>>(6)?}))).map_err(|_|"自动化来源对话不存在。".into())
+    }
     pub fn providers(&self) -> Result<Vec<Provider>, String> {
         let mut q = self
             .db
@@ -118,7 +197,7 @@ impl Store {
         if offset < 0 {
             return Err("分页参数无效。".into());
         }
-        let mut q=self.db.prepare("SELECT c.id,c.title,c.workspace_id,c.provider_id,c.updated_at,(SELECT id FROM turns t WHERE t.conversation_id=c.id AND t.status='streaming' LIMIT 1) FROM conversations c ORDER BY c.updated_at DESC,c.id DESC LIMIT 30 OFFSET ?1").map_err(|e|e.to_string())?;
+        let mut q=self.db.prepare("SELECT c.id,c.title,c.workspace_id,c.provider_id,c.updated_at,(SELECT id FROM turns t WHERE t.conversation_id=c.id AND t.status='streaming' LIMIT 1),c.agent_id,c.project_id FROM conversations c ORDER BY c.updated_at DESC,c.id DESC LIMIT 30 OFFSET ?1").map_err(|e|e.to_string())?;
         let items = q
             .query_map([offset], |r| {
                 Ok(Conversation {
@@ -128,6 +207,8 @@ impl Store {
                     provider_id: r.get(3)?,
                     updated_at: r.get(4)?,
                     active_turn_id: r.get(5)?,
+                    agent_id: r.get(6)?,
+                    project_id: r.get(7)?,
                 })
             })
             .map_err(|e| e.to_string())?
@@ -229,9 +310,24 @@ impl Store {
         provider: &Provider,
         text: &str,
     ) -> Result<TurnReceipt, String> {
+        self.begin_turn_mode(client_id, conversation_id, provider, text, false)
+    }
+    pub fn begin_turn_mode(
+        &mut self,
+        client_id: &str,
+        conversation_id: i64,
+        provider: &Provider,
+        text: &str,
+        automation: bool,
+    ) -> Result<TurnReceipt, String> {
         let tx = self.db.transaction().map_err(|e| e.to_string())?;
         tx.execute("INSERT INTO turns(client_turn_id,conversation_id,provider_id,provider_revision,provider_name,model,protocol,user_text,status) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,'streaming')",params![client_id,conversation_id,provider.id,provider.revision,provider.config["name"].as_str().unwrap_or(""),provider.config["model"].as_str().unwrap_or(""),provider.config["protocol"].as_str().unwrap_or(""),text]).map_err(|e|e.to_string())?;
         let id = tx.last_insert_rowid();
+        tx.execute(
+            "UPDATE turns SET automation_mode=?2 WHERE id=?1",
+            params![id, automation],
+        )
+        .map_err(|e| e.to_string())?;
         tx.execute("UPDATE conversations SET provider_id=?1,title=CASE WHEN NOT EXISTS(SELECT 1 FROM turns WHERE conversation_id=?2 AND id<>?3) THEN ?4 ELSE title END,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=?2",params![provider.id,conversation_id,id,text.split_whitespace().collect::<Vec<_>>().join(" ").chars().take(40).collect::<String>()]).map_err(|e|e.to_string())?;
         tx.commit().map_err(|e| e.to_string())?;
         Ok(TurnReceipt {

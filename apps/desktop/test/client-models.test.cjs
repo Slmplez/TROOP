@@ -752,3 +752,29 @@ test("scheduled history shares one resource identity and refreshes mutable Run s
   release();
   f.models.dispose();
 });
+
+test("authorization choices load older pages and retain them during refresh", async () => {
+  const f = await setup(async (method, input) => {
+    assert.equal(method, "authorizations.list");
+    return input.offset === 0
+      ? page([{ id: "new-grant" }], 20)
+      : page([{ id: "old-grant" }]);
+  });
+  const model = f.models.resource("authorizations.list", { offset: 0 });
+  const release = model.subscribe(() => {});
+  try {
+    await tick();
+    await model.more();
+    assert.deepEqual(
+      model.state.data.items.map((x) => x.id),
+      ["new-grant", "old-grant"],
+    );
+    await model.refresh();
+    assert.deepEqual(
+      model.state.data.items.map((x) => x.id),
+      ["new-grant", "old-grant"],
+    );
+  } finally {
+    release();
+  }
+});

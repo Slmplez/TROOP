@@ -16,6 +16,7 @@ use troop_protocol::lifecycle::{self, run_terminal as terminal, Evidence};
 use troop_storage::{public_run, Store};
 use uuid::Uuid;
 mod actions;
+mod automations;
 mod cli_interactions;
 mod commands;
 pub(crate) mod context;
