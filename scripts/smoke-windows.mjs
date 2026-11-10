@@ -995,6 +995,7 @@ async function buildStrictFakeDocker(temporary) {
   try {
     await execFileAsync("dotnet", [
       "build", project,
+      "--disable-build-servers",
       "--configuration", "Release",
       "--output", output,
       "--nologo",

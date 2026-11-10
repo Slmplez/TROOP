@@ -3,6 +3,22 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs"),
   path = require("node:path"),
   { pathToFileURL } = require("node:url");
+test("Windows smoke builds its fixture without persistent compiler servers", () => {
+  const source = fs.readFileSync(
+    path.resolve(__dirname, "../../../scripts/smoke-windows.mjs"),
+    "utf8",
+  );
+  const start = source.indexOf("async function buildStrictFakeDocker(");
+  const end = source.indexOf(
+    "async function assertFakeDockerContainerState(",
+    start,
+  );
+  assert.ok(start >= 0 && end > start);
+  assert.match(
+    source.slice(start, end),
+    /execFileAsync\("dotnet", \[[\s\S]*"--disable-build-servers"/,
+  );
+});
 test("Windows bootstrap uses the documented checksum-pinned carrier release", async () => {
   const root = path.resolve(__dirname, "../../..");
   const config = await import(
